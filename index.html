@@ -5,260 +5,62 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sims Theory Test Pro</title>
     <style>
-        /* --- MODERN COLOR PALETTE & VARIABLES --- */
         :root {
-            --primary: #4f46e5;       /* Modern Indigo */
+            --primary: #4f46e5;
             --primary-hover: #4338ca;
-            --bg: #f8fafc;            /* Soft light gray background */
-            --surface: #ffffff;       /* Pure white for cards */
-            --text-main: #0f172a;     /* Deep slate for text */
+            --bg: #f8fafc;
+            --surface: #ffffff;
+            --text-main: #0f172a;
             --text-light: #475569;
-            --success: #16a34a;       /* Vibrant green */
-            --error: #dc2626;         /* Clear red */
+            --success: #16a34a;
+            --error: #dc2626;
             --border: #e2e8f0;
-            --radius: 12px;           /* Modern rounded corners */
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+            --radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        /* --- GLOBAL STYLES --- */
-        body {
-            font-family: 'Inter', system-ui, -apple-system, sans-serif;
-            background-color: var(--bg);
-            color: var(--text-main);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            line-height: 1.5;
-        }
+        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; line-height: 1.5; }
+        
+        header { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white; width: 100%; padding: 2.5rem 0; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
+        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; }
 
-        /* --- HEADER & NAVIGATION --- */
-        header {
-            background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
-            color: white;
-            width: 100%;
-            padding: 2.5rem 0 1.5rem 0;
-            text-align: center;
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-        }
-
-        header h1 {
-            margin: 0 0 15px 0;
-            font-size: 2.2rem;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        nav {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        button.tab-btn {
-            background-color: rgba(255, 255, 255, 0.2);
-            color: white;
-            border: 2px solid transparent;
-            padding: 10px 24px;
-            cursor: pointer;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 30px;
-            transition: all 0.2s ease;
-        }
-
-        button.tab-btn:hover {
-            background-color: rgba(255, 255, 255, 0.3);
-        }
-
-        button.tab-btn.active {
-            background-color: white;
-            color: var(--primary);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        /* --- MAIN CONTAINERS --- */
-        .container {
-            background-color: var(--surface);
-            max-width: 800px;
-            width: 90%;
-            margin: 2rem auto;
-            padding: 2.5rem;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border);
-            box-sizing: border-box;
-        }
-
+        .container { background-color: var(--surface); max-width: 800px; width: 90%; margin: 2rem auto; padding: 2.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); box-sizing: border-box; }
+        
         .section { display: none; }
         .section.active { display: block; animation: fadeIn 0.3s ease; }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        h2 { margin-top: 0; color: var(--text-main); font-weight: 700; }
-        p { color: var(--text-light); }
+        .hero-image { width: 100%; border-radius: var(--radius); margin-bottom: 1.5rem; }
 
-        /* --- IMAGE BANNER --- */
-        .hero-image {
-            width: 100%;
-            height: 250px;
-            object-fit: cover;
-            border-radius: var(--radius);
-            margin-bottom: 1.5rem;
-            background-color: #cbd5e1; /* Placeholder color while loading */
-            border: 1px solid var(--border);
-        }
+        select.styled-select { width: 100%; padding: 16px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 24px; background-color: var(--bg); color: var(--text-main); cursor: pointer; }
+        
+        .action-btn { background-color: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; cursor: pointer; border-radius: 8px; font-weight: 600; width: 100%; margin-top: 10px; transition: all 0.2s ease; }
+        .action-btn:hover { background-color: var(--primary-hover); }
 
-        /* --- FORMS & BUTTONS --- */
-        select.styled-select {
-            width: 100%;
-            padding: 16px;
-            font-size: 16px;
-            border: 2px solid var(--border);
-            border-radius: 8px;
-            margin-bottom: 24px;
-            background-color: var(--bg);
-            color: var(--text-main);
-            cursor: pointer;
-            transition: all 0.2s ease;
-            font-family: inherit;
-        }
-
-        select.styled-select:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: var(--surface);
-        }
-
-        .action-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 14px 24px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(79, 70, 229, 0.3);
-        }
-
-        .action-btn:hover { background-color: var(--primary-hover); transform: translateY(-1px); }
-        .action-btn:active { transform: translateY(1px); box-shadow: none; }
-        .action-btn:disabled { background-color: #cbd5e1; cursor: not-allowed; box-shadow: none; transform: none; }
-        .full-width { width: 100%; margin-top: 10px; }
-
-        /* --- ACTIVE TEST UI --- */
-        .test-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid var(--border);
-            padding-bottom: 15px;
-            margin-bottom: 25px;
-        }
-
-        .timer {
-            font-size: 22px;
-            font-weight: 800;
-            color: var(--error);
-            background: #fee2e2;
-            padding: 5px 15px;
-            border-radius: 20px;
-        }
-
+        .test-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
+        .timer { font-size: 22px; font-weight: 800; color: var(--error); background: #fee2e2; padding: 5px 15px; border-radius: 20px; }
+        
         .options { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
-
-        .option-btn {
-            padding: 18px;
-            font-size: 16px;
-            background-color: var(--surface);
-            border: 2px solid var(--border);
-            color: var(--text-main);
-            cursor: pointer;
-            text-align: left;
-            border-radius: 8px;
-            transition: all 0.2s;
-            font-weight: 500;
-        }
-
+        .option-btn { padding: 18px; font-size: 16px; background-color: var(--surface); border: 2px solid var(--border); color: var(--text-main); cursor: pointer; text-align: left; border-radius: 8px; transition: all 0.2s; font-weight: 500; }
         .option-btn:hover { border-color: var(--primary); background-color: #eef2ff; }
         .option-btn.selected { background-color: #e0e7ff; border-color: var(--primary); color: var(--primary); font-weight: 700; }
-        .controls { display: flex; justify-content: space-between; margin-top: 30px; align-items: center; }
-
-        /* --- RESULTS STYLES --- */
-        .result-summary {
-            font-size: 18px;
-            margin-bottom: 25px;
-            padding: 20px;
-            background-color: #eef2ff;
-            border-left: 5px solid var(--primary);
-            border-radius: 0 8px 8px 0;
-            color: var(--text-main);
-        }
-
-        .result-item {
-            background-color: var(--bg);
-            padding: 20px;
-            margin-bottom: 15px;
-            border-radius: 8px;
-            border-left: 5px solid var(--error);
-            border-[1px] solid var(--border);
-        }
-
+        
+        .result-summary { font-size: 18px; margin-bottom: 25px; padding: 20px; background-color: #eef2ff; border-left: 5px solid var(--primary); border-radius: 0 8px 8px 0; }
+        .result-item { background-color: var(--bg); padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 5px solid var(--error); border: 1px solid var(--border); }
         .result-question { font-weight: 700; margin-bottom: 10px; font-size: 1.1rem; }
         .wrong-answer { color: var(--error); margin-bottom: 5px; font-weight: 500; }
         .correct-answer { color: var(--success); font-weight: 700; }
-
-        /* --- HAZARD PERCEPTION UI --- */
-        .video-wrapper {
-            width: 100%;
-            background-color: #0f172a;
-            aspect-ratio: 16/9;
-            border-radius: 8px;
-            position: relative;
-            margin-bottom: 20px;
-            overflow: hidden;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-        }
-        
-        .hazard-info {
-            background-color: #f0fdf4;
-            padding: 18px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border-left: 5px solid var(--success);
-            color: var(--text-main);
-        }
-
-        .click-counter {
-            font-size: 18px;
-            background: var(--bg);
-            padding: 10px 20px;
-            border-radius: 20px;
-            border: 1px solid var(--border);
-        }
     </style>
 </head>
 <body>
 
     <header>
         <h1>Sims Theory Test</h1>
-        <nav>
-            <button class="tab-btn active" id="tab-mock" onclick="switchMainTab('mock')">Mock Tests</button>
-            <button class="tab-btn" id="tab-hazard" onclick="switchMainTab('hazard')">Hazard Perception</button>
-        </nav>
     </header>
 
     <div class="container section active" id="mock-selection">
-        
         <img src="banner.jpg" alt="Driving Theory Preparation" class="hero-image" onerror="this.style.display='none'">
-
         <h2>Choose a Mock Test</h2>
         <p>Select a test below. Each mock contains exactly <strong>50 randomized questions</strong>. You need <strong>43 correct answers</strong> to pass within the <strong>57-minute</strong> time limit.</p>
         
@@ -275,7 +77,7 @@
             <option value="9">Mock Test 10</option>
         </select>
 
-        <button class="action-btn full-width" onclick="startDropdownTest()">Start 50-Question Exam</button>
+        <button class="action-btn" onclick="startDropdownTest()">Start 50-Question Exam</button>
     </div>
 
     <div class="container section" id="active-test">
@@ -285,64 +87,25 @@
         </div>
         
         <p id="question-tracker" style="font-weight: 600; color: var(--primary);">Question 1 of 50</p>
-        <p id="question-text" style="font-size: 20px; font-weight: 700;">Question text goes here?</p>
+        <p id="question-text" style="font-size: 20px; font-weight: 700;"></p>
         
-        <div class="options" id="options-container">
-            </div>
+        <div class="options" id="options-container"></div>
 
-        <div class="controls">
-            <button class="action-btn" id="prev-btn" onclick="prevQuestion()" style="background-color: var(--text-light);">Previous</button>
-            <button class="action-btn" id="next-btn" onclick="nextQuestion()">Next Question</button>
+        <div class="controls" style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <button class="action-btn" id="prev-btn" onclick="prevQuestion()" style="background-color: var(--text-light); width: 48%;">Previous</button>
+            <button class="action-btn" id="next-btn" onclick="nextQuestion()" style="width: 48%;">Next Question</button>
         </div>
     </div>
 
     <div class="container section" id="test-results">
         <h2>Your Results</h2>
-        <div class="result-summary" id="result-summary">
-            </div>
-        
+        <div class="result-summary" id="result-summary"></div>
         <h3 style="margin-top:30px;">Questions to Review:</h3>
-        <div id="incorrect-answers-container">
-            </div>
-
-        <div class="controls" style="justify-content: center;">
-            <button class="action-btn" onclick="returnToMenu()">Return to Main Menu</button>
-        </div>
-    </div>
-
-    <div class="container section" id="hazard">
-        <h2>Hazard Perception Simulator</h2>
-        <p>Select a scenario from the dropdown. When you are ready, click "Play Video". Click anywhere on the video screen as soon as you spot the developing hazard.</p>
-        
-        <select id="hazard-dropdown" class="styled-select" onchange="loadHazardDetails()">
-            <option value="0">Clip 1: Pedestrian Stepping Out</option>
-            <option value="1">Clip 2: Car Pulling Out</option>
-            <option value="2">Clip 3: Cyclist Swerving</option>
-            <option value="3">Clip 4: Sudden Braking</option>
-            <option value="4">Clip 5: Child Behind Parked Car</option>
-        </select>
-
-        <div class="hazard-info" id="hazard-description">
-            </div>
-        
-        <div class="video-wrapper">
-            <div id="hazard-video-placeholder" style="display:flex; align-items:center; justify-content:center; width:100%; height:100%; flex-direction:column; gap:20px; color:white;">
-                <p style="color:white; font-size:18px; margin:0;">Video is ready to start</p>
-                <button class="action-btn" style="background-color: #10b981; font-size: 18px; padding: 15px 30px;" onclick="startHazardVideo()">▶ Play Hazard Clip</button>
-            </div>
-            
-            <div id="hazard-video-player" style="display:none; width:100%; height:100%; position:absolute; top:0; left:0;">
-                </div>
-        </div>
-
-        <div class="controls">
-            <div class="click-counter">Clicks registered: <strong id="click-count" style="color:var(--error); font-size: 22px;">0</strong></div>
-            <button class="action-btn" style="background-color: var(--text-light);" onclick="loadHazardDetails()">Reset Clicks</button>
-        </div>
+        <div id="incorrect-answers-container"></div>
+        <button class="action-btn" onclick="returnToMenu()">Return to Main Menu</button>
     </div>
 
     <script>
-        // --- MASTER QUESTION BANK (50 Real UK Theory Questions) ---
         const questionBank = [
             { q: "What is the national speed limit on a single carriageway for cars?", options: ["40 mph", "50 mph", "60 mph", "70 mph"], answer: 2 },
             { q: "What is the national speed limit on a dual carriageway for cars?", options: ["50 mph", "60 mph", "70 mph", "80 mph"], answer: 2 },
@@ -396,35 +159,15 @@
             { q: "What does an amber traffic light mean?", options: ["Go", "Stop at the stop line", "Prepare to go", "Speed up to clear the junction"], answer: 1 }
         ];
 
-        // --- STATE VARIABLES ---
         let currentTestQuestions = [];
         let currentQuestionIndex = 0;
         let userAnswers = [];
         let timerInterval = null;
-        let timeRemaining = 3420; // 57 mins
+        let timeRemaining = 3420;
 
-        // --- INITIALIZATION ---
-        window.onload = () => { loadHazardDetails(); };
-
-        // --- NAVIGATION ---
-        function switchMainTab(tab) {
-            if (timerInterval) clearInterval(timerInterval);
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
-            
-            if (tab === 'mock') {
-                document.getElementById('mock-selection').classList.add('active');
-                document.getElementById('tab-mock').classList.add('active');
-            } else if (tab === 'hazard') {
-                document.getElementById('hazard').classList.add('active');
-                document.getElementById('tab-hazard').classList.add('active');
-                loadHazardDetails(); 
-            }
-        }
-
-        function showSection(sectionId) {
-            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
-            document.getElementById(sectionId).classList.add('active');
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
             window.scrollTo(0,0);
         }
 
@@ -437,14 +180,11 @@
             return shuffled;
         }
 
-        // --- MOCK TEST LOGIC ---
         function startDropdownTest() {
-            const selectEl = document.getElementById('mock-test-dropdown');
-            const testName = selectEl.options[selectEl.selectedIndex].text;
             currentTestQuestions = shuffleArray(questionBank);
             currentQuestionIndex = 0;
             userAnswers = new Array(50).fill(null);
-            document.getElementById('active-test-title').innerText = testName;
+            document.getElementById('active-test-title').innerText = "Mock Exam";
             startTimer();
             renderQuestion();
             showSection('active-test');
@@ -453,161 +193,54 @@
         function startTimer() {
             clearInterval(timerInterval);
             timeRemaining = 3420;
-            updateTimerDisplay();
             timerInterval = setInterval(() => {
                 timeRemaining--;
-                updateTimerDisplay();
+                const m = Math.floor(timeRemaining / 60);
+                const s = timeRemaining % 60;
+                document.getElementById('timer-display').innerText = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
                 if (timeRemaining <= 0) { clearInterval(timerInterval); finishTest(); }
             }, 1000);
-        }
-
-        function updateTimerDisplay() {
-            const minutes = Math.floor(timeRemaining / 60);
-            const seconds = timeRemaining % 60;
-            document.getElementById('timer-display').innerText = 
-                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
         }
 
         function renderQuestion() {
             const q = currentTestQuestions[currentQuestionIndex];
             document.getElementById('question-tracker').innerText = `Question ${currentQuestionIndex + 1} of 50`;
             document.getElementById('question-text').innerText = q.q;
-            const optionsContainer = document.getElementById('options-container');
-            optionsContainer.innerHTML = "";
-
-            q.options.forEach((opt, optIndex) => {
+            const container = document.getElementById('options-container');
+            container.innerHTML = "";
+            q.options.forEach((opt, i) => {
                 const btn = document.createElement('button');
-                btn.className = 'option-btn';
-                if (userAnswers[currentQuestionIndex] === optIndex) btn.classList.add('selected');
+                btn.className = 'option-btn' + (userAnswers[currentQuestionIndex] === i ? ' selected' : '');
                 btn.innerText = opt;
-                btn.onclick = () => selectOption(optIndex);
-                optionsContainer.appendChild(btn);
+                btn.onclick = () => { userAnswers[currentQuestionIndex] = i; renderQuestion(); };
+                container.appendChild(btn);
             });
-
-            document.getElementById('prev-btn').disabled = (currentQuestionIndex === 0);
-            const nextBtn = document.getElementById('next-btn');
-            if (currentQuestionIndex === 49) {
-                nextBtn.innerText = "Finish Exam";
-                nextBtn.style.backgroundColor = "var(--success)";
-            } else {
-                nextBtn.innerText = "Next Question";
-                nextBtn.style.backgroundColor = "var(--primary)";
-            }
+            document.getElementById('next-btn').innerText = currentQuestionIndex === 49 ? "Finish Exam" : "Next Question";
         }
 
-        function selectOption(optIndex) { userAnswers[currentQuestionIndex] = optIndex; renderQuestion(); }
-        function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); } }
-        
         function nextQuestion() {
-            if (currentQuestionIndex < 49) {
-                currentQuestionIndex++; renderQuestion();
-            } else {
-                if(userAnswers.includes(null)) {
-                    if(!confirm("You have unanswered questions. Submit anyway?")) return;
-                }
-                finishTest();
-            }
+            if (currentQuestionIndex < 49) { currentQuestionIndex++; renderQuestion(); }
+            else finishTest();
         }
 
-        // --- RESULTS LOGIC ---
+        function prevQuestion() { if (currentQuestionIndex > 0) { currentQuestionIndex--; renderQuestion(); } }
+
         function finishTest() {
             clearInterval(timerInterval);
             let score = 0;
-            const incorrectContainer = document.getElementById('incorrect-answers-container');
-            incorrectContainer.innerHTML = "";
-            let hasMistakes = false;
-
-            currentTestQuestions.forEach((q, index) => {
-                const userAnswer = userAnswers[index];
-                if (userAnswer === q.answer) {
-                    score++;
-                } else {
-                    hasMistakes = true;
-                    const item = document.createElement('div');
-                    item.className = 'result-item';
-                    const userText = userAnswer !== null ? q.options[userAnswer] : "Skipped";
-                    item.innerHTML = `
-                        <div class="result-question">Q${index + 1}: ${q.q}</div>
-                        <div class="wrong-answer">❌ You answered: ${userText}</div>
-                        <div class="correct-answer">✅ Correct answer: ${q.options[q.answer]}</div>
-                    `;
-                    incorrectContainer.appendChild(item);
+            const container = document.getElementById('incorrect-answers-container');
+            container.innerHTML = "";
+            currentTestQuestions.forEach((q, i) => {
+                if (userAnswers[i] === q.answer) score++;
+                else {
+                    container.innerHTML += `<div class="result-item"><div class="result-question">Q${i+1}: ${q.q}</div><div class="wrong-answer">❌ You: ${userAnswers[i] !== null ? q.options[userAnswers[i]] : 'Skipped'}</div><div class="correct-answer">✅ Correct: ${q.options[q.answer]}</div></div>`;
                 }
             });
-
-            const passed = score >= 43;
-            const passMarkText = passed ? "<strong style='color:var(--success)'>PASSED</strong>" : "<strong style='color:var(--error)'>FAILED</strong>";
-            
-            document.getElementById('result-summary').innerHTML = `
-                You scored <strong style="font-size:24px; color:var(--primary);">${score}</strong> out of 50. <br><br>
-                Status: ${passMarkText} <br>
-                <em>(DVSA Pass mark is 43 out of 50)</em>
-            `;
-
-            if (!hasMistakes) incorrectContainer.innerHTML = "<p>Perfect! You got every question right.</p>";
+            document.getElementById('result-summary').innerHTML = `You scored <strong>${score}</strong> out of 50. Status: <strong>${score >= 43 ? 'PASSED' : 'FAILED'}</strong>`;
             showSection('test-results');
         }
 
         function returnToMenu() { showSection('mock-selection'); }
-
-        // --- HAZARD PERCEPTION LOGIC ---
-        const hazardDatabase = [
-            { title: "Clip 1: Pedestrian Stepping Out", desc: "Scenario: Busy area. Look for a pedestrian stepping into the road.", ytId: "Rbmn0yKebug", startAt: 120 },
-            { title: "Clip 2: Car Pulling Out", desc: "Scenario: Approaching junctions. Watch for a car pulling out.", ytId: "p857QoxSTSU", startAt: 55 },
-            { title: "Clip 3: Cyclist Swerving", desc: "Scenario: Vulnerable users. Watch for a cyclist swerving.", ytId: "RsDGYpSBuGs", startAt: 45 },
-            { title: "Clip 4: Sudden Braking", desc: "Scenario: Following traffic. Watch for a vehicle braking suddenly.", ytId: "M7Epax0Q0Xk", startAt: 310 },
-            { title: "Clip 5: Child Behind Parked Car", desc: "Scenario: Parked vehicles. Watch for a child running out.", ytId: "V75rTb2ptP4", startAt: 1065 }
-        ];
-
-        let currentHazardData = null;
-        let hazardClicks = 0;
-
-        function loadHazardDetails() {
-            const selectedIndex = document.getElementById('hazard-dropdown').value;
-            currentHazardData = hazardDatabase[selectedIndex];
-            document.getElementById('hazard-description').innerHTML = `<strong>${currentHazardData.title}</strong><br>${currentHazardData.desc}`;
-            
-            // Reset Views
-            document.getElementById('hazard-video-placeholder').style.display = 'flex';
-            const playerDiv = document.getElementById('hazard-video-player');
-            playerDiv.style.display = 'none';
-            playerDiv.innerHTML = ''; // Kill running video
-            
-            hazardClicks = 0;
-            document.getElementById('click-count').innerText = hazardClicks;
-        }
-
-        function startHazardVideo() {
-            // Hide placeholder, show player
-            document.getElementById('hazard-video-placeholder').style.display = 'none';
-            const playerDiv = document.getElementById('hazard-video-player');
-            playerDiv.style.display = 'block';
-            
-            // Inject Video WITH autoplay forced (allowed because user clicked the button)
-            playerDiv.innerHTML = `
-                <iframe width="100%" height="100%" 
-                    src="https://www.youtube.com/embed/${currentHazardData.ytId}?start=${currentHazardData.startAt}&autoplay=1&mute=1&controls=0&rel=0&playsinline=1" 
-                    frameborder="0" allow="autoplay; encrypted-media" allowfullscreen
-                    style="position: absolute; top: 0; left: 0; z-index: 1; pointer-events: none;">
-                </iframe>
-                <div style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 2; cursor: crosshair;" onclick="registerClick(event)"></div>
-                <span class="flag" id="click-flag" style="position: absolute; z-index: 3; font-size: 30px; display: none; filter: drop-shadow(0px 2px 2px rgba(0,0,0,0.5));">🚩</span>
-            `;
-        }
-
-        function registerClick(e) {
-            hazardClicks++;
-            document.getElementById('click-count').innerText = hazardClicks;
-            
-            const flag = document.getElementById('click-flag');
-            const rect = document.getElementById('hazard-video-player').getBoundingClientRect();
-            
-            flag.style.display = 'block';
-            flag.style.left = (e.clientX - rect.left - 15) + 'px'; 
-            flag.style.top = (e.clientY - rect.top - 15) + 'px';
-
-            setTimeout(() => { flag.style.display = 'none'; }, 600);
-        }
     </script>
 </body>
 </html>
