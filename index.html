@@ -6,51 +6,27 @@
     <title>Sims Theory Test Pro</title>
     <style>
         :root {
-            --primary: #4f46e5;
-            --primary-hover: #4338ca;
-            --bg: #f8fafc;
+            --primary: #d63384;      /* Soft Rose */
+            --primary-hover: #ad2a6a;
+            --bg: #fff5f7;           /* Blush background */
             --surface: #ffffff;
-            --text-main: #0f172a;
-            --text-light: #475569;
-            --success: #16a34a;
-            --error: #dc2626;
-            --border: #e2e8f0;
+            --text-main: #4a148c;    /* Deep Purple text */
+            --error: #c62828;
+            --border: #f8bbd0;
             --radius: 12px;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
 
-        body { font-family: 'Inter', system-ui, -apple-system, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; line-height: 1.5; }
-        
-        header { background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%); color: white; width: 100%; padding: 2.5rem 0; text-align: center; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); }
-        header h1 { margin: 0; font-size: 2.2rem; font-weight: 800; }
-
-        .container { background-color: var(--surface); max-width: 800px; width: 90%; margin: 2rem auto; padding: 2.5rem; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border); box-sizing: border-box; }
-        
+        body { font-family: 'Inter', system-ui, sans-serif; background-color: var(--bg); color: var(--text-main); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        header { background: linear-gradient(135deg, #d63384 0%, #9c27b0 100%); color: white; width: 100%; padding: 2.5rem 0; text-align: center; }
+        .container { background-color: var(--surface); max-width: 800px; width: 90%; margin: 2rem auto; padding: 2.5rem; border-radius: var(--radius); border: 1px solid var(--border); }
         .section { display: none; }
-        .section.active { display: block; animation: fadeIn 0.3s ease; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
+        .section.active { display: block; }
         .hero-image { width: 100%; border-radius: var(--radius); margin-bottom: 1.5rem; }
-
-        select.styled-select { width: 100%; padding: 16px; font-size: 16px; border: 2px solid var(--border); border-radius: 8px; margin-bottom: 24px; background-color: var(--bg); color: var(--text-main); cursor: pointer; }
-        
-        .action-btn { background-color: var(--primary); color: white; border: none; padding: 14px 24px; font-size: 16px; cursor: pointer; border-radius: 8px; font-weight: 600; width: 100%; margin-top: 10px; transition: all 0.2s ease; }
+        .action-btn { background-color: var(--primary); color: white; border: none; padding: 14px 24px; border-radius: 8px; cursor: pointer; font-weight: 600; width: 100%; }
         .action-btn:hover { background-color: var(--primary-hover); }
-
-        .test-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 15px; margin-bottom: 25px; }
-        .timer { font-size: 22px; font-weight: 800; color: var(--error); background: #fee2e2; padding: 5px 15px; border-radius: 20px; }
-        
-        .options { display: flex; flex-direction: column; gap: 12px; margin: 25px 0; }
-        .option-btn { padding: 18px; font-size: 16px; background-color: var(--surface); border: 2px solid var(--border); color: var(--text-main); cursor: pointer; text-align: left; border-radius: 8px; transition: all 0.2s; font-weight: 500; }
-        .option-btn:hover { border-color: var(--primary); background-color: #eef2ff; }
-        .option-btn.selected { background-color: #e0e7ff; border-color: var(--primary); color: var(--primary); font-weight: 700; }
-        
-        .result-summary { font-size: 18px; margin-bottom: 25px; padding: 20px; background-color: #eef2ff; border-left: 5px solid var(--primary); border-radius: 0 8px 8px 0; }
-        .result-item { background-color: var(--bg); padding: 20px; margin-bottom: 15px; border-radius: 8px; border-left: 5px solid var(--error); border: 1px solid var(--border); }
-        .result-question { font-weight: 700; margin-bottom: 10px; font-size: 1.1rem; }
-        .wrong-answer { color: var(--error); margin-bottom: 5px; font-weight: 500; }
-        .correct-answer { color: var(--success); font-weight: 700; }
+        .option-btn { padding: 18px; margin: 8px 0; border: 2px solid var(--border); border-radius: 8px; background: white; text-align: left; cursor: pointer; }
+        .option-btn.selected { background-color: #fce4ec; border-color: var(--primary); color: var(--primary); }
+        .timer { font-size: 22px; font-weight: 800; color: var(--error); }
     </style>
 </head>
 <body>
@@ -59,12 +35,13 @@
         <h1>Sims Theory Test</h1>
     </header>
 
+    <!-- MOCK TEST SELECTION -->
     <div class="container section active" id="mock-selection">
-        <img src="banner.jpg" alt="Driving Theory Preparation" class="hero-image" onerror="this.style.display='none'">
+        <img src="banner.jpg" alt="Driving Theory" class="hero-image">
         <h2>Choose a Mock Test</h2>
-        <p>Select a test below. Each mock contains exactly <strong>50 randomized questions</strong>. You need <strong>43 correct answers</strong> to pass within the <strong>57-minute</strong> time limit.</p>
+        <p>Select a test below. Each mock contains exactly 50 randomized questions. You need 43 correct answers to pass within the 57-minute time limit.</p>
         
-        <select id="mock-test-dropdown" class="styled-select">
+        <select id="mock-test-dropdown" class="styled-select" style="width: 100%; padding: 16px; margin-bottom: 24px; border: 2px solid var(--border); border-radius: 8px;">
             <option value="0">Mock Test 1</option>
             <option value="1">Mock Test 2</option>
             <option value="2">Mock Test 3</option>
@@ -80,6 +57,7 @@
         <button class="action-btn" onclick="startDropdownTest()">Start 50-Question Exam</button>
     </div>
 
+    <!-- ACTIVE TEST SCREEN -->
     <div class="container section" id="active-test">
         <div class="test-header">
             <h2 id="active-test-title" style="margin:0;">Test Name</h2>
@@ -91,15 +69,16 @@
         
         <div class="options" id="options-container"></div>
 
-        <div class="controls" style="display: flex; justify-content: space-between; margin-top: 30px;">
-            <button class="action-btn" id="prev-btn" onclick="prevQuestion()" style="background-color: var(--text-light); width: 48%;">Previous</button>
+        <div style="display: flex; justify-content: space-between; margin-top: 30px;">
+            <button class="action-btn" onclick="prevQuestion()" style="background-color: #7b1fa2; width: 48%;">Previous</button>
             <button class="action-btn" id="next-btn" onclick="nextQuestion()" style="width: 48%;">Next Question</button>
         </div>
     </div>
 
+    <!-- RESULTS SCREEN -->
     <div class="container section" id="test-results">
         <h2>Your Results</h2>
-        <div class="result-summary" id="result-summary"></div>
+        <div id="result-summary" style="font-size: 18px; margin-bottom: 25px; padding: 20px; background-color: #fce4ec; border-left: 5px solid var(--primary);"></div>
         <h3 style="margin-top:30px;">Questions to Review:</h3>
         <div id="incorrect-answers-container"></div>
         <button class="action-btn" onclick="returnToMenu()">Return to Main Menu</button>
@@ -233,7 +212,7 @@
             currentTestQuestions.forEach((q, i) => {
                 if (userAnswers[i] === q.answer) score++;
                 else {
-                    container.innerHTML += `<div class="result-item"><div class="result-question">Q${i+1}: ${q.q}</div><div class="wrong-answer">❌ You: ${userAnswers[i] !== null ? q.options[userAnswers[i]] : 'Skipped'}</div><div class="correct-answer">✅ Correct: ${q.options[q.answer]}</div></div>`;
+                    container.innerHTML += `<div class="result-item"><div class="result-question">Q${i+1}: ${q.q}</div><div class="wrong-answer" style="color:var(--error);">❌ You: ${userAnswers[i] !== null ? q.options[userAnswers[i]] : 'Skipped'}</div><div class="correct-answer" style="color:var(--success);">✅ Correct: ${q.options[q.answer]}</div></div>`;
                 }
             });
             document.getElementById('result-summary').innerHTML = `You scored <strong>${score}</strong> out of 50. Status: <strong>${score >= 43 ? 'PASSED' : 'FAILED'}</strong>`;
