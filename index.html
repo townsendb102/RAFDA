@@ -3,15 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sims Car Theory Practice</title>
+    <title>Sims Theory Test</title>
     <style>
         :root {
-            --primary: #005ea5; /* UK Gov Blue */
+            --primary: #005ea5;
             --bg: #f3f2f1;
             --text: #0b0c0c;
             --white: #ffffff;
             --success: #00703c;
             --error: #d4351c;
+            --gray: #b1b4b6;
         }
 
         body {
@@ -71,7 +72,39 @@
             display: block;
         }
 
-        /* Quiz Styles */
+        /* Test Selection Styles */
+        .test-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .test-card {
+            background-color: var(--bg);
+            border: 2px solid var(--gray);
+            padding: 20px;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* Active Test Styles */
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--gray);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .timer {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--error);
+        }
+
         .options {
             display: flex;
             flex-direction: column;
@@ -83,7 +116,7 @@
             padding: 15px;
             font-size: 16px;
             background-color: var(--bg);
-            border: 2px solid #b1b4b6;
+            border: 2px solid var(--gray);
             cursor: pointer;
             text-align: left;
             border-radius: 4px;
@@ -94,16 +127,67 @@
             border-color: var(--primary);
         }
 
-        .option-btn.correct {
-            background-color: #cce2d8;
-            border-color: var(--success);
-            color: var(--success);
+        .option-btn.selected {
+            background-color: #d2e2f1;
+            border-color: var(--primary);
         }
 
-        .option-btn.wrong {
-            background-color: #f6d7d2;
-            border-color: var(--error);
+        /* Results Styles */
+        .result-summary {
+            font-size: 18px;
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #e8f1f8;
+            border-left: 5px solid var(--primary);
+        }
+
+        .result-item {
+            background-color: var(--bg);
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 6px;
+            border-left: 5px solid var(--error);
+        }
+
+        .result-question {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .wrong-answer {
             color: var(--error);
+            margin-bottom: 5px;
+        }
+
+        .correct-answer {
+            color: var(--success);
+            font-weight: bold;
+        }
+
+        /* Buttons */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 4px;
+        }
+
+        .action-btn:hover {
+            background-color: #004070;
+        }
+
+        .action-btn:disabled {
+            background-color: var(--gray);
+            cursor: not-allowed;
         }
 
         /* Hazard Perception Styles */
@@ -126,55 +210,65 @@
             font-size: 24px;
             display: none;
         }
-
-        .controls {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-
-        .action-btn {
-            background-color: var(--primary);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 4px;
-        }
-
-        .action-btn:hover {
-            background-color: #004070;
-        }
     </style>
 </head>
 <body>
 
     <header>
-        <h1>UK Driving Theory Practice</h1>
+        <h1>Sims Theory Test</h1>
         <nav>
-            <button class="tab-btn active" onclick="switchTab('theory')">Multiple Choice</button>
-            <button class="tab-btn" onclick="switchTab('hazard')">Hazard Perception</button>
+            <button class="tab-btn active" id="tab-mock" onclick="switchMainTab('mock')">Mock Tests</button>
+            <button class="tab-btn" id="tab-hazard" onclick="switchMainTab('hazard')">Hazard Perception</button>
         </nav>
     </header>
 
-    <div class="container section active" id="theory">
-        <h2>Mock Theory Questions</h2>
-        <p id="question-text"><strong>Question 1:</strong> What is the national speed limit on a single carriageway for cars?</p>
-        
-        <div class="options">
-            <button class="option-btn" onclick="checkAnswer(this, false)">40 mph</button>
-            <button class="option-btn" onclick="checkAnswer(this, false)">50 mph</button>
-            <button class="option-btn" onclick="checkAnswer(this, true)">60 mph</button>
-            <button class="option-btn" onclick="checkAnswer(this, false)">70 mph</button>
-        </div>
-
-        <div class="controls">
-            <span id="feedback"></span>
-            <button class="action-btn" onclick="resetQuestion()">Next Question (Demo)</button>
+    <!-- 1. MOCK TEST SELECTION SCREEN -->
+    <div class="container section active" id="mock-selection">
+        <h2>Choose a Mock Test</h2>
+        <p>Each test has a 60-minute time limit. Your results will be shown at the end.</p>
+        <div class="test-list" id="test-list-container">
+            <!-- Tests injected here via JS -->
         </div>
     </div>
 
+    <!-- 2. ACTIVE TEST SCREEN -->
+    <div class="container section" id="active-test">
+        <div class="test-header">
+            <h2 id="active-test-title">Test Name</h2>
+            <div class="timer" id="timer-display">60:00</div>
+        </div>
+        
+        <p id="question-tracker">Question 1 of 50</p>
+        <p id="question-text" style="font-size: 18px; font-weight: bold;">Question text goes here?</p>
+        
+        <div class="options" id="options-container">
+            <!-- Options injected here via JS -->
+        </div>
+
+        <div class="controls">
+            <button class="action-btn" id="prev-btn" onclick="prevQuestion()">Previous</button>
+            <button class="action-btn" id="next-btn" onclick="nextQuestion()">Next</button>
+        </div>
+    </div>
+
+    <!-- 3. TEST RESULTS SCREEN -->
+    <div class="container section" id="test-results">
+        <h2>Test Results</h2>
+        <div class="result-summary" id="result-summary">
+            <!-- Score goes here -->
+        </div>
+        
+        <h3>Questions to Review:</h3>
+        <div id="incorrect-answers-container">
+            <!-- Incorrect answers injected here via JS -->
+        </div>
+
+        <div class="controls" style="justify-content: center;">
+            <button class="action-btn" onclick="returnToMenu()">Return to Mock Tests</button>
+        </div>
+    </div>
+
+    <!-- 4. HAZARD PERCEPTION SECTION -->
     <div class="container section" id="hazard">
         <h2>Hazard Perception Practice</h2>
         <p>Click anywhere on the video area when you spot a developing hazard.</p>
@@ -191,74 +285,249 @@
     </div>
 
     <script>
-        // --- Navigation Logic ---
-        function switchTab(tabId) {
+        // --- DATA: Mock Tests ---
+        // You can expand these arrays to have 50 questions each
+        const testDatabase = [
+            {
+                id: 1,
+                name: "Mock Test 1 (Demo)",
+                questions: [
+                    { q: "What is the national speed limit on a single carriageway for cars?", options: ["40 mph", "50 mph", "60 mph", "70 mph"], answer: 2 }, // Index 2 is "60 mph"
+                    { q: "You are approaching a red traffic light. What should you do?", options: ["Speed up", "Stop behind the white line", "Proceed if clear", "Sound your horn"], answer: 1 },
+                    { q: "When should you use your hazard warning lights?", options: ["When parked illegally", "When driving slowly in fog", "When your vehicle has broken down and is causing an obstruction", "To thank a driver for giving way"], answer: 2 },
+                    { q: "What shape is a STOP sign?", options: ["Circular", "Triangular", "Octagonal", "Rectangular"], answer: 2 }
+                ]
+            },
+            {
+                id: 2,
+                name: "Mock Test 2 (Demo)",
+                questions: [
+                    { q: "Who has priority at an unmarked crossroads?", options: ["The larger vehicle", "No one has priority", "The vehicle on the right", "The vehicle going straight"], answer: 1 },
+                    { q: "What does a circular traffic sign with a red border mean?", options: ["Warning", "Must do", "Prohibited/Order", "Information"], answer: 2 },
+                    { q: "When are you allowed to use your horn in a built-up area?", options: ["Between 11:30 pm and 7:00 am", "To greet a friend", "When you are moving and need to warn others of your presence", "When a vehicle is blocking your path"], answer: 2 }
+                ]
+            }
+        ];
+
+        // --- STATE VARIABLES ---
+        let currentTestIndex = null;
+        let currentQuestionIndex = 0;
+        let userAnswers = []; // Stores the index of chosen options
+        let timerInterval = null;
+        let timeRemaining = 3600; // 60 minutes in seconds
+
+        // --- INITIALIZATION ---
+        window.onload = () => {
+            renderTestList();
+        };
+
+        // --- NAVIGATION ---
+        function switchMainTab(tab) {
+            // Stop timer if leaving active test
+            if (timerInterval) clearInterval(timerInterval);
+
             document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
             
-            document.getElementById(tabId).classList.add('active');
-            event.target.classList.add('active');
-        }
-
-        // --- Theory Quiz Logic ---
-        function checkAnswer(button, isCorrect) {
-            // Disable all buttons after a choice
-            const buttons = button.parentElement.querySelectorAll('.option-btn');
-            buttons.forEach(btn => btn.disabled = true);
-
-            const feedbackText = document.getElementById('feedback');
-
-            if (isCorrect) {
-                button.classList.add('correct');
-                feedbackText.innerHTML = "<span style='color: var(--success); font-weight:bold;'>Correct!</span>";
-            } else {
-                button.classList.add('wrong');
-                feedbackText.innerHTML = "<span style='color: var(--error); font-weight:bold;'>Incorrect. The answer is 60 mph.</span>";
-                
-                // Highlight correct answer
-                buttons.forEach(btn => {
-                    if(btn.innerHTML === "60 mph") btn.classList.add('correct');
-                });
+            if (tab === 'mock') {
+                document.getElementById('mock-selection').classList.add('active');
+                document.getElementById('tab-mock').classList.add('active');
+            } else if (tab === 'hazard') {
+                document.getElementById('hazard').classList.add('active');
+                document.getElementById('tab-hazard').classList.add('active');
             }
         }
 
-        function resetQuestion() {
-            // In a real app, this would load the next question from an array
-            const buttons = document.querySelectorAll('.option-btn');
-            buttons.forEach(btn => {
-                btn.disabled = false;
-                btn.classList.remove('correct', 'wrong');
-            });
-            document.getElementById('feedback').innerHTML = "";
-            alert("In a full build, this would load the next question from a JavaScript array!");
+        function showSection(sectionId) {
+            document.querySelectorAll('.section').forEach(sec => sec.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
         }
 
-        // --- Hazard Perception Logic ---
+        // --- MOCK TEST LOGIC ---
+        function renderTestList() {
+            const container = document.getElementById('test-list-container');
+            container.innerHTML = "";
+            
+            testDatabase.forEach((test, index) => {
+                const div = document.createElement('div');
+                div.className = 'test-card';
+                div.innerHTML = `
+                    <div>
+                        <h3>${test.name}</h3>
+                        <p>${test.questions.length} Questions</p>
+                    </div>
+                    <button class="action-btn" onclick="startTest(${index})">Start Test</button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function startTest(index) {
+            currentTestIndex = index;
+            currentQuestionIndex = 0;
+            userAnswers = new Array(testDatabase[index].questions.length).fill(null);
+            
+            document.getElementById('active-test-title').innerText = testDatabase[index].name;
+            
+            startTimer();
+            renderQuestion();
+            showSection('active-test');
+        }
+
+        function startTimer() {
+            clearInterval(timerInterval);
+            timeRemaining = 3600; // 60 mins
+            updateTimerDisplay();
+
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerDisplay();
+
+                if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    finishTest(); // Auto submit when time runs out
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const minutes = Math.floor(timeRemaining / 60);
+            const seconds = timeRemaining % 60;
+            document.getElementById('timer-display').innerText = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        function renderQuestion() {
+            const test = testDatabase[currentTestIndex];
+            const q = test.questions[currentQuestionIndex];
+            
+            document.getElementById('question-tracker').innerText = `Question ${currentQuestionIndex + 1} of ${test.questions.length}`;
+            document.getElementById('question-text').innerText = q.q;
+
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = "";
+
+            q.options.forEach((opt, optIndex) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                if (userAnswers[currentQuestionIndex] === optIndex) {
+                    btn.classList.add('selected');
+                }
+                btn.innerText = opt;
+                btn.onclick = () => selectOption(optIndex);
+                optionsContainer.appendChild(btn);
+            });
+
+            // Update buttons
+            document.getElementById('prev-btn').disabled = (currentQuestionIndex === 0);
+            
+            const nextBtn = document.getElementById('next-btn');
+            if (currentQuestionIndex === test.questions.length - 1) {
+                nextBtn.innerText = "Finish Test";
+                nextBtn.style.backgroundColor = "var(--success)";
+            } else {
+                nextBtn.innerText = "Next";
+                nextBtn.style.backgroundColor = "var(--primary)";
+            }
+        }
+
+        function selectOption(optIndex) {
+            userAnswers[currentQuestionIndex] = optIndex;
+            renderQuestion(); // re-render to show selection
+        }
+
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        function nextQuestion() {
+            const testLength = testDatabase[currentTestIndex].questions.length;
+            
+            if (currentQuestionIndex < testLength - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                // Confirm before finishing if answers are missing
+                if(userAnswers.includes(null)) {
+                    if(!confirm("You have unanswered questions. Are you sure you want to finish?")) return;
+                }
+                finishTest();
+            }
+        }
+
+        // --- RESULTS LOGIC ---
+        function finishTest() {
+            clearInterval(timerInterval);
+            const test = testDatabase[currentTestIndex];
+            let score = 0;
+            const incorrectContainer = document.getElementById('incorrect-answers-container');
+            incorrectContainer.innerHTML = "";
+
+            let hasMistakes = false;
+
+            test.questions.forEach((q, index) => {
+                const userAnswer = userAnswers[index];
+                
+                if (userAnswer === q.answer) {
+                    score++;
+                } else {
+                    hasMistakes = true;
+                    // Create error item
+                    const item = document.createElement('div');
+                    item.className = 'result-item';
+                    
+                    const userText = userAnswer !== null ? q.options[userAnswer] : "No answer provided";
+                    const correctText = q.options[q.answer];
+
+                    item.innerHTML = `
+                        <div class="result-question">Q${index + 1}: ${q.q}</div>
+                        <div class="wrong-answer">❌ You answered: ${userText}</div>
+                        <div class="correct-answer">✅ Correct answer: ${correctText}</div>
+                    `;
+                    incorrectContainer.appendChild(item);
+                }
+            });
+
+            // Summary
+            const passMarkText = (score >= 43 && test.questions.length === 50) ? "<strong style='color:var(--success)'>PASSED</strong>" : "";
+            document.getElementById('result-summary').innerHTML = `
+                You scored <strong>${score}</strong> out of <strong>${test.questions.length}</strong>. ${passMarkText}
+            `;
+
+            if (!hasMistakes) {
+                incorrectContainer.innerHTML = "<p>Perfect! You got everything right.</p>";
+            }
+
+            showSection('test-results');
+        }
+
+        function returnToMenu() {
+            showSection('mock-selection');
+        }
+
+        // --- HAZARD PERCEPTION LOGIC ---
         let clicks = 0;
         function registerClick(e) {
             clicks++;
             document.getElementById('click-count').innerText = clicks;
             
-            // Show a temporary red flag where clicked
             const container = document.getElementById('hazard-video');
             const flag = document.getElementById('click-flag');
             
-            // Calculate click position relative to the container
             const rect = container.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
 
             flag.style.display = 'block';
-            flag.style.left = (x - 12) + 'px'; // -12 to center the flag emoji
+            flag.style.left = (x - 12) + 'px';
             flag.style.top = (y - 12) + 'px';
 
-            // Hide flag after half a second
             setTimeout(() => {
                 flag.style.display = 'none';
             }, 500);
-
-            // In a real app, you would capture: document.getElementById('your-video-id').currentTime
-            console.log("Click registered at simulated timestamp.");
         }
 
         function resetHazard() {
