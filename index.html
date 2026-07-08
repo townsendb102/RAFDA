@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
+    <!-- PWA & Home Screen Icon Settings -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -139,7 +140,7 @@
         .winner-banner { width: 100%; max-width: 600px; background: var(--tech-red); color: white; text-align: center; padding: 15px; border-radius: 12px; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;}
 
         /* Modals */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);}
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 100; }
         .modal { background: #161b22; border: 1px solid var(--tech-cyan); padding: 25px; border-radius: 16px; text-align: center; max-width: 350px; width: 90%; }
         .modal h3 { color: var(--tech-cyan); margin-top: 0; font-size: 1.5em; text-transform: uppercase; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
@@ -149,13 +150,17 @@
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
         /* Transparent modal background so video feeds remain 100% visible */
-        #start-modal { align-items: flex-end; padding-bottom: 20px; background: rgba(0,0,0,0.1) !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        #start-modal { align-items: flex-end; padding-bottom: 20px; background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
         #start-modal .modal { background: #161b22; box-shadow: 0 0 50px rgba(0,229,255,0.15), 0 10px 30px rgba(0,0,0,0.8); border: 1px solid var(--tech-cyan); }
+        
+        /* Ensure normal blur stays for the QR code and checkout modals */
+        #qr-modal, #checkout-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
 
 <div id="app">
+    <!-- Header Replica -->
     <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
@@ -163,6 +168,7 @@
         </header>
     </div>
 
+    <!-- 1. Main Menu Screen -->
     <main id="menu-screen" class="screen active">
         <div class="menu-grid">
             <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
@@ -200,6 +206,7 @@
         <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
     </div>
 
+    <!-- 2. Local Setup Screen -->
     <main id="local-setup-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
@@ -218,6 +225,7 @@
         </div>
     </main>
 
+    <!-- 3. Online Lobby Screen -->
     <main id="online-lobby-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Network Sync</h2>
@@ -241,6 +249,7 @@
         </div>
     </main>
 
+    <!-- 3b. Phone Camera Node Screen -->
     <main id="camera-node-screen" class="screen">
         <div class="inner-content" style="align-items: center; text-align: center;">
             <h2 class="view-title">Live Camera Feed</h2>
@@ -256,6 +265,7 @@
         </div>
     </main>
 
+    <!-- 4. Active Match Screen -->
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
@@ -265,12 +275,15 @@
             </div>
         </div>
         
+        <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
+            <!-- Local video disappears when remote connects to save space, but comes back for Bull Up! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
         <div class="boards">
+            <!-- P1 Board -->
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -279,6 +292,7 @@
                 </div>
                 <div class="history"><table><tbody id="p1-history"></tbody></table></div>
             </div>
+            <!-- P2 Board -->
             <div class="player-board">
                 <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -301,6 +315,7 @@
         </div>
     </main>
 
+    <!-- 5. Post Match Stats Screen -->
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
@@ -347,6 +362,7 @@
     </main>
 </div>
 
+<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -356,6 +372,7 @@
     </div>
 </div>
 
+<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -366,10 +383,12 @@
     </div>
 </div>
 
+<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
         <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
 
+        <!-- LOCAL MODE SETTINGS -->
         <div id="setup-local">
             <div style="text-align: left; margin-bottom: 15px;">
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
@@ -384,6 +403,7 @@
             </div>
         </div>
 
+        <!-- ONLINE MODE SETTINGS -->
         <div id="setup-online-name" style="display:none;">
             <div style="text-align: left; margin-bottom: 15px;">
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
@@ -396,6 +416,7 @@
             <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
         </div>
 
+        <!-- Only Host Sees This -->
         <div id="setup-online-host" style="display:none;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em;">🎯 BULL UP! 🎯</p>
             <p style="color:#aaa; font-size:0.9em; margin-bottom:15px;">Check the camera feed. Who is closest to the bull?</p>
@@ -473,7 +494,7 @@
         triggerSetup();
     }
 
-    // --- 2. ONLINE LOBBY ---
+    // --- 2. ONLINE LOBBY (REVERTED TO ORIGINAL WORKING CONNECTION) ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -481,15 +502,9 @@
     }
 
     function initPeer() {
+        // Reverted to pure default settings to fix your connection issues
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        peer = new Peer(shortId, {
-            config: {
-                'iceServers': [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            }
-        });
+        peer = new Peer(shortId); 
         
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
@@ -500,15 +515,12 @@
             });
         });
 
-        // HOST receiving connection from JOINER
         peer.on('connection', conn => {
             connection = conn;
             localPlayerNum = 1;
             opponentPeerId = conn.peer;
             state.p1.name = document.getElementById('online-name').value || "Host";
-            
-            // Centralized network listener
-            conn.on('data', data => handleNetworkData(data, conn));
+            setupDataConnection();
         });
 
         peer.on('call', call => {
@@ -554,7 +566,6 @@
         }
     }
 
-    // JOINER connecting to HOST
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
@@ -562,13 +573,11 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
+        // Reverted to exactly what worked for you initially
         connection = peer.connect(remoteId, { reliable: true });
-        
-        connection.on('open', () => {
-            document.getElementById('lobby-status').innerText = "LINK ESTABLISHED. WAITING ON HOST...";
-            const myName = document.getElementById('online-name').value || "Player 2";
-            connection.send({ type: 'JOIN_REQUEST', name: myName });
+        setupDataConnection();
 
+        connection.on('open', () => {
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
@@ -577,53 +586,62 @@
                 });
             }
         });
-
-        connection.on('data', data => handleNetworkData(data, connection));
     }
 
-    // --- BULLETPROOF HANDSHAKE AND DATA ROUTING ---
-    function handleNetworkData(data, conn) {
-        if (data.type === 'JOIN_REQUEST') {
-            // Host receives Joiner's request
-            if (localPlayerNum === 1) {
-                state.p2.name = data.name;
-                state.p1.name = document.getElementById('online-name').value || "Player 1";
-                conn.send({ type: 'JOIN_ACCEPT', state: state });
+    function setupDataConnection() {
+        // Only Joiner triggers this open event because Host connection is already open
+        connection.on('open', () => {
+            const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+            connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
+            document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO START...";
+        });
+
+        connection.on('data', data => {
+            if (data.type === 'HANDSHAKE') {
+                if (data.player === 1) state.p1.name = data.name;
+                if (data.player === 2) state.p2.name = data.name;
+                updateUI();
+                
+                if (localPlayerNum === 1) {
+                    state.p1 = getFreshPlayerState(state.p1.name);
+                    state.p2 = getFreshPlayerState(state.p2.name);
+                    
+                    // Host replies to Joiner and forces them into Setup
+                    if (data.player === 2) {
+                        connection.send({ type: 'HANDSHAKE', name: state.p1.name, player: 1 });
+                        connection.send({ type: 'GOTO_SETUP' });
+                        triggerSetup();
+                    }
+                }
+            } else if (data.type === 'GOTO_SETUP') {
+                // Joiner is told to go to setup
                 triggerSetup();
+            } else if (data.type === 'STATE_SYNC') {
+                state = data.state; 
+                
+                if(document.getElementById('match-screen').classList.contains('active') === false && 
+                   document.getElementById('post-match-screen').classList.contains('active') === false) {
+                    document.getElementById('match-badge').innerText = "ONLINE SYNC";
+                    document.getElementById('match-badge').className = "connection-badge badge-online";
+                    document.getElementById('match-cam-btn').style.display = 'block';
+                    showScreen('match-screen');
+                }
+                updateUI();
+                
+                if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
+                else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
+                
+            } else if (data.type === 'REMATCH_READY') {
+                remoteRematchReady = true;
+                remoteNewName = data.name;
+                if(localPlayerNum === 1) state.p2.name = remoteNewName;
+                else state.p1.name = remoteNewName;
+                checkOnlineRematchState();
+            } else if (data.type === 'REMATCH_START') {
+                document.getElementById('start-modal').style.display = 'none';
+                executeStart(data.startingPlayer, data.p1Name, data.p2Name);
             }
-        } 
-        else if (data.type === 'JOIN_ACCEPT') {
-            // Joiner receives Host's acceptance
-            if (localPlayerNum === 2) {
-                state = data.state;
-                triggerSetup();
-            }
-        } 
-        else if (data.type === 'STATE_SYNC') {
-            state = data.state; 
-            if(document.getElementById('match-screen').classList.contains('active') === false && 
-               document.getElementById('post-match-screen').classList.contains('active') === false) {
-                document.getElementById('match-badge').innerText = "ONLINE SYNC";
-                document.getElementById('match-badge').className = "connection-badge badge-online";
-                document.getElementById('match-cam-btn').style.display = 'block';
-                showScreen('match-screen');
-            }
-            updateUI();
-            
-            if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
-            else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
-        } 
-        else if (data.type === 'REMATCH_READY') {
-            remoteRematchReady = true;
-            remoteNewName = data.name;
-            if(localPlayerNum === 1) state.p2.name = remoteNewName;
-            else state.p1.name = remoteNewName;
-            checkOnlineRematchState();
-        } 
-        else if (data.type === 'REMATCH_START') {
-            document.getElementById('start-modal').style.display = 'none';
-            executeStart(data.startingPlayer, data.p1Name, data.p2Name);
-        }
+        });
     }
 
     function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
@@ -631,16 +649,7 @@
     // --- 3. CAMERA NODE MODE ---
     async function initCameraNode() {
         showScreen('camera-node-screen');
-        if (!peer) { 
-            peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
-                config: {
-                    'iceServers': [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
-                    ]
-                }
-            }); 
-        }
+        if (!peer) { peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase()); }
         try {
             myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             document.getElementById('node-camera-feed').srcObject = myVideoStream;
@@ -765,6 +774,7 @@
 
     // --- SETUP / REMATCH / BULL UP LOGIC ---
     function triggerSetup() {
+        // Flipping back to match screen makes video feeds visible behind the modal for the Bull Up
         showScreen('match-screen');
         
         // Ensure BOTH videos are visible for the Bull Up phase
@@ -786,6 +796,7 @@
             const p1Btn = document.getElementById('start-local-p1');
             const p2Btn = document.getElementById('start-local-p2');
 
+            // Default to current names
             p1Input.value = state.p1.name;
             p2Input.value = state.p2.name;
             p1Btn.innerText = state.p1.name + " Throws First";
@@ -809,7 +820,9 @@
 
     function cancelRematch() {
         document.getElementById('start-modal').style.display = 'none';
-        if (appMode === 'online') { document.getElementById('local-vid').style.display = 'none'; }
+        if (appMode === 'online') {
+            document.getElementById('local-vid').style.display = 'none';
+        }
         showScreen('post-match-screen');
     }
 
