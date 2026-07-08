@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
+    <!-- --- PWA & Home Screen Icon Settings --- -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -102,6 +103,7 @@
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
+        /* Video Feeds */
         .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
         .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
@@ -120,6 +122,7 @@
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
+        /* Numpad Input */
         .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
         .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
@@ -273,13 +276,11 @@
         
         <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
-            <!-- Local video disappears when remote connects to save space! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
         <div class="boards">
-            <!-- P1 Board -->
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -288,7 +289,6 @@
                 </div>
                 <div class="history"><table><tbody id="p1-history"></tbody></table></div>
             </div>
-            <!-- P2 Board -->
             <div class="player-board">
                 <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -345,14 +345,13 @@
                 </div>
             </div>
 
-            <!-- Export Features -->
             <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
                 <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
                 <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
             </div>
 
             <div class="flex-col" style="max-width: 600px; width:100%;">
-                <button class="btn-primary" onclick="initRematch()">Play Rematch</button>
+                <button class="btn-primary" onclick="triggerSetup()">Play Rematch</button>
                 <button class="btn-secondary" onclick="location.reload()">End Session</button>
             </div>
         </div>
@@ -380,7 +379,7 @@
     </div>
 </div>
 
-<!-- Who Starts Setup Modal -->
+<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
         <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
@@ -410,9 +409,10 @@
         </div>
 
         <div id="setup-online-wait" style="display:none;">
-            <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;">Waiting for opponent...</p>
+            <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
         </div>
 
+        <!-- Only Host Sees This -->
         <div id="setup-online-host" style="display:none;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em;">🎯 BULL UP! 🎯</p>
             <p style="color:#aaa; font-size:0.9em; margin-bottom:15px;">Check the camera feed. Who is closest to the bull?</p>
@@ -540,17 +540,13 @@
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
-                        outCall.on('stream', remoteStream => {
-                            setupRemoteVideoStream(remoteStream);
-                        });
+                        outCall.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
                     }
                 });
             } else {
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
-                call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream);
-                });
+                call.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
             }
         });
         peer.on('error', err => { console.error("PeerJS Error:", err); });
@@ -560,7 +556,6 @@
         document.getElementById('video-bar').style.display = 'flex';
         const remoteVid = document.getElementById('remote-vid');
         const localVid = document.getElementById('local-vid');
-        
         remoteVid.srcObject = remoteStream;
         remoteVid.style.display = 'block';
         localVid.style.display = 'none';
@@ -580,9 +575,7 @@
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
-                call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream);
-                });
+                call.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
             }
         });
     }
@@ -591,7 +584,7 @@
         connection.on('open', () => {
             const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
             connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
-            document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO START...";
+            if (localPlayerNum === 2) document.getElementById('lobby-status').innerText = "WAITING FOR HOST...";
         });
 
         connection.on('data', data => {
@@ -599,10 +592,15 @@
                 if (data.player === 1) state.p1.name = data.name;
                 if (data.player === 2) state.p2.name = data.name;
                 updateUI();
-                if (localPlayerNum === 1) {
-                    state.p1 = getFreshPlayerState(state.p1.name);
-                    state.p2 = getFreshPlayerState(state.p2.name);
-                    initRematch(); // Host chooses who starts the online game
+                
+                // When Host gets Joiner's handshake, Host initiates setup for both
+                if (localPlayerNum === 1 && data.player === 2) {
+                    connection.send({ type: 'HANDSHAKE', name: state.p1.name, player: 1 });
+                    triggerSetup();
+                }
+            } else if (data.type === 'GOTO_SETUP') {
+                if (document.getElementById('start-modal').style.display !== 'flex') {
+                    initRematch();
                 }
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; 
@@ -614,7 +612,6 @@
                     document.getElementById('match-cam-btn').style.display = 'block';
                     showScreen('match-screen');
                 }
-                
                 updateUI();
                 
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
@@ -736,7 +733,6 @@
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
-    
     function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
     function setupMatchUI() { resetLeg(); showScreen('match-screen'); updateUI(); }
     
@@ -769,7 +765,14 @@
         }
     }
 
-    // --- Starting / Rematch Prompt Logic ---
+    // --- SETUP / REMATCH / BULL UP LOGIC ---
+    function triggerSetup() {
+        if (appMode === 'online' && connection && connection.open) {
+            connection.send({ type: 'GOTO_SETUP' });
+        }
+        initRematch();
+    }
+
     function initRematch() {
         // Flipping back to match screen makes video feeds visible behind the modal for the Bull Up
         showScreen('match-screen');
@@ -844,7 +847,7 @@
             } else {
                 // Joiner waits for host
                 document.getElementById('setup-online-wait').style.display = 'block';
-                document.getElementById('setup-online-wait').innerHTML = `<p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;">Waiting for Host (${remoteNewName}) to Bull Up and choose who throws first...</p>`;
+                document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to Bull Up and choose who throws first...`;
             }
         }
     }
@@ -885,7 +888,6 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -898,7 +900,6 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
@@ -914,7 +915,6 @@
         showScreen('post-match-screen');
     }
 
-    // --- EXPORT FUNCTIONS ---
     function exportStatsText() {
         const winnerName = state.p1.legs >= state.settings.targetLegs ? state.p1.name : state.p2.name;
         const summary = `🎯 RAF DARTS MATCH SUMMARY 🎯\n` +
