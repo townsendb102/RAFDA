@@ -6,9 +6,9 @@
     <title>RAF Darts Scorer Pro</title>
     
     <!-- --- PWA & Home Screen Icon Settings --- -->
-    <link rel="apple-touch-icon" href="63338.jpg">
-    <link rel="icon" sizes="192x192" href="63338.jpg">
-    <link rel="icon" sizes="512x512" href="63338.jpg">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -305,6 +305,7 @@
                 <button onclick="appendNum(4)" class="num-btn">4</button> <button onclick="appendNum(5)" class="num-btn">5</button> <button onclick="appendNum(6)" class="num-btn">6</button>
                 <button onclick="appendNum(7)" class="num-btn">7</button> <button onclick="appendNum(8)" class="num-btn">8</button> <button onclick="appendNum(9)" class="num-btn">9</button>
                 <button class="btn-clear num-btn" onclick="clearInput()">C</button> <button onclick="appendNum(0)" class="num-btn">0</button> <button class="btn-enter num-btn" onclick="submitScore()">ENT</button>
+                <!-- Undo is isolated so it remains clickable even if it's not your turn (to fix mistakes) -->
                 <button class="btn-undo" onclick="undo()">Undo Entry</button>
             </div>
         </div>
@@ -639,7 +640,6 @@
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
         state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
         
-        // --- PRO STATS CALCULATION ---
         if (player.history.length < 3) {
             player.first9Scored += actualDeduction;
             player.first9Darts += dartsUsed;
@@ -768,6 +768,7 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
+        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -780,6 +781,7 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
+        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
