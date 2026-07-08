@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
+    <!-- PWA & Home Screen Icon Settings -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -83,7 +84,7 @@
         input[type="text"], select { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #444; border-radius: 8px; background: #222; color: white; }
         
         .btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; }
         .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
         .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
         
@@ -148,7 +149,7 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
+        /* FIX: Setup Modal Background is fully transparent so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -512,8 +513,6 @@
 
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        
-        // REVERTED to original flawless connection method
         peer = new Peer(shortId); 
         
         peer.on('open', id => { 
@@ -530,9 +529,8 @@
             connection = conn;
             localPlayerNum = 1;
             opponentPeerId = conn.peer;
-            state.p1.name = document.getElementById('online-name').value || "Host";
             
-            setupDataConnection();
+            conn.on('data', data => handleNetworkData(data, conn));
         });
 
         peer.on('call', call => {
@@ -540,16 +538,13 @@
                 call.answer(); 
                 call.on('stream', stream => {
                     myVideoStream = stream; 
-                    document.getElementById('video-bar').style.display = 'flex';
-                    const localVid = document.getElementById('local-vid');
-                    localVid.srcObject = stream;
-                    localVid.style.display = 'block';
-
+                    setupRemoteVideoStream(stream, true); // True = it's a local camera
+                    
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
                         outCall.on('stream', remoteStream => {
-                            setupRemoteVideoStream(remoteStream);
+                            setupRemoteVideoStream(remoteStream, false);
                         });
                     }
                 });
@@ -557,24 +552,33 @@
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream);
+                    setupRemoteVideoStream(remoteStream, false);
                 });
             }
         });
         peer.on('error', err => { console.error("PeerJS Error:", err); });
     }
 
-    function setupRemoteVideoStream(remoteStream) {
+    function setupRemoteVideoStream(stream, isLocal) {
         document.getElementById('video-bar').style.display = 'flex';
-        const remoteVid = document.getElementById('remote-vid');
-        const localVid = document.getElementById('local-vid');
         
-        remoteVid.srcObject = remoteStream;
-        remoteVid.style.display = 'block';
-        
+        if (isLocal) {
+            const localVid = document.getElementById('local-vid');
+            localVid.srcObject = stream;
+            localVid.style.display = 'block';
+        } else {
+            const remoteVid = document.getElementById('remote-vid');
+            remoteVid.srcObject = stream;
+            remoteVid.style.display = 'block';
+        }
+
         // Hide local view so the user only sees the opponent's board (unless in setup phase)
+        const localVid = document.getElementById('local-vid');
         if (document.getElementById('start-modal').style.display !== 'flex') {
             localVid.style.display = 'none';
+        } else {
+            // FIX: If setup modal IS open, force local video back on so both are visible
+            localVid.style.display = 'block';
         }
     }
 
@@ -586,67 +590,71 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        // Reverted to pure original flawless connection
+        // Pure default connection
         connection = peer.connect(remoteId, { reliable: true });
-        setupDataConnection();
-
+        
         connection.on('open', () => {
+            document.getElementById('lobby-status').innerText = "SYNCING...";
+            const myName = document.getElementById('online-name').value || "Player 2";
+            connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
+
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream);
+                    setupRemoteVideoStream(remoteStream, false);
                 });
             }
         });
+
+        connection.on('data', data => handleNetworkData(data, connection));
     }
 
-    function setupDataConnection() {
-        // This was the magic code that worked flawlessly for you the first time
-        connection.on('open', () => {
-            const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
-            connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
-            document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO START...";
-        });
-
-        connection.on('data', data => {
-            if (data.type === 'HANDSHAKE') {
-                if (data.player === 1) state.p1.name = data.name;
-                if (data.player === 2) state.p2.name = data.name;
-                updateUI();
+    // --- BULLETPROOF DATA ROUTER ---
+    function handleNetworkData(data, conn) {
+        if (data.type === 'HANDSHAKE') {
+            // HOST receives Joiner's connection
+            if (localPlayerNum === 1 && data.player === 2) {
+                state.p1.name = document.getElementById('online-name').value || "Player 1";
+                state.p2.name = data.name;
                 
-                if (localPlayerNum === 1) {
-                    state.p1 = getFreshPlayerState(state.p1.name);
-                    state.p2 = getFreshPlayerState(state.p2.name);
-                    
-                    // ON INITIAL CONNECTION: Go straight to the Host Bull-Up screen
-                    showInitialHostSetup();
-                }
-            } 
-            else if (data.type === 'STATE_SYNC') {
-                state = data.state; 
-                if(document.getElementById('match-screen').classList.contains('active') === false && 
-                   document.getElementById('post-match-screen').classList.contains('active') === false) {
-                    document.getElementById('match-badge').innerText = "ONLINE SYNC";
-                    document.getElementById('match-badge').className = "connection-badge badge-online";
-                    document.getElementById('match-cam-btn').style.display = 'block';
-                    showScreen('match-screen');
-                }
-                updateUI();
+                // Host sends the command to pull Joiner into the Bull Up wait room
+                conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
                 
-                if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
-                else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
-            } 
-            else if (data.type === 'REMATCH_READY') {
-                remoteRematchReady = true;
-                remoteNewName = data.name;
-                checkOnlineRematchState();
-            } 
-            else if (data.type === 'REMATCH_START') {
-                document.getElementById('start-modal').style.display = 'none';
-                executeStart(data.startingPlayer, data.p1Name, data.p2Name);
+                // Pull Host into the Setup menu
+                showInitialHostSetup();
             }
-        });
+        } 
+        else if (data.type === 'JOINER_AWAIT_BULLUP') {
+            // JOINER receives Host's command to enter the Bull Up room
+            if (localPlayerNum === 2) {
+                state.p1.name = data.hostName;
+                showInitialJoinerWait(); 
+            }
+        } 
+        else if (data.type === 'STATE_SYNC') {
+            state = data.state; 
+            if(document.getElementById('match-screen').classList.contains('active') === false && 
+               document.getElementById('post-match-screen').classList.contains('active') === false) {
+                document.getElementById('match-badge').innerText = "ONLINE SYNC";
+                document.getElementById('match-badge').className = "connection-badge badge-online";
+                document.getElementById('match-cam-btn').style.display = 'block';
+                showScreen('match-screen');
+            }
+            updateUI();
+            
+            if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
+            else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
+        } 
+        else if (data.type === 'REMATCH_READY') {
+            remoteRematchReady = true;
+            remoteNewName = data.name;
+            checkOnlineRematchState();
+        } 
+        else if (data.type === 'REMATCH_START') {
+            document.getElementById('start-modal').style.display = 'none';
+            executeStart(data.startingPlayer, data.p1Name, data.p2Name);
+        }
     }
 
     function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
@@ -801,6 +809,24 @@
         document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
     }
 
+    // Called ONLY by the Joiner directly upon the very first network connection
+    function showInitialJoinerWait() {
+        showScreen('match-screen');
+        
+        const localVid = document.getElementById('local-vid');
+        const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) localVid.style.display = 'block';
+        if (activeMediaCall) remoteVid.style.display = 'block';
+
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'none';
+        
+        document.getElementById('setup-online-wait').style.display = 'block';
+        document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to Bull Up...`;
+    }
+
     function initLocalSetup() {
         showScreen('match-screen');
         document.getElementById('start-modal').style.display = 'flex';
@@ -846,12 +872,15 @@
             document.getElementById('setup-online-host').style.display = 'none';
 
             const myNameInput = document.getElementById('rematch-my-name');
+            // Carry over your current name
             myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
         }
     }
 
     function cancelRematch() {
         document.getElementById('start-modal').style.display = 'none';
+        
+        // Hide local video again if we cancel back to stats
         if (appMode === 'online') {
             document.getElementById('local-vid').style.display = 'none';
         }
