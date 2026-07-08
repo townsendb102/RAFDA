@@ -93,8 +93,8 @@
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-        /* Video Feeds - Constrained so they don't break the layout */
-        .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(60px, 15vh, 120px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
+        /* Video Feeds - Made larger, local video hides automatically */
+        .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
         .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
         .boards { display: flex; flex: 1; min-height: 0; border-bottom: 1px solid #333; background: #161b22; }
@@ -112,15 +112,15 @@
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
-        /* Numpad Input - Automatically dims when it is not your turn */
-        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s; }
-        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
+        /* Numpad Input */
+        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; }
+        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); transition: opacity 0.2s;}
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
-        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; }
+        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; transition: opacity 0.2s;}
         .numpad button:active { background: #111; }
         .btn-enter { background: linear-gradient(135deg, var(--tech-cyan), #007bb5) !important; border:none !important; }
         .btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
-        .btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; }
+        .btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; opacity: 1 !important; pointer-events: auto !important;}
 
         /* Post Match Stats */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; width: 100%; max-width: 600px; }
@@ -281,10 +281,10 @@
         <div class="input-section" id="input-section">
             <div class="score-display" id="current-input"></div>
             <div class="numpad">
-                <button onclick="appendNum(1)">1</button> <button onclick="appendNum(2)">2</button> <button onclick="appendNum(3)">3</button>
-                <button onclick="appendNum(4)">4</button> <button onclick="appendNum(5)">5</button> <button onclick="appendNum(6)">6</button>
-                <button onclick="appendNum(7)">7</button> <button onclick="appendNum(8)">8</button> <button onclick="appendNum(9)">9</button>
-                <button class="btn-clear" onclick="clearInput()">C</button> <button onclick="appendNum(0)">0</button> <button class="btn-enter" onclick="submitScore()">ENT</button>
+                <button onclick="appendNum(1)" class="num-btn">1</button> <button onclick="appendNum(2)" class="num-btn">2</button> <button onclick="appendNum(3)" class="num-btn">3</button>
+                <button onclick="appendNum(4)" class="num-btn">4</button> <button onclick="appendNum(5)" class="num-btn">5</button> <button onclick="appendNum(6)" class="num-btn">6</button>
+                <button onclick="appendNum(7)" class="num-btn">7</button> <button onclick="appendNum(8)" class="num-btn">8</button> <button onclick="appendNum(9)" class="num-btn">9</button>
+                <button class="btn-clear num-btn" onclick="clearInput()">C</button> <button onclick="appendNum(0)" class="num-btn">0</button> <button class="btn-enter num-btn" onclick="submitScore()">ENT</button>
                 <button class="btn-undo" onclick="undo()">Undo Entry</button>
             </div>
         </div>
@@ -454,10 +454,7 @@
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
                         outCall.on('stream', remoteStream => {
-                            document.getElementById('video-bar').style.display = 'flex';
-                            const remoteVid = document.getElementById('remote-vid');
-                            remoteVid.srcObject = remoteStream;
-                            remoteVid.style.display = 'block';
+                            setupRemoteVideoStream(remoteStream);
                         });
                     }
                 });
@@ -465,10 +462,7 @@
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
-                    document.getElementById('video-bar').style.display = 'flex';
-                    const remoteVid = document.getElementById('remote-vid');
-                    remoteVid.srcObject = remoteStream;
-                    remoteVid.style.display = 'block';
+                    setupRemoteVideoStream(remoteStream);
                 });
             }
         });
@@ -490,13 +484,21 @@
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
-                    document.getElementById('video-bar').style.display = 'flex';
-                    const remoteVid = document.getElementById('remote-vid');
-                    remoteVid.srcObject = remoteStream;
-                    remoteVid.style.display = 'block';
+                    setupRemoteVideoStream(remoteStream);
                 });
             }
         });
+    }
+    
+    // Helper to format the opponent's video exclusively
+    function setupRemoteVideoStream(remoteStream) {
+        document.getElementById('video-bar').style.display = 'flex';
+        const remoteVid = document.getElementById('remote-vid');
+        remoteVid.srcObject = remoteStream;
+        remoteVid.style.display = 'block';
+        
+        // Hide our local video so the opponent's video has max screen real-estate
+        document.getElementById('local-vid').style.display = 'none';
     }
 
     function setupDataConnection() {
@@ -569,12 +571,15 @@
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
-    function appendNum(num) { if(appMode === 'online' && state.turn !== localPlayerNum) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
-    function clearInput() { if(appMode === 'online' && state.turn !== localPlayerNum) return; currentInput = ""; updateInputUI(); }
+    // Strict Number checking implemented to kill coercion bugs
+    function isMyTurn() { return (appMode === 'local') || (Number(state.turn) === Number(localPlayerNum)); }
+
+    function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
+    function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
     function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
     function submitScore() {
-        if(appMode === 'online' && state.turn !== localPlayerNum) return;
+        if(!isMyTurn()) return;
         if (currentInput === "") return;
         const score = parseInt(currentInput);
         currentInput = ""; updateInputUI();
@@ -603,7 +608,9 @@
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
-    function undo() { if(appMode === 'online' && state.turn !== localPlayerNum) return; if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
+    
+    // Undo does not check isMyTurn(), so you can undo a mistake immediately after throwing
+    function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
     function setupMatchUI() { resetLeg(); showScreen('match-screen'); updateUI(); }
     function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
     function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
@@ -617,17 +624,19 @@
         document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
         document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
 
-        // --- Turn Restrictions (Dims numpad if it isn't your turn) ---
-        const isMyTurn = (appMode === 'local') || (state.turn === localPlayerNum);
-        const inputSection = document.getElementById('input-section');
-        if (isMyTurn) {
-            inputSection.style.opacity = '1';
-            inputSection.style.pointerEvents = 'auto';
-            document.getElementById('current-input').innerText = currentInput;
+        // --- Turn Restrictions (Dims numpad if it isn't your turn, leaving UNDO free) ---
+        const active = isMyTurn();
+        const numpadBtns = document.querySelectorAll('.num-btn');
+        const scoreDisp = document.getElementById('current-input');
+        
+        if (active) {
+            scoreDisp.style.opacity = '1';
+            scoreDisp.innerText = currentInput;
+            numpadBtns.forEach(btn => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; });
         } else {
-            inputSection.style.opacity = '0.35';
-            inputSection.style.pointerEvents = 'none';
-            document.getElementById('current-input').innerText = "WAITING...";
+            scoreDisp.style.opacity = '0.35';
+            scoreDisp.innerText = "WAITING...";
+            numpadBtns.forEach(btn => { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none'; });
         }
     }
 
@@ -675,7 +684,7 @@
             document.getElementById('start-modal').style.display !== 'flex') {
             if (event.key >= '0' && event.key <= '9') appendNum(event.key);
             else if (event.key === 'Enter') submitScore();
-            else if (event.key === 'Backspace') { currentInput = currentInput.slice(0, -1); updateInputUI(); }
+            else if (event.key === 'Backspace') { clearInput(); }
             else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
         }
     });
