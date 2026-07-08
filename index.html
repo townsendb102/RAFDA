@@ -93,7 +93,7 @@
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-        /* Video Feeds - Made larger, local video hides automatically */
+        /* Video Feeds */
         .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
         .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
@@ -113,10 +113,10 @@
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
         /* Numpad Input */
-        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; }
-        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); transition: opacity 0.2s;}
+        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
+        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
-        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; transition: opacity 0.2s;}
+        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
         .numpad button:active { background: #111; }
         .btn-enter { background: linear-gradient(135deg, var(--tech-cyan), #007bb5) !important; border:none !important; }
         .btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
@@ -383,10 +383,9 @@
         document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
         document.getElementById(screenId).classList.add('active');
         
-        // Only show footer on the main menu
         document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
         
-        // Hide the large main header during the match to free up layout space for the video/numpad
+        // Hide large header in match/stats to save vertical space
         if (screenId === 'match-screen' || screenId === 'post-match-screen') {
             document.getElementById('main-header').style.display = 'none';
         } else {
@@ -404,7 +403,7 @@
         
         document.getElementById('match-badge').innerText = "LOCAL";
         document.getElementById('match-badge').className = "connection-badge badge-local";
-        document.getElementById('match-cam-btn').style.display = 'none'; // Don't need QR online link locally
+        document.getElementById('match-cam-btn').style.display = 'none'; 
         
         showStartModal();
     }
@@ -441,6 +440,7 @@
         // Incoming Video Calls (Either from our phone, or from opponent)
         peer.on('call', call => {
             if(call.metadata && call.metadata.type === 'external-camera') {
+                // This is OUR phone connecting.
                 call.answer(); 
                 call.on('stream', stream => {
                     myVideoStream = stream; 
@@ -449,7 +449,7 @@
                     localVid.srcObject = stream;
                     localVid.style.display = 'block';
 
-                    // Forward new camera feed to opponent instantly
+                    // Forward new camera feed to opponent instantly if they exist
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
@@ -459,6 +459,7 @@
                     }
                 });
             } else {
+                // This is the OPPONENT connecting to give us their feed.
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
@@ -467,6 +468,19 @@
             }
         });
         peer.on('error', err => { console.error("PeerJS Error:", err); });
+    }
+
+    // Helper: Shows opponent video and FORCIBLY hides local video to save space
+    function setupRemoteVideoStream(remoteStream) {
+        document.getElementById('video-bar').style.display = 'flex';
+        const remoteVid = document.getElementById('remote-vid');
+        const localVid = document.getElementById('local-vid');
+        
+        remoteVid.srcObject = remoteStream;
+        remoteVid.style.display = 'block';
+        
+        // Hide local view so the user only sees the opponent's board.
+        localVid.style.display = 'none';
     }
 
     function connectToPeer() {
@@ -488,17 +502,6 @@
                 });
             }
         });
-    }
-    
-    // Helper to format the opponent's video exclusively
-    function setupRemoteVideoStream(remoteStream) {
-        document.getElementById('video-bar').style.display = 'flex';
-        const remoteVid = document.getElementById('remote-vid');
-        remoteVid.srcObject = remoteStream;
-        remoteVid.style.display = 'block';
-        
-        // Hide our local video so the opponent's video has max screen real-estate
-        document.getElementById('local-vid').style.display = 'none';
     }
 
     function setupDataConnection() {
@@ -532,12 +535,11 @@
                 
                 updateUI();
                 
-                // Show post match automatically if the opponent triggers a win
+                // If opponent triggered a win, display stats for both
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
-                if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
+                else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
                 
             } else if (data.type === 'REMATCH') {
-                // Opponent initiated rematch and chose who starts
                 executeStart(data.startingPlayer);
             }
         });
@@ -571,8 +573,11 @@
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
-    // Strict Number checking implemented to kill coercion bugs
-    function isMyTurn() { return (appMode === 'local') || (Number(state.turn) === Number(localPlayerNum)); }
+    // Strict Turn Validation
+    function isMyTurn() { 
+        if (appMode === 'local') return true;
+        return Number(state.turn) === Number(localPlayerNum); 
+    }
 
     function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
     function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
@@ -584,6 +589,7 @@
         const score = parseInt(currentInput);
         currentInput = ""; updateInputUI();
         if (score > 180 || impossibleScores.includes(score)) { alert("INVALID SCORE"); return; }
+        
         const p = state.turn === 1 ? state.p1 : state.p2;
         if (score > p.rem || p.rem - score === 1) { recordScore(p, 0, "Bust", 3); switchTurn(); } 
         else if (score === p.rem) { p.pendingCheckoutScore = score; document.getElementById('checkout-modal').style.display = 'flex'; } 
@@ -602,8 +608,16 @@
         const p = state.turn === 1 ? state.p1 : state.p2;
         recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
         p.legs++;
-        if (p.legs >= state.settings.targetLegs) { broadcastState(); displayPostMatch(p); } 
-        else { state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; resetLeg(); updateUI(); broadcastState(); }
+        
+        if (p.legs >= state.settings.targetLegs) { 
+            // Force state broadcast to update the opponent instantly before switching
+            broadcastState(); 
+            if (appMode === 'local') displayPostMatch(p); 
+        } 
+        else { 
+            state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; 
+            resetLeg(); updateUI(); broadcastState(); 
+        }
     }
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
@@ -650,7 +664,6 @@
     function confirmStart(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
         
-        // Trigger network sync if online
         if (appMode === 'online' && connection && connection.open) { 
             connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
         }
@@ -671,11 +684,27 @@
         }
         
         setupMatchUI();
+        if (appMode === 'online' && localPlayerNum === 1) { broadcastState(); }
+    }
+
+    function displayPostMatch(winningPlayer) {
+        document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Push full state down the wire if host
-        if (appMode === 'online' && localPlayerNum === 1) {
-            broadcastState();
-        }
+        document.getElementById('stat-p1-name').innerText = state.p1.name;
+        document.getElementById('stat-p1-legs').innerText = state.p1.legs;
+        document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
+        document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
+        document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
+        document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
+
+        document.getElementById('stat-p2-name').innerText = state.p2.name;
+        document.getElementById('stat-p2-legs').innerText = state.p2.legs;
+        document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
+        document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
+        document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
+        document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
+
+        showScreen('post-match-screen');
     }
 
     document.addEventListener('keydown', function(event) {
