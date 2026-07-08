@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
-    <!-- --- PWA & Home Screen Icon Settings --- -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -103,7 +102,6 @@
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-        /* Video Feeds */
         .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
         .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
@@ -122,7 +120,6 @@
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
-        /* Numpad Input */
         .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
         .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
@@ -159,7 +156,6 @@
 <body>
 
 <div id="app">
-    <!-- Header Replica -->
     <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
@@ -167,7 +163,6 @@
         </header>
     </div>
 
-    <!-- 1. Main Menu Screen -->
     <main id="menu-screen" class="screen active">
         <div class="menu-grid">
             <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
@@ -205,7 +200,6 @@
         <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
     </div>
 
-    <!-- 2. Local Setup Screen -->
     <main id="local-setup-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
@@ -224,7 +218,6 @@
         </div>
     </main>
 
-    <!-- 3. Online Lobby Screen -->
     <main id="online-lobby-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Network Sync</h2>
@@ -248,7 +241,6 @@
         </div>
     </main>
 
-    <!-- 3b. Phone Camera Node Screen -->
     <main id="camera-node-screen" class="screen">
         <div class="inner-content" style="align-items: center; text-align: center;">
             <h2 class="view-title">Live Camera Feed</h2>
@@ -264,7 +256,6 @@
         </div>
     </main>
 
-    <!-- 4. Active Match Screen -->
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
@@ -274,7 +265,6 @@
             </div>
         </div>
         
-        <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
@@ -311,7 +301,6 @@
         </div>
     </main>
 
-    <!-- 5. Post Match Stats Screen -->
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
@@ -358,7 +347,6 @@
     </main>
 </div>
 
-<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -368,7 +356,6 @@
     </div>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -379,12 +366,10 @@
     </div>
 </div>
 
-<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
         <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
 
-        <!-- LOCAL MODE SETTINGS -->
         <div id="setup-local">
             <div style="text-align: left; margin-bottom: 15px;">
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
@@ -399,7 +384,6 @@
             </div>
         </div>
 
-        <!-- ONLINE MODE SETTINGS -->
         <div id="setup-online-name" style="display:none;">
             <div style="text-align: left; margin-bottom: 15px;">
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
@@ -412,7 +396,6 @@
             <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
         </div>
 
-        <!-- Only Host Sees This -->
         <div id="setup-online-host" style="display:none;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em;">🎯 BULL UP! 🎯</p>
             <p style="color:#aaa; font-size:0.9em; margin-bottom:15px;">Check the camera feed. Who is closest to the bull?</p>
@@ -433,11 +416,9 @@
     let localPlayerNum = 1;
     let opponentPeerId = null; 
     
-    // --- WebRTC Media Variables ---
     let myVideoStream = null;     
     let activeMediaCall = null;   
 
-    // --- State & Logic ---
     const getFreshPlayerState = (name) => ({ 
         name: name, legs: 0, rem: 501, history: [], 
         totalScored: 0, totalDarts: 0, highestScore: 0,
@@ -540,13 +521,17 @@
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
-                        outCall.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
+                        outCall.on('stream', remoteStream => {
+                            setupRemoteVideoStream(remoteStream);
+                        });
                     }
                 });
             } else {
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
-                call.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
+                call.on('stream', remoteStream => {
+                    setupRemoteVideoStream(remoteStream);
+                });
             }
         });
         peer.on('error', err => { console.error("PeerJS Error:", err); });
@@ -556,6 +541,7 @@
         document.getElementById('video-bar').style.display = 'flex';
         const remoteVid = document.getElementById('remote-vid');
         const localVid = document.getElementById('local-vid');
+        
         remoteVid.srcObject = remoteStream;
         remoteVid.style.display = 'block';
         localVid.style.display = 'none';
@@ -575,7 +561,9 @@
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
-                call.on('stream', remoteStream => { setupRemoteVideoStream(remoteStream); });
+                call.on('stream', remoteStream => {
+                    setupRemoteVideoStream(remoteStream);
+                });
             }
         });
     }
@@ -583,8 +571,11 @@
     function setupDataConnection() {
         connection.on('open', () => {
             const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+            // 1. Initial Handshake sent by Joiner
             connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
-            if (localPlayerNum === 2) document.getElementById('lobby-status').innerText = "WAITING FOR HOST...";
+            if (localPlayerNum === 2) {
+                document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO SYNC...";
+            }
         });
 
         connection.on('data', data => {
@@ -593,18 +584,17 @@
                 if (data.player === 2) state.p2.name = data.name;
                 updateUI();
                 
-                // When Host gets Joiner's handshake, Host initiates setup for both
+                // HOST logic: Receive Joiner's Handshake and synchronize the start
                 if (localPlayerNum === 1 && data.player === 2) {
                     connection.send({ type: 'HANDSHAKE', name: state.p1.name, player: 1 });
+                    connection.send({ type: 'GOTO_SETUP' });
                     triggerSetup();
                 }
             } else if (data.type === 'GOTO_SETUP') {
-                if (document.getElementById('start-modal').style.display !== 'flex') {
-                    initRematch();
-                }
+                // JOINER logic: Host told us it's time to setup names
+                triggerSetup();
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; 
-                
                 if(document.getElementById('match-screen').classList.contains('active') === false && 
                    document.getElementById('post-match-screen').classList.contains('active') === false) {
                     document.getElementById('match-badge').innerText = "ONLINE SYNC";
@@ -613,13 +603,15 @@
                     showScreen('match-screen');
                 }
                 updateUI();
-                
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
                 else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
                 
             } else if (data.type === 'REMATCH_READY') {
                 remoteRematchReady = true;
                 remoteNewName = data.name;
+                // Pre-update the state so the remote name matches when host clicks start
+                if(localPlayerNum === 1) state.p2.name = remoteNewName;
+                else state.p1.name = remoteNewName;
                 checkOnlineRematchState();
             } else if (data.type === 'REMATCH_START') {
                 document.getElementById('start-modal').style.display = 'none';
