@@ -145,6 +145,7 @@
 <body>
 
 <div id="app">
+    <!-- Header Replica -->
     <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
@@ -152,6 +153,7 @@
         </header>
     </div>
 
+    <!-- 1. Main Menu Screen -->
     <main id="menu-screen" class="screen active">
         <div class="menu-grid">
             <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
@@ -189,6 +191,7 @@
         <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
     </div>
 
+    <!-- 2. Local Setup Screen -->
     <main id="local-setup-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
@@ -207,6 +210,7 @@
         </div>
     </main>
 
+    <!-- 3. Online Lobby Screen -->
     <main id="online-lobby-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Network Sync</h2>
@@ -230,6 +234,7 @@
         </div>
     </main>
 
+    <!-- 3b. Phone Camera Node Screen -->
     <main id="camera-node-screen" class="screen">
         <div class="inner-content" style="align-items: center; text-align: center;">
             <h2 class="view-title">Live Camera Feed</h2>
@@ -245,6 +250,7 @@
         </div>
     </main>
 
+    <!-- 4. Active Match Screen -->
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
@@ -254,12 +260,15 @@
             </div>
         </div>
         
+        <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
+            <!-- Local video disappears when remote connects to save space! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
         <div class="boards">
+            <!-- P1 Board -->
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -268,6 +277,7 @@
                 </div>
                 <div class="history"><table><tbody id="p1-history"></tbody></table></div>
             </div>
+            <!-- P2 Board -->
             <div class="player-board">
                 <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -290,6 +300,7 @@
         </div>
     </main>
 
+    <!-- 5. Post Match Stats Screen -->
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
@@ -323,6 +334,7 @@
                 </div>
             </div>
 
+            <!-- Export Features -->
             <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
                 <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
                 <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
@@ -336,6 +348,7 @@
     </main>
 </div>
 
+<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -345,6 +358,7 @@
     </div>
 </div>
 
+<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -355,14 +369,22 @@
     </div>
 </div>
 
+<!-- Who Starts Setup Modal -->
 <div class="modal-overlay" id="start-modal">
-    <div class="modal">
-        <h3 id="start-modal-title">Who Throws First?</h3>
-        <p style="color:#aaa;">Select the starting player.</p>
+    <div class="modal" style="padding: 20px;">
+        <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
+        <div style="text-align: left; margin-bottom: 15px;">
+            <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
+            <input type="text" id="rematch-p1-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white; margin-bottom:10px;">
+            <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 2 Name</label>
+            <input type="text" id="rematch-p2-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+        </div>
+        
+        <p style="color:#aaa; margin-top:0; margin-bottom:10px; font-size:0.9em;">Who throws first?</p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
             <button class="start-btn" id="start-p1-btn" onclick="confirmStart(1)">Player 1</button>
             <button class="start-btn" id="start-p2-btn" onclick="confirmStart(2)">Player 2</button>
-            <button style="padding: 12px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 10px;" onclick="document.getElementById('start-modal').style.display='none'">Cancel</button>
+            <button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 5px;" onclick="document.getElementById('start-modal').style.display='none'">Cancel</button>
         </div>
     </div>
 </div>
@@ -549,7 +571,7 @@
                 else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
                 
             } else if (data.type === 'REMATCH') {
-                executeStart(data.startingPlayer);
+                executeStart(data.startingPlayer, data.p1Name, data.p2Name);
             }
         });
     }
@@ -683,21 +705,40 @@
         }
     }
 
+    // --- Starting / Rematch Prompt Logic ---
     function showStartModal() {
-        document.getElementById('start-p1-btn').innerText = state.p1.name;
-        document.getElementById('start-p2-btn').innerText = state.p2.name;
+        const p1Input = document.getElementById('rematch-p1-name');
+        const p2Input = document.getElementById('rematch-p2-name');
+        const p1Btn = document.getElementById('start-p1-btn');
+        const p2Btn = document.getElementById('start-p2-btn');
+
+        p1Input.value = state.p1.name;
+        p2Input.value = state.p2.name;
+        p1Btn.innerText = state.p1.name + " Throws First";
+        p2Btn.innerText = state.p2.name + " Throws First";
+
+        p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
+        p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
+
         document.getElementById('start-modal').style.display = 'flex';
     }
 
     function confirmStart(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
+        
+        const newP1 = document.getElementById('rematch-p1-name').value || "Player 1";
+        const newP2 = document.getElementById('rematch-p2-name').value || "Player 2";
+
         if (appMode === 'online' && connection && connection.open) { 
-            connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
+            connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum, p1Name: newP1, p2Name: newP2 }); 
         }
-        executeStart(startingPlayerNum);
+        executeStart(startingPlayerNum, newP1, newP2);
     }
 
-    function executeStart(startingPlayerNum) {
+    function executeStart(startingPlayerNum, p1Name, p2Name) {
+        if(p1Name) state.p1.name = p1Name;
+        if(p2Name) state.p2.name = p2Name;
+
         state.p1 = getFreshPlayerState(state.p1.name);
         state.p2 = getFreshPlayerState(state.p2.name);
         state.startingPlayer = startingPlayerNum; 
