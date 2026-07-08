@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
+    
+    <!-- --- PWA & Home Screen Icon Settings --- -->
+    <link rel="apple-touch-icon" href="63338.jpg">
+    <link rel="icon" sizes="192x192" href="63338.jpg">
+    <link rel="icon" sizes="512x512" href="63338.jpg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1e24">
+
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <style>
@@ -629,6 +639,7 @@
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
         state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
         
+        // --- PRO STATS CALCULATION ---
         if (player.history.length < 3) {
             player.first9Scored += actualDeduction;
             player.first9Darts += dartsUsed;
@@ -705,7 +716,6 @@
         }
     }
 
-    // --- Starting / Rematch Prompt Logic ---
     function showStartModal() {
         const p1Input = document.getElementById('rematch-p1-name');
         const p2Input = document.getElementById('rematch-p2-name');
@@ -758,7 +768,6 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -771,7 +780,6 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
