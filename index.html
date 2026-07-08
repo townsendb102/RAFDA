@@ -3,104 +3,242 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>P2P Darts Scorer</title>
-    <!-- PeerJS for WebRTC Peer-to-Peer Networking -->
+    <title>RAF Darts Scorer</title>
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <style>
         :root {
-            --primary: #2c3e50;
-            --active: #27ae60;
-            --bg: #ecf0f1;
-            --panel: #ffffff;
-            --border: #bdc3c7;
-            --alert: #e74c3c;
+            /* RAF Brand Colours */
+            --raf-blue: #002A5C;
+            --raf-red: #C8102E;
+            --bg-color: #f0f2f5;
+            --panel-bg: #ffffff;
+            --text-dark: #1a1a1a;
+            --text-light: #ffffff;
+            --border: #e1e4e8;
+            --turn-bg: #f5f8ff;
+            --turn-border: #0056b3;
         }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
-        body { margin: 0; padding: 20px; background-color: var(--bg); display: flex; justify-content: center; }
-        #app { background: var(--panel); max-width: 900px; width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
-        
-        .screen { display: none; padding: 20px; }
-        .screen.active { display: block; }
-        
-        /* Lobby Screen */
-        .lobby-panel { max-width: 500px; margin: 0 auto; text-align: center; }
-        .lobby-box { border: 2px dashed var(--border); padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #f8f9fa; }
-        .id-display { font-size: 2em; font-family: monospace; font-weight: bold; color: var(--primary); letter-spacing: 2px; margin: 10px 0; user-select: all; }
-        input[type="text"], select { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border: 1px solid var(--border); border-radius: 4px; text-align: center; }
-        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 20px; font-size: 16px; border-radius: 4px; width: 100%; transition: background 0.2s; }
-        button:hover { background: #1a252f; }
-        button:disabled { background: var(--border); cursor: not-allowed; }
-        .status { margin-top: 15px; font-weight: bold; color: var(--alert); }
 
-        /* Match Screen */
-        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: bold; border-bottom: 2px solid var(--border); padding-bottom: 10px;}
-        .connection-status { font-size: 0.8em; padding: 4px 8px; background: var(--active); color: white; border-radius: 12px; }
-        .boards { display: flex; border: 2px solid var(--border); border-radius: 4px; overflow: hidden; }
-        .player-board { flex: 1; display: flex; flex-direction: column; }
+        * {
+            box-sizing: border-box;
+            font-family: "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px 10px;
+            background-color: var(--bg-color);
+            display: flex;
+            justify-content: center;
+            color: var(--text-dark);
+        }
+
+        #app {
+            background: var(--panel-bg);
+            max-width: 900px;
+            width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header & Logo */
+        .app-header {
+            text-align: center;
+            padding: 20px;
+            border-bottom: 2px solid var(--border);
+            background: #fff;
+        }
+        .main-logo {
+            max-width: 250px;
+            height: auto;
+        }
+
+        /* Screen Management */
+        .screen { display: none; padding: 30px 20px; }
+        .screen.active { display: block; animation: fadeIn 0.3s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Typography & Layouts */
+        h2 { color: var(--raf-blue); text-align: center; margin-top: 0; font-size: 1.8em; }
+        .flex-col { display: flex; flex-direction: column; gap: 15px; max-width: 450px; margin: 0 auto; }
+        
+        /* Inputs & Buttons */
+        label { font-weight: bold; color: var(--raf-blue); margin-bottom: -5px; }
+        input[type="text"], select { 
+            width: 100%; padding: 12px; font-size: 16px; 
+            border: 2px solid var(--border); border-radius: 6px; 
+            transition: border-color 0.2s;
+        }
+        input[type="text"]:focus, select:focus { border-color: var(--raf-blue); outline: none; }
+        
+        button {
+            background: var(--raf-blue); color: var(--text-light);
+            border: none; padding: 15px; font-size: 16px; font-weight: bold;
+            border-radius: 6px; cursor: pointer; transition: all 0.2s;
+        }
+        button:hover { background: #001f44; transform: translateY(-1px); }
+        button.btn-red { background: var(--raf-red); }
+        button.btn-red:hover { background: #a00d24; }
+        button:disabled { background: #ccc; cursor: not-allowed; transform: none; }
+
+        /* Main Menu Grid */
+        .menu-grid {
+            display: grid; grid-template-columns: 1fr 1fr; gap: 20px; max-width: 600px; margin: 20px auto 0;
+        }
+        .menu-btn {
+            padding: 40px 20px; font-size: 1.2em; display: flex; flex-direction: column; align-items: center; gap: 10px;
+        }
+        @media (max-width: 600px) { .menu-grid { grid-template-columns: 1fr; } }
+
+        /* Lobby Info */
+        .lobby-box {
+            border: 2px dashed var(--raf-blue); padding: 20px; border-radius: 8px; 
+            text-align: center; margin-bottom: 20px; background: #fafafa;
+        }
+        .id-display { font-size: 2.2em; font-family: monospace; font-weight: bold; color: var(--raf-red); letter-spacing: 3px; margin: 10px 0; }
+        .status { margin-top: 15px; font-weight: bold; color: var(--raf-red); text-align: center; }
+
+        /* Match Screen Layout */
+        .match-info {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 10px 20px; background: var(--raf-blue); color: white; font-weight: bold;
+        }
+        .connection-badge {
+            font-size: 0.85em; padding: 5px 10px; border-radius: 20px; background: rgba(255,255,255,0.2);
+        }
+
+        .boards { display: flex; border-bottom: 2px solid var(--border); }
+        .player-board { flex: 1; display: flex; flex-direction: column; width: 50%; }
         .player-board:first-child { border-right: 2px solid var(--border); }
-        .player-info { padding: 15px; text-align: center; border-bottom: 2px solid var(--border); background: #f8f9fa; transition: background 0.2s; }
-        .player-info.is-turn { background: #e8f5e9; border-top: 4px solid var(--active); }
-        .player-name { font-size: 1.5em; font-weight: bold; margin: 0 0 10px 0; }
-        .score-remaining { font-size: 4em; font-weight: bold; line-height: 1; margin-bottom: 10px; }
-        .stats { font-size: 0.9em; color: #555; display: flex; justify-content: space-around; }
         
-        .history { flex: 1; min-height: 250px; max-height: 300px; overflow-y: auto; background: #fff; }
+        .player-header {
+            padding: 20px 10px; text-align: center; transition: all 0.2s; border-bottom: 1px solid var(--border);
+        }
+        .player-header.is-turn {
+            background: var(--turn-bg); border-top: 4px solid var(--turn-border); border-bottom: 1px solid var(--turn-border);
+        }
+        .player-name { font-size: 1.6em; margin: 0 0 5px 0; color: var(--raf-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .score-remaining { font-size: 4.5em; font-weight: 900; line-height: 1; margin: 10px 0; color: var(--text-dark); }
+        .stats { display: flex; justify-content: center; gap: 15px; font-size: 0.9em; color: #666; }
+        
+        .history { height: 200px; overflow-y: auto; background: #fff; }
         .history table { width: 100%; border-collapse: collapse; text-align: center; }
-        .history th { background: #eee; padding: 5px; font-size: 0.8em; position: sticky; top: 0; }
-        .history td { padding: 8px 5px; border-bottom: 1px solid #eee; }
-        .history tr:nth-child(even) { background: #fafafa; }
-        .score-col { font-weight: bold; }
-        
-        /* Input Area */
-        .input-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; }
-        .score-display { width: 200px; height: 60px; font-size: 2em; text-align: center; margin-bottom: 15px; border: 2px solid var(--primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; width: 100%; }
-        .numpad button { padding: 15px; font-size: 1.5em; background: #fff; border: 1px solid var(--border); color: black; }
-        .numpad button:active { background: #e0e0e0; }
-        .btn-enter { background: var(--active) !important; color: white !important; grid-column: span 1; }
-        .btn-clear { background: var(--alert) !important; color: white !important; }
-        .btn-undo { background: #f39c12 !important; color: white !important; grid-column: span 3; }
+        .history th { background: #f8f9fa; padding: 8px; font-size: 0.8em; position: sticky; top: 0; color: #555; }
+        .history td { padding: 8px; border-bottom: 1px solid #eee; }
+        .score-col { font-weight: bold; color: var(--raf-blue); }
 
-        /* Modal */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal { background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 400px; }
-        .modal button { margin: 5px; width: auto; display: inline-block; }
+        /* Numpad Input */
+        .input-section { padding: 20px; display: flex; flex-direction: column; align-items: center; background: #fafafa; }
+        .score-display {
+            width: 100%; max-width: 250px; height: 65px; font-size: 2.5em; text-align: center;
+            margin-bottom: 15px; border: 2px solid var(--raf-blue); border-radius: 8px;
+            display: flex; align-items: center; justify-content: center; font-weight: bold; background: #fff;
+            color: var(--raf-blue);
+        }
+        .numpad {
+            display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 350px;
+        }
+        .numpad button { background: #fff; border: 2px solid var(--border); color: var(--text-dark); font-size: 1.6em; border-radius: 8px; padding: 18px 0; }
+        .numpad button:active { background: #e0e0e0; }
+        .btn-enter { background: var(--raf-blue) !important; color: white !important; border-color: var(--raf-blue) !important; }
+        .btn-clear { background: var(--raf-red) !important; color: white !important; border-color: var(--raf-red) !important; }
+        .btn-undo { grid-column: span 3; background: #6c757d !important; color: white !important; border-color: #6c757d !important; font-size: 1.2em !important; padding: 12px 0 !important; }
+
+        /* Modals */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,42,0.7); justify-content: center; align-items: center; z-index: 100;
+        }
+        .modal { background: white; padding: 30px; border-radius: 12px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 10px 40px rgba(0,0,0,0.3); }
+        .modal h3 { color: var(--raf-blue); margin-top: 0; font-size: 1.8em; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+        .modal-buttons button { flex: 1; }
+
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Lobby Screen -->
-    <div id="lobby-screen" class="screen active">
-        <div class="lobby-panel">
-            <h2>Online Match Setup</h2>
-            <p>Share your ID with a friend, or connect to theirs.</p>
-            
+    <header class="app-header">
+        <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
+        <h1 id="alt-title" style="display:none; color: var(--raf-blue); margin:0;">RAF DARTS</h1>
+    </header>
+
+    <main id="menu-screen" class="screen active">
+        <h2>Select Game Mode</h2>
+        <div class="menu-grid">
+            <button class="menu-btn" onclick="showScreen('local-setup-screen')">
+                <span style="font-size: 2em;">🎯</span>
+                Local Match
+                <span style="font-size: 0.7em; font-weight: normal;">Play on a single device</span>
+            </button>
+            <button class="menu-btn btn-red" onclick="initOnlineLobby()">
+                <span style="font-size: 2em;">🌐</span>
+                Online Match
+                <span style="font-size: 0.7em; font-weight: normal;">Play against someone remotely</span>
+            </button>
+        </div>
+    </main>
+
+    <main id="local-setup-screen" class="screen">
+        <h2>Local Match Setup</h2>
+        <div class="flex-col">
+            <label>Player 1 Name</label>
+            <input type="text" id="local-p1" value="Player 1">
+            <label>Player 2 Name</label>
+            <input type="text" id="local-p2" value="Player 2">
+            <label>Starting Score</label>
+            <select id="local-score">
+                <option value="501">501</option>
+                <option value="301">301</option>
+                <option value="701">701</option>
+            </select>
+            <label>First to (Legs)</label>
+            <select id="local-legs">
+                <option value="1">1</option>
+                <option value="3" selected>3</option>
+                <option value="5">5</option>
+                <option value="7">7</option>
+            </select>
+            <button onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
+            <button onclick="showScreen('menu-screen')" style="background: transparent; color: var(--raf-blue); border: 2px solid var(--raf-blue);">Back to Menu</button>
+        </div>
+    </main>
+
+    <main id="online-lobby-screen" class="screen">
+        <h2>Online Multiplayer</h2>
+        <div class="flex-col">
             <div class="lobby-box">
-                <div>Your Shareable ID:</div>
+                <div style="color: #666; font-weight: bold;">YOUR SHAREABLE ID:</div>
                 <div class="id-display" id="my-peer-id">Loading...</div>
                 <button onclick="copyMyId()" id="copy-btn">Copy ID</button>
             </div>
-
-            <div class="lobby-box">
-                <input type="text" id="my-name" placeholder="Enter your player name" value="Player 1">
-                <input type="text" id="remote-id" placeholder="Paste friend's ID here to join">
-                <button onclick="connectToPeer()" id="connect-btn">Connect & Start Match</button>
-                <div class="status" id="lobby-status"></div>
-            </div>
+            
+            <label>Your Name</label>
+            <input type="text" id="online-name" placeholder="Enter your name" value="Player 1">
+            
+            <label>Join a Friend</label>
+            <input type="text" id="remote-id" placeholder="Paste friend's ID here">
+            
+            <button class="btn-red" onclick="connectToPeer()" id="connect-btn" style="margin-top: 10px;">Connect & Start</button>
+            <button onclick="showScreen('menu-screen')" style="background: transparent; color: var(--raf-blue); border: 2px solid var(--raf-blue);">Cancel</button>
+            
+            <div class="status" id="lobby-status"></div>
         </div>
-    </div>
+    </main>
 
-    <!-- Match Screen -->
-    <div id="match-screen" class="screen">
-        <div class="match-header">
+    <main id="match-screen" class="screen">
+        <div class="match-info">
             <div>First to <span id="target-legs">3</span> Legs</div>
-            <div class="connection-status">Online Sync Active</div>
+            <div class="connection-badge" id="match-badge">Local Match</div>
         </div>
         
         <div class="boards">
             <div class="player-board">
-                <div id="p1-panel" class="player-info">
+                <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
                     <div class="score-remaining" id="p1-rem">501</div>
                     <div class="stats">
@@ -110,14 +248,14 @@
                 </div>
                 <div class="history">
                     <table>
-                        <thead><tr><th>No.</th><th>Score</th><th>Rem</th></tr></thead>
+                        <thead><tr><th>Throw</th><th>Score</th><th>Left</th></tr></thead>
                         <tbody id="p1-history"></tbody>
                     </table>
                 </div>
             </div>
             
             <div class="player-board">
-                <div id="p2-panel" class="player-info">
+                <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
                     <div class="score-remaining" id="p2-rem">501</div>
                     <div class="stats">
@@ -127,7 +265,7 @@
                 </div>
                 <div class="history">
                     <table>
-                        <thead><tr><th>No.</th><th>Score</th><th>Rem</th></tr></thead>
+                        <thead><tr><th>Throw</th><th>Score</th><th>Left</th></tr></thead>
                         <tbody id="p2-history"></tbody>
                     </table>
                 </div>
@@ -149,18 +287,17 @@
                 <button class="btn-clear" onclick="clearInput()">C</button>
                 <button onclick="appendNum(0)">0</button>
                 <button class="btn-enter" onclick="submitScore()">Enter</button>
-                <button class="btn-undo" onclick="undo()">Undo</button>
+                <button class="btn-undo" onclick="undo()">⟲ Undo Last Entry</button>
             </div>
         </div>
-    </div>
+    </main>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Won!</h3>
-        <p>How many darts to checkout?</p>
-        <div>
+        <p>How many darts did it take to checkout?</p>
+        <div class="modal-buttons">
             <button onclick="completeLeg(1)">1 Dart</button>
             <button onclick="completeLeg(2)">2 Darts</button>
             <button onclick="completeLeg(3)">3 Darts</button>
@@ -168,33 +305,82 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="winner-modal">
+    <div class="modal">
+        <h3 id="winner-text">Player Wins!</h3>
+        <div class="modal-buttons">
+            <button class="btn-red" onclick="location.reload()">End Match</button>
+        </div>
+    </div>
+</div>
+
 <script>
-    // --- Networking (PeerJS) ---
+    // --- Application State ---
+    let appMode = 'local'; // 'local' or 'online'
+    
+    let state = {
+        settings: { startScore: 501, targetLegs: 3 },
+        p1: { name: "", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
+        p2: { name: "", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
+        turn: 1, 
+        startingPlayer: 1,
+        globalHistory: [] 
+    };
+
+    let currentInput = "";
+    const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
+
+    // --- Screen Management ---
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(screenId).classList.add('active');
+    }
+
+    // --- Local Match Logic ---
+    function startLocalMatch() {
+        appMode = 'local';
+        state.settings.startScore = parseInt(document.getElementById('local-score').value);
+        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
+        state.p1.name = document.getElementById('local-p1').value || "Player 1";
+        state.p2.name = document.getElementById('local-p2').value || "Player 2";
+        
+        document.getElementById('match-badge').innerText = "Local Match";
+        document.getElementById('match-badge').style.background = "var(--raf-blue)";
+        
+        setupMatchUI();
+    }
+
+    function setupMatchUI() {
+        document.getElementById('target-legs').innerText = state.settings.targetLegs;
+        resetLeg();
+        showScreen('match-screen');
+        updateUI();
+    }
+
+    // --- Online Match Logic (PeerJS) ---
     let peer = null;
     let connection = null;
-    let localPlayerNum = 1; // 1 if Host, 2 if Joiner
+    let localPlayerNum = 1;
 
-    function initNetwork() {
-        // Generate a random, readable 6-character ID
-        const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    function initOnlineLobby() {
+        appMode = 'online';
+        showScreen('online-lobby-screen');
         
-        peer = new Peer(shortId, { debug: 2 });
+        if (!peer) {
+            const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+            peer = new Peer(shortId);
 
-        peer.on('open', id => {
-            document.getElementById('my-peer-id').innerText = id;
-        });
+            peer.on('open', id => { document.getElementById('my-peer-id').innerText = id; });
 
-        // When someone connects to US (We are the host)
-        peer.on('connection', conn => {
-            connection = conn;
-            localPlayerNum = 1; // We are player 1
-            state.p1.name = document.getElementById('my-name').value || "Host";
-            setupConnection();
-        });
+            peer.on('connection', conn => {
+                connection = conn;
+                localPlayerNum = 1; // Host is P1
+                state.p1.name = document.getElementById('online-name').value || "Host";
+                setupOnlineConnection();
+            });
 
-        peer.on('error', err => {
-            document.getElementById('lobby-status').innerText = "Network Error: " + err.type;
-        });
+            peer.on('error', err => { document.getElementById('lobby-status').innerText = "Error: " + err.type; });
+        }
     }
 
     function connectToPeer() {
@@ -202,47 +388,44 @@
         if (!remoteId) return;
         
         document.getElementById('lobby-status').innerText = "Connecting...";
-        
-        // We are joining (Player 2)
-        localPlayerNum = 2;
+        localPlayerNum = 2; // Joiner is P2
         connection = peer.connect(remoteId, { reliable: true });
-        setupConnection();
+        setupOnlineConnection();
     }
 
-    function setupConnection() {
+    function setupOnlineConnection() {
         connection.on('open', () => {
-            // Send our name immediately
-            const myName = document.getElementById('my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+            const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
             connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
             
-            document.getElementById('lobby-screen').classList.remove('active');
-            document.getElementById('match-screen').classList.add('active');
-            updateUI();
+            document.getElementById('match-badge').innerText = "Online Match (Sync Active)";
+            document.getElementById('match-badge').style.background = "var(--raf-red)";
+            showScreen('match-screen');
         });
 
         connection.on('data', data => {
             if (data.type === 'HANDSHAKE') {
-                // Register the opponent's name
                 if (data.player === 1) state.p1.name = data.name;
                 if (data.player === 2) state.p2.name = data.name;
                 updateUI();
-                
-                // If we are the host, push the initial match state to the joiner
-                if (localPlayerNum === 1) broadcastState();
+                if (localPlayerNum === 1) {
+                    resetLeg(); // Ensure fresh state
+                    broadcastState();
+                }
             } else if (data.type === 'STATE_SYNC') {
-                // Overwrite local state with network state
                 state = data.state;
                 updateUI();
             }
         });
 
         connection.on('close', () => {
-            alert("Connection lost. Please refresh and reconnect.");
+            alert("Connection lost. Please refresh the page.");
+            location.reload();
         });
     }
 
     function broadcastState() {
-        if (connection && connection.open) {
+        if (appMode === 'online' && connection && connection.open) {
             connection.send({ type: 'STATE_SYNC', state: state });
         }
     }
@@ -255,23 +438,8 @@
         setTimeout(() => btn.innerText = "Copy ID", 2000);
     }
 
-    // --- Game Logic ---
-    let state = {
-        settings: { startScore: 501, targetLegs: 3 },
-        p1: { name: "Player 1", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
-        p2: { name: "Player 2", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
-        turn: 1, 
-        startingPlayer: 1,
-        globalHistory: [] 
-    };
-
-    let currentInput = "";
-    const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
-
+    // --- Scoring Logic ---
     function appendNum(num) {
-        // Optional constraint: Only allow typing if it's our turn
-        // if (state.turn !== localPlayerNum) return; 
-
         if (currentInput.length < 3) {
             currentInput += num;
             updateInputUI();
@@ -294,20 +462,20 @@
 
         const p = state.turn === 1 ? state.p1 : state.p2;
         
-        if (score > p.rem || p.rem - score === 1) { // Bust
+        if (score > p.rem || p.rem - score === 1) { 
             recordScore(p, 0, "Bust (" + score + ")", 3);
             switchTurn();
-        } else if (score === p.rem) { // Checkout Attempt
+        } else if (score === p.rem) { 
             p.pendingCheckoutScore = score; 
             document.getElementById('checkout-modal').style.display = 'flex';
-        } else { // Normal score
+        } else { 
             recordScore(p, score, score, 3);
             switchTurn();
         }
     }
 
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
-        state.globalHistory.push(JSON.parse(JSON.stringify(state))); // Save for undo
+        state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
         player.rem -= actualDeduction;
         player.totalScored += actualDeduction;
         player.totalDarts += dartsUsed;
@@ -322,8 +490,8 @@
         p.legs++;
 
         if (p.legs >= state.settings.targetLegs) {
-            alert(p.name + " Wins the Match!");
-            resetLeg(); // Optional auto-reset
+            document.getElementById('winner-text').innerText = p.name + " Wins!";
+            document.getElementById('winner-modal').style.display = 'flex';
         } else {
             state.startingPlayer = state.startingPlayer === 1 ? 2 : 1;
             resetLeg();
@@ -339,12 +507,13 @@
         state.p2.history = [];
         state.turn = state.startingPlayer;
         state.globalHistory = [];
+        updateUI();
     }
 
     function switchTurn() {
         state.turn = state.turn === 1 ? 2 : 1;
         updateUI();
-        broadcastState(); // Sync network every time a turn finishes
+        broadcastState();
     }
 
     function undo() {
@@ -356,7 +525,7 @@
         broadcastState();
     }
 
-    // --- UI Updating ---
+    // --- UI Rendering ---
     function calculateAverage(player) {
         if (player.totalDarts === 0) return "0.00";
         return ((player.totalScored / player.totalDarts) * 3).toFixed(2);
@@ -373,6 +542,7 @@
     }
 
     function updateUI() {
+        document.getElementById('target-legs').innerText = state.settings.targetLegs;
         document.getElementById('p1-name').innerText = state.p1.name;
         document.getElementById('p2-name').innerText = state.p2.name;
         document.getElementById('p1-rem').innerText = state.p1.rem;
@@ -385,14 +555,16 @@
         renderHistory(state.p1.history, 'p1-history');
         renderHistory(state.p2.history, 'p2-history');
 
-        document.getElementById('p1-panel').className = 'player-info' + (state.turn === 1 ? ' is-turn' : '');
-        document.getElementById('p2-panel').className = 'player-info' + (state.turn === 2 ? ' is-turn' : '');
+        document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : '');
+        document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
     }
 
-    // Keyboard support
+    // --- Hardware Keyboard Support ---
     document.addEventListener('keydown', function(event) {
         if (document.getElementById('match-screen').classList.contains('active') && 
-            document.getElementById('checkout-modal').style.display !== 'flex') {
+            document.getElementById('checkout-modal').style.display !== 'flex' &&
+            document.getElementById('winner-modal').style.display !== 'flex') {
+            
             if (event.key >= '0' && event.key <= '9') appendNum(event.key);
             else if (event.key === 'Enter') submitScore();
             else if (event.key === 'Backspace') { currentInput = currentInput.slice(0, -1); updateInputUI(); }
@@ -400,9 +572,6 @@
         }
     });
 
-    // Boot up
-    initNetwork();
 </script>
-
 </body>
 </html>
