@@ -76,7 +76,7 @@
         .btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
         .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
         .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
-        .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
         
         .btn-cam-small { background: transparent; border: 1px solid #888; color: #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s;}
         .btn-cam-small:active { background: var(--tech-cyan); color: #000; border-color: var(--tech-cyan);}
@@ -123,10 +123,10 @@
         .btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; opacity: 1 !important; pointer-events: auto !important;}
 
         /* Post Match Stats */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; width: 100%; max-width: 600px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 600px; }
         .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; }
         .stat-card h3 { color: var(--tech-cyan); font-size: 1.2em; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; text-align: center; text-transform: uppercase;}
-        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.85em; color: #aaa;}
+        .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.8em; color: #aaa;}
         .stat-row:last-child { border-bottom: none; }
         .stat-val { font-weight: 700; color: white; }
         .winner-banner { width: 100%; max-width: 600px; background: var(--tech-red); color: white; text-align: center; padding: 15px; border-radius: 12px; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;}
@@ -298,19 +298,34 @@
                 <div class="stat-card">
                     <h3 id="stat-p1-name">P1</h3>
                     <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p1-legs">0</span></div>
-                    <div class="stat-row"><span>Average</span> <span class="stat-val" id="stat-p1-avg">0.00</span></div>
+                    <div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p1-avg">0.00</span></div>
+                    <div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p1-first9">0.00</span></div>
+                    <div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p1-100s">0</span></div>
+                    <div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p1-140s">0</span></div>
+                    <div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p1-180s">0</span></div>
+                    <div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p1-highout">0</span></div>
                     <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p1-high">0</span></div>
-                    <div class="stat-row"><span>Points</span> <span class="stat-val" id="stat-p1-pts">0</span></div>
-                    <div class="stat-row"><span>Darts</span> <span class="stat-val" id="stat-p1-darts">0</span></div>
+                    <div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p1-pts">0</span></div>
+                    <div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p1-darts">0</span></div>
                 </div>
                 <div class="stat-card">
                     <h3 id="stat-p2-name">P2</h3>
                     <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p2-legs">0</span></div>
-                    <div class="stat-row"><span>Average</span> <span class="stat-val" id="stat-p2-avg">0.00</span></div>
+                    <div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p2-avg">0.00</span></div>
+                    <div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p2-first9">0.00</span></div>
+                    <div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p2-100s">0</span></div>
+                    <div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p2-140s">0</span></div>
+                    <div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p2-180s">0</span></div>
+                    <div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p2-highout">0</span></div>
                     <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p2-high">0</span></div>
-                    <div class="stat-row"><span>Points</span> <span class="stat-val" id="stat-p2-pts">0</span></div>
-                    <div class="stat-row"><span>Darts</span> <span class="stat-val" id="stat-p2-darts">0</span></div>
+                    <div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p2-pts">0</span></div>
+                    <div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p2-darts">0</span></div>
                 </div>
+            </div>
+
+            <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
+                <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
+                <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
             </div>
 
             <div class="flex-col" style="max-width: 600px; width:100%;">
@@ -364,12 +379,17 @@
     let activeMediaCall = null;   
 
     // --- State & Logic ---
-    const getFreshPlayerState = (name) => ({ name: name, legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0, highestScore: 0 });
+    const getFreshPlayerState = (name) => ({ 
+        name: name, legs: 0, rem: 501, history: [], 
+        totalScored: 0, totalDarts: 0, highestScore: 0,
+        scores100s: 0, scores140s: 0, scores180s: 0,
+        highestCheckout: 0, first9Scored: 0, first9Darts: 0
+    });
+
     let state = { settings: { startScore: 501, targetLegs: 3 }, p1: getFreshPlayerState("Player 1"), p2: getFreshPlayerState("Player 2"), turn: 1, startingPlayer: 1, globalHistory: [] };
     let currentInput = "";
     const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
 
-    // Check if we arrived via QR Code
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const camTarget = urlParams.get('cam');
@@ -385,7 +405,6 @@
         
         document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
         
-        // Hide large header in match/stats to save vertical space
         if (screenId === 'match-screen' || screenId === 'post-match-screen') {
             document.getElementById('main-header').style.display = 'none';
         } else {
@@ -408,7 +427,7 @@
         showStartModal();
     }
 
-    // --- 2. ONLINE LOBBY (Scoreboard Node) ---
+    // --- 2. ONLINE LOBBY ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -428,7 +447,6 @@
             });
         });
 
-        // Incoming connection (Opponent joining us)
         peer.on('connection', conn => {
             connection = conn;
             localPlayerNum = 1;
@@ -437,10 +455,8 @@
             setupDataConnection();
         });
 
-        // Incoming Video Calls (Either from our phone, or from opponent)
         peer.on('call', call => {
             if(call.metadata && call.metadata.type === 'external-camera') {
-                // This is OUR phone connecting.
                 call.answer(); 
                 call.on('stream', stream => {
                     myVideoStream = stream; 
@@ -449,7 +465,6 @@
                     localVid.srcObject = stream;
                     localVid.style.display = 'block';
 
-                    // Forward new camera feed to opponent instantly if they exist
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
@@ -459,7 +474,6 @@
                     }
                 });
             } else {
-                // This is the OPPONENT connecting to give us their feed.
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
@@ -470,7 +484,6 @@
         peer.on('error', err => { console.error("PeerJS Error:", err); });
     }
 
-    // Helper: Shows opponent video and FORCIBLY hides local video to save space
     function setupRemoteVideoStream(remoteStream) {
         document.getElementById('video-bar').style.display = 'flex';
         const remoteVid = document.getElementById('remote-vid');
@@ -478,8 +491,6 @@
         
         remoteVid.srcObject = remoteStream;
         remoteVid.style.display = 'block';
-        
-        // Hide local view so the user only sees the opponent's board.
         localVid.style.display = 'none';
     }
 
@@ -519,12 +530,11 @@
                 if (localPlayerNum === 1) {
                     state.p1 = getFreshPlayerState(state.p1.name);
                     state.p2 = getFreshPlayerState(state.p2.name);
-                    showStartModal(); // Host chooses who starts the online game
+                    showStartModal(); 
                 }
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; 
                 
-                // If Joiner receives the first sync, boot them directly into the match screen
                 if(document.getElementById('match-screen').classList.contains('active') === false && 
                    document.getElementById('post-match-screen').classList.contains('active') === false) {
                     document.getElementById('match-badge').innerText = "ONLINE SYNC";
@@ -535,7 +545,6 @@
                 
                 updateUI();
                 
-                // If opponent triggered a win, display stats for both
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
                 else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
                 
@@ -573,7 +582,6 @@
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
-    // Strict Turn Validation
     function isMyTurn() { 
         if (appMode === 'local') return true;
         return Number(state.turn) === Number(localPlayerNum); 
@@ -598,21 +606,41 @@
 
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
         state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
-        player.rem -= actualDeduction; player.totalScored += actualDeduction; player.totalDarts += dartsUsed;
-        if (typeof displayScore === 'number' && displayScore > player.highestScore) player.highestScore = displayScore;
+        
+        if (player.history.length < 3) {
+            player.first9Scored += actualDeduction;
+            player.first9Darts += dartsUsed;
+        }
+
+        player.rem -= actualDeduction; 
+        player.totalScored += actualDeduction; 
+        player.totalDarts += dartsUsed;
+        
+        if (typeof displayScore === 'number') {
+            if (displayScore === 180) player.scores180s++;
+            else if (displayScore >= 140) player.scores140s++;
+            else if (displayScore >= 100) player.scores100s++;
+
+            if (displayScore > player.highestScore) player.highestScore = displayScore;
+        }
+        
         player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
     }
 
     function completeLeg(checkoutDarts) {
         document.getElementById('checkout-modal').style.display = 'none';
         const p = state.turn === 1 ? state.p1 : state.p2;
+        
+        if (p.pendingCheckoutScore > p.highestCheckout) {
+            p.highestCheckout = p.pendingCheckoutScore;
+        }
+
         recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
         p.legs++;
         
         if (p.legs >= state.settings.targetLegs) { 
-            // Force state broadcast to update the opponent instantly before switching
             broadcastState(); 
-            if (appMode === 'local') displayPostMatch(p); 
+            displayPostMatch(p); 
         } 
         else { 
             state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; 
@@ -623,10 +651,12 @@
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
     
-    // Undo does not check isMyTurn(), so you can undo a mistake immediately after throwing
     function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
     function setupMatchUI() { resetLeg(); showScreen('match-screen'); updateUI(); }
+    
     function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
+    function calculateFirst9Average(player) { return player.first9Darts === 0 ? "0.00" : ((player.first9Scored / player.first9Darts) * 3).toFixed(2); }
+    
     function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
     
     function updateUI() {
@@ -638,7 +668,6 @@
         document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
         document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
 
-        // --- Turn Restrictions (Dims numpad if it isn't your turn, leaving UNDO free) ---
         const active = isMyTurn();
         const numpadBtns = document.querySelectorAll('.num-btn');
         const scoreDisp = document.getElementById('current-input');
@@ -654,7 +683,6 @@
         }
     }
 
-    // --- Starting / Rematch Prompt Logic ---
     function showStartModal() {
         document.getElementById('start-p1-btn').innerText = state.p1.name;
         document.getElementById('start-p2-btn').innerText = state.p2.name;
@@ -663,7 +691,6 @@
 
     function confirmStart(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
-        
         if (appMode === 'online' && connection && connection.open) { 
             connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
         }
@@ -690,21 +717,92 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
+        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
+        document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1);
+        document.getElementById('stat-p1-100s').innerText = state.p1.scores100s;
+        document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
+        document.getElementById('stat-p1-180s').innerText = state.p1.scores180s;
+        document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout;
         document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
+        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
+        document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2);
+        document.getElementById('stat-p2-100s').innerText = state.p2.scores100s;
+        document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
+        document.getElementById('stat-p2-180s').innerText = state.p2.scores180s;
+        document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout;
         document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
         document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
         document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
 
         showScreen('post-match-screen');
+    }
+
+    // --- EXPORT FUNCTIONS ---
+    function exportStatsText() {
+        const winnerName = state.p1.legs >= state.settings.targetLegs ? state.p1.name : state.p2.name;
+        const summary = `🎯 RAF DARTS MATCH SUMMARY 🎯\n` +
+            `------------------------------------------\n` +
+            `Result: ${state.p1.name} (${state.p1.legs}) vs (${state.p2.legs}) ${state.p2.name}\n` +
+            `Winner: ${winnerName}\n\n` +
+            `[${state.p1.name}]\n` +
+            `• Match Avg: ${calculateAverage(state.p1)}\n` +
+            `• First 9 Avg: ${calculateFirst9Average(state.p1)}\n` +
+            `• High Checkout: ${state.p1.highestCheckout}\n` +
+            `• High Score: ${state.p1.highestScore}\n` +
+            `• 100+ / 140+ / 180s: ${state.p1.scores100s} / ${state.p1.scores140s} / ${state.p1.scores180s}\n` +
+            `• Total Darts: ${state.p1.totalDarts}\n\n` +
+            `[${state.p2.name}]\n` +
+            `• Match Avg: ${calculateAverage(state.p2)}\n` +
+            `• First 9 Avg: ${calculateFirst9Average(state.p2)}\n` +
+            `• High Checkout: ${state.p2.highestCheckout}\n` +
+            `• High Score: ${state.p2.highestScore}\n` +
+            `• 100+ / 140+ / 180s: ${state.p2.scores100s} / ${state.p2.scores140s} / ${state.p2.scores180s}\n` +
+            `• Total Darts: ${state.p2.totalDarts}\n` +
+            `------------------------------------------\n` +
+            `Generated via RAF Darts Scorer Pro`;
+        
+        navigator.clipboard.writeText(summary).then(() => {
+            alert("Match report copied to clipboard! Ready to paste.");
+        }).catch(err => {
+            alert("Unable to auto-copy. Check browser permissions.");
+        });
+    }
+
+    function exportStatsCSV() {
+        const rows = [
+            ["Metric", state.p1.name, state.p2.name],
+            ["Legs Won", state.p1.legs, state.p2.legs],
+            ["Match Average", calculateAverage(state.p1), calculateAverage(state.p2)],
+            ["First 9 Average", calculateFirst9Average(state.p1), calculateFirst9Average(state.p2)],
+            ["100+ Hits", state.p1.scores100s, state.p2.scores100s],
+            ["140+ Hits", state.p1.scores140s, state.p2.scores140s],
+            ["180 Hits", state.p1.scores180s, state.p2.scores180s],
+            ["Highest Checkout", state.p1.highestCheckout, state.p2.highestCheckout],
+            ["Highest Score Thrown", state.p1.highestScore, state.p2.highestScore],
+            ["Total Points Scored", state.p1.totalScored, state.p2.totalScored],
+            ["Total Darts Thrown", state.p1.totalDarts, state.p2.totalDarts]
+        ];
+
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const dateStr = new Date().toISOString().slice(0,10);
+        link.setAttribute("download", `RAF_Match_${state.p1.name}_vs_${state.p2.name}_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     }
 
     document.addEventListener('keydown', function(event) {
