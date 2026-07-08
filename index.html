@@ -102,7 +102,6 @@
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-        /* Video Feeds */
         .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
         .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
@@ -121,7 +120,6 @@
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
-        /* Numpad Input */
         .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
         .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
@@ -149,11 +147,16 @@
         
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
+        
+        /* Specialized layout for the start modal so it sits at the bottom */
+        #start-modal { align-items: flex-end; padding-bottom: 20px; background: rgba(0,0,0,0.6); }
+        #start-modal .modal { box-shadow: 0 -10px 40px rgba(0,0,0,0.8); }
     </style>
 </head>
 <body>
 
 <div id="app">
+    <!-- Header Replica -->
     <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
@@ -161,6 +164,7 @@
         </header>
     </div>
 
+    <!-- 1. Main Menu Screen -->
     <main id="menu-screen" class="screen active">
         <div class="menu-grid">
             <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
@@ -198,6 +202,7 @@
         <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
     </div>
 
+    <!-- 2. Local Setup Screen -->
     <main id="local-setup-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
@@ -216,6 +221,7 @@
         </div>
     </main>
 
+    <!-- 3. Online Lobby Screen -->
     <main id="online-lobby-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Network Sync</h2>
@@ -239,6 +245,7 @@
         </div>
     </main>
 
+    <!-- 3b. Phone Camera Node Screen -->
     <main id="camera-node-screen" class="screen">
         <div class="inner-content" style="align-items: center; text-align: center;">
             <h2 class="view-title">Live Camera Feed</h2>
@@ -254,6 +261,7 @@
         </div>
     </main>
 
+    <!-- 4. Active Match Screen -->
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
@@ -263,12 +271,15 @@
             </div>
         </div>
         
+        <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
+            <!-- Local video disappears when remote connects to save space! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
         <div class="boards">
+            <!-- P1 Board -->
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -277,6 +288,7 @@
                 </div>
                 <div class="history"><table><tbody id="p1-history"></tbody></table></div>
             </div>
+            <!-- P2 Board -->
             <div class="player-board">
                 <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -299,6 +311,7 @@
         </div>
     </main>
 
+    <!-- 5. Post Match Stats Screen -->
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
@@ -332,19 +345,21 @@
                 </div>
             </div>
 
+            <!-- Export Features -->
             <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
                 <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
                 <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
             </div>
 
             <div class="flex-col" style="max-width: 600px; width:100%;">
-                <button class="btn-primary" onclick="showStartModal()">Play Rematch</button>
+                <button class="btn-primary" onclick="initRematch()">Play Rematch</button>
                 <button class="btn-secondary" onclick="location.reload()">End Session</button>
             </div>
         </div>
     </main>
 </div>
 
+<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -354,6 +369,7 @@
     </div>
 </div>
 
+<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -364,22 +380,49 @@
     </div>
 </div>
 
+<!-- Who Starts Setup Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
         <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
-        <div style="text-align: left; margin-bottom: 15px;">
-            <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
-            <input type="text" id="rematch-p1-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white; margin-bottom:10px;">
-            <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 2 Name</label>
-            <input type="text" id="rematch-p2-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+
+        <!-- LOCAL MODE SETTINGS -->
+        <div id="setup-local">
+            <div style="text-align: left; margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
+                <input type="text" id="rematch-p1-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white; margin-bottom:10px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 2 Name</label>
+                <input type="text" id="rematch-p2-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+            </div>
+            <p style="color:#aaa; margin-top:0; margin-bottom:10px; font-size:0.9em;">Who throws first?</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="start-btn" id="start-local-p1" onclick="confirmStartLocal(1)">Player 1</button>
+                <button class="start-btn" id="start-local-p2" onclick="confirmStartLocal(2)">Player 2</button>
+            </div>
         </div>
-        
-        <p style="color:#aaa; margin-top:0; margin-bottom:10px; font-size:0.9em;">Who throws first?</p>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button class="start-btn" id="start-p1-btn" onclick="confirmStart(1)">Player 1</button>
-            <button class="start-btn" id="start-p2-btn" onclick="confirmStart(2)">Player 2</button>
-            <button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 5px;" onclick="document.getElementById('start-modal').style.display='none'">Cancel</button>
+
+        <!-- ONLINE MODE SETTINGS -->
+        <div id="setup-online-name" style="display:none;">
+            <div style="text-align: left; margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
+                <input type="text" id="rematch-my-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+            </div>
+            <button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
         </div>
+
+        <div id="setup-online-wait" style="display:none;">
+            <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;">Waiting for opponent...</p>
+        </div>
+
+        <div id="setup-online-host" style="display:none;">
+            <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em;">🎯 BULL UP! 🎯</p>
+            <p style="color:#aaa; font-size:0.9em; margin-bottom:15px;">Check the camera feed. Who is closest to the bull?</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="start-btn" id="start-online-host" onclick="confirmStartOnline(1)">Me</button>
+                <button class="start-btn" id="start-online-joiner" onclick="confirmStartOnline(2)">Opponent</button>
+            </div>
+        </div>
+
+        <button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 15px;" onclick="cancelRematch()">Cancel</button>
     </div>
 </div>
 
@@ -405,6 +448,12 @@
     let state = { settings: { startScore: 501, targetLegs: 3 }, p1: getFreshPlayerState("Player 1"), p2: getFreshPlayerState("Player 2"), turn: 1, startingPlayer: 1, globalHistory: [] };
     let currentInput = "";
     const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
+
+    // Rematch Sync Tracking
+    let localRematchReady = false;
+    let remoteRematchReady = false;
+    let localNewName = "";
+    let remoteNewName = "";
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -440,7 +489,7 @@
         document.getElementById('match-badge').className = "connection-badge badge-local";
         document.getElementById('match-cam-btn').style.display = 'none'; 
         
-        showStartModal();
+        initRematch();
     }
 
     // --- 2. ONLINE LOBBY ---
@@ -452,8 +501,6 @@
 
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        
-        // --- ADDED GOOGLE STUN SERVERS TO HARDEN CONNECTION ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
@@ -555,7 +602,7 @@
                 if (localPlayerNum === 1) {
                     state.p1 = getFreshPlayerState(state.p1.name);
                     state.p2 = getFreshPlayerState(state.p2.name);
-                    showStartModal(); 
+                    initRematch(); // Host chooses who starts the online game
                 }
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; 
@@ -573,7 +620,12 @@
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
                 else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
                 
-            } else if (data.type === 'REMATCH') {
+            } else if (data.type === 'REMATCH_READY') {
+                remoteRematchReady = true;
+                remoteNewName = data.name;
+                checkOnlineRematchState();
+            } else if (data.type === 'REMATCH_START') {
+                document.getElementById('start-modal').style.display = 'none';
                 executeStart(data.startingPlayer, data.p1Name, data.p2Name);
             }
         });
@@ -585,7 +637,6 @@
     async function initCameraNode() {
         showScreen('camera-node-screen');
         if (!peer) { 
-            // --- ADDED GOOGLE STUN SERVERS TO HARDEN CONNECTION ---
             peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
                 config: {
                     'iceServers': [
@@ -718,33 +769,97 @@
         }
     }
 
-    function showStartModal() {
-        const p1Input = document.getElementById('rematch-p1-name');
-        const p2Input = document.getElementById('rematch-p2-name');
-        const p1Btn = document.getElementById('start-p1-btn');
-        const p2Btn = document.getElementById('start-p2-btn');
-
-        p1Input.value = state.p1.name;
-        p2Input.value = state.p2.name;
-        p1Btn.innerText = state.p1.name + " Throws First";
-        p2Btn.innerText = state.p2.name + " Throws First";
-
-        p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
-        p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
-
+    // --- Starting / Rematch Prompt Logic ---
+    function initRematch() {
+        // Flipping back to match screen makes video feeds visible behind the modal for the Bull Up
+        showScreen('match-screen');
         document.getElementById('start-modal').style.display = 'flex';
+
+        if (appMode === 'local') {
+            document.getElementById('setup-local').style.display = 'block';
+            document.getElementById('setup-online-name').style.display = 'none';
+            document.getElementById('setup-online-wait').style.display = 'none';
+            document.getElementById('setup-online-host').style.display = 'none';
+
+            const p1Input = document.getElementById('rematch-p1-name');
+            const p2Input = document.getElementById('rematch-p2-name');
+            const p1Btn = document.getElementById('start-local-p1');
+            const p2Btn = document.getElementById('start-local-p2');
+
+            p1Input.value = state.p1.name;
+            p2Input.value = state.p2.name;
+            p1Btn.innerText = state.p1.name + " Throws First";
+            p2Btn.innerText = state.p2.name + " Throws First";
+
+            p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
+            p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
+        } else {
+            localRematchReady = false;
+            remoteRematchReady = false;
+
+            document.getElementById('setup-local').style.display = 'none';
+            document.getElementById('setup-online-name').style.display = 'block';
+            document.getElementById('setup-online-wait').style.display = 'none';
+            document.getElementById('setup-online-host').style.display = 'none';
+
+            const myNameInput = document.getElementById('rematch-my-name');
+            myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
+        }
     }
 
-    function confirmStart(startingPlayerNum) {
+    function cancelRematch() {
         document.getElementById('start-modal').style.display = 'none';
-        
+        showScreen('post-match-screen');
+    }
+
+    function confirmStartLocal(startingPlayerNum) {
+        document.getElementById('start-modal').style.display = 'none';
         const newP1 = document.getElementById('rematch-p1-name').value || "Player 1";
         const newP2 = document.getElementById('rematch-p2-name').value || "Player 2";
-
-        if (appMode === 'online' && connection && connection.open) { 
-            connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum, p1Name: newP1, p2Name: newP2 }); 
-        }
         executeStart(startingPlayerNum, newP1, newP2);
+    }
+
+    function confirmReadyOnline() {
+        localNewName = document.getElementById('rematch-my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+        localRematchReady = true;
+
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'block';
+
+        if (connection && connection.open) {
+            connection.send({ type: 'REMATCH_READY', name: localNewName });
+        }
+        checkOnlineRematchState();
+    }
+
+    function checkOnlineRematchState() {
+        if (localRematchReady && remoteRematchReady) {
+            document.getElementById('setup-online-wait').style.display = 'none';
+
+            if (localPlayerNum === 1) {
+                // Host picks who throws first
+                document.getElementById('setup-online-host').style.display = 'block';
+                document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
+                document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
+            } else {
+                // Joiner waits for host
+                document.getElementById('setup-online-wait').style.display = 'block';
+                document.getElementById('setup-online-wait').innerHTML = `<p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;">Waiting for Host (${remoteNewName}) to Bull Up and choose who throws first...</p>`;
+            }
+        }
+    }
+
+    function confirmStartOnline(startingPlayerNum) {
+        document.getElementById('start-modal').style.display = 'none';
+        if (connection && connection.open) {
+            connection.send({
+                type: 'REMATCH_START',
+                startingPlayer: startingPlayerNum,
+                p1Name: localNewName,
+                p2Name: remoteNewName
+            });
+        }
+        executeStart(startingPlayerNum, localNewName, remoteNewName);
     }
 
     function executeStart(startingPlayerNum, p1Name, p2Name) {
