@@ -223,14 +223,6 @@
                 <input type="text" id="local-p2" value="Player 2">
                 <label>Starting Score</label>
                 <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
-                <label>Match Format</label>
-                <select id="local-legs">
-                    <option value="1">Best of 1 (First to 1)</option>
-                    <option value="2">Best of 3 (First to 2)</option>
-                    <option value="3" selected>Best of 5 (First to 3)</option>
-                    <option value="4">Best of 7 (First to 4)</option>
-                    <option value="6">Best of 11 (First to 6)</option>
-                </select>
                 <button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
                 <button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
             </div>
@@ -249,20 +241,9 @@
                     <button class="btn-cam-link" onclick="showQRModal()">📱 Link Phone Camera</button>
                 </div>
                 
-                <div style="background: rgba(0,0,0,0.2); padding: 15px; border-radius: 8px; border: 1px solid #333;">
-                    <label>Your Name</label>
-                    <input type="text" id="online-name" placeholder="Enter your name" value="Player 1" style="margin-bottom: 15px;">
-                    
-                    <label>Match Format (Host Only)</label>
-                    <select id="online-lobby-legs">
-                        <option value="1">Best of 1 (First to 1)</option>
-                        <option value="2">Best of 3 (First to 2)</option>
-                        <option value="3" selected>Best of 5 (First to 3)</option>
-                        <option value="4">Best of 7 (First to 4)</option>
-                        <option value="6">Best of 11 (First to 6)</option>
-                    </select>
-                </div>
-
+                <label>Your Name</label>
+                <input type="text" id="online-name" placeholder="Enter your name" value="Player 1">
+                
                 <label>Opponent ID</label>
                 <input type="text" id="remote-id" placeholder="Paste ID here">
                 <button class="btn-danger" onclick="connectToPeer()" id="connect-btn" style="margin-top: 10px;">Establish Link</button>
@@ -433,18 +414,6 @@
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
                 <input type="text" id="rematch-my-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
             </div>
-
-            <div id="rematch-host-legs-container" style="margin-bottom: 15px; display:none;">
-                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
-                <select id="rematch-online-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-                    <option value="1">Best of 1 (First to 1)</option>
-                    <option value="2">Best of 3 (First to 2)</option>
-                    <option value="3" selected>Best of 5 (First to 3)</option>
-                    <option value="4">Best of 7 (First to 4)</option>
-                    <option value="6">Best of 11 (First to 6)</option>
-                </select>
-            </div>
-
             <button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
         </div>
 
@@ -454,6 +423,18 @@
 
         <div id="setup-online-host" style="display:none; text-align: left;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
+                <select id="online-host-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+                    <option value="1">Best of 1 (First to 1)</option>
+                    <option value="2">Best of 3 (First to 2)</option>
+                    <option value="3" selected>Best of 5 (First to 3)</option>
+                    <option value="4">Best of 7 (First to 4)</option>
+                    <option value="6">Best of 11 (First to 6)</option>
+                </select>
+            </div>
+
             <p style="color:#aaa; font-size:0.9em; margin-bottom:15px; text-align: center;">Check the camera feed.<br>Who is closest to the bull?</p>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="start-btn" id="start-online-host" onclick="confirmStartOnline(1)">Me</button>
@@ -518,7 +499,6 @@
     function startLocalMatch() {
         appMode = 'local';
         state.settings.startScore = parseInt(document.getElementById('local-score').value);
-        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
         state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
         
@@ -640,12 +620,8 @@
                 state.p1.name = document.getElementById('online-name').value || "Player 1";
                 state.p2.name = data.name;
                 
-                // HOST reads the Leg Selection from the lobby screen!
-                state.settings.targetLegs = parseInt(document.getElementById('online-lobby-legs').value);
-                
                 const reply = () => {
-                    // Send target legs down to joiner immediately
-                    conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name, targetLegs: state.settings.targetLegs });
+                    conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
                     showInitialHostSetup();
                 };
 
@@ -657,7 +633,6 @@
             // JOINER receives Host's command to enter the Bull Up room
             if (localPlayerNum === 2) {
                 state.p1.name = data.hostName;
-                if (data.targetLegs) { state.settings.targetLegs = data.targetLegs; }
                 showInitialJoinerWait(); 
             }
         } 
@@ -832,6 +807,8 @@
         
         document.getElementById('setup-online-host').style.display = 'block';
         
+        document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
+        
         localNewName = state.p1.name;
         remoteNewName = state.p2.name;
         document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
@@ -852,7 +829,7 @@
         document.getElementById('setup-online-host').style.display = 'none';
         
         document.getElementById('setup-online-wait').style.display = 'block';
-        document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to Bull Up...`;
+        document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to set Match Format and Bull Up...`;
     }
 
     function initLocalSetup() {
@@ -902,14 +879,6 @@
 
             const myNameInput = document.getElementById('rematch-my-name');
             myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
-
-            // Host gets the leg selection directly in the Rematch setup menu
-            if (localPlayerNum === 1) {
-                document.getElementById('rematch-host-legs-container').style.display = 'block';
-                document.getElementById('rematch-online-legs').value = state.settings.targetLegs;
-            } else {
-                document.getElementById('rematch-host-legs-container').style.display = 'none';
-            }
         }
     }
 
@@ -935,11 +904,6 @@
         localNewName = document.getElementById('rematch-my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
         localRematchReady = true;
 
-        if (localPlayerNum === 1) {
-            // Save the newly selected match length
-            state.settings.targetLegs = parseInt(document.getElementById('rematch-online-legs').value);
-        }
-
         document.getElementById('setup-online-name').style.display = 'none';
         document.getElementById('setup-online-wait').style.display = 'block';
 
@@ -956,12 +920,14 @@
             if (localPlayerNum === 1) {
                 document.getElementById('setup-online-host').style.display = 'block';
                 
+                document.getElementById('online-host-legs').value = state.settings.targetLegs;
+                
                 state.p2.name = remoteNewName;
                 document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
                 document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
             } else {
                 document.getElementById('setup-online-wait').style.display = 'block';
-                document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to Bull Up and choose who throws first...`;
+                document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to set Match Format and Bull Up...`;
             }
         }
     }
@@ -969,13 +935,16 @@
     function confirmStartOnline(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
         
+        const targetLegs = parseInt(document.getElementById('online-host-legs').value);
+        state.settings.targetLegs = targetLegs;
+
         if (connection && connection.open) {
             connection.send({
                 type: 'REMATCH_START',
                 startingPlayer: startingPlayerNum,
                 p1Name: localNewName,
                 p2Name: remoteNewName,
-                targetLegs: state.settings.targetLegs // Beam the selected match length to Joiner
+                targetLegs: targetLegs 
             });
         }
         executeStart(startingPlayerNum, localNewName, remoteNewName);
@@ -1006,6 +975,7 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
+        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -1018,6 +988,7 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
+        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
