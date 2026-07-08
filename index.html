@@ -61,7 +61,6 @@
         .btn-online::before { content: ''; position: absolute; top: 30%; left: -50%; right: -50%; bottom: -50%; background-image: linear-gradient(rgba(98,216,245,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(98,216,245,0.3) 1px, transparent 1px); background-size: 20px 20px; transform: perspective(200px) rotateX(60deg); pointer-events: none; z-index: 1; }
         .online-icon { font-size: clamp(2.5em, 10vw, 4em); margin: 5px 0; z-index: 2; filter: drop-shadow(0 0 10px rgba(98,216,245,0.8)); line-height: 1; }
 
-        /* The 3rd Camera Node Button */
         .btn-camera { grid-column: span 2; background: #1a1e24; border: 2px dashed #888; box-shadow: none; min-height: clamp(80px, 20vw, 120px); justify-content: center; flex-direction: row; gap: 20px; }
         .btn-camera h2 { font-size: clamp(1.2em, 4vw, 1.8em); color: #ccc; text-shadow: none;}
         .btn-camera p { color: #888; margin: 0; text-shadow: none;}
@@ -119,12 +118,24 @@
         .btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
         .btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; }
 
+        /* Post Match Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; width: 100%; max-width: 600px; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; }
+        .stat-card h3 { color: var(--tech-cyan); font-size: 1.2em; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; text-align: center; text-transform: uppercase;}
+        .stat-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #222; font-size: 0.85em; color: #aaa;}
+        .stat-row:last-child { border-bottom: none; }
+        .stat-val { font-weight: 700; color: white; }
+        .winner-banner { width: 100%; max-width: 600px; background: var(--tech-red); color: white; text-align: center; padding: 15px; border-radius: 12px; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;}
+
         /* Modals */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); justify-content: center; align-items: center; z-index: 100; backdrop-filter: blur(4px); }
         .modal { background: #161b22; border: 1px solid var(--tech-cyan); padding: 25px; border-radius: 16px; text-align: center; max-width: 350px; width: 90%; }
         .modal h3 { color: var(--tech-cyan); margin-top: 0; font-size: 1.5em; text-transform: uppercase; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
         .modal-buttons button { flex: 1; padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;}
+        
+        .rematch-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
+        .rematch-btn:active { background: var(--tech-cyan); color: #000; }
     </style>
 </head>
 <body>
@@ -272,7 +283,36 @@
         </div>
     </main>
 
-    </div>
+    <main id="post-match-screen" class="screen">
+        <div class="inner-content" style="align-items: center;">
+            <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="stat-p1-name">P1</h3>
+                    <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p1-legs">0</span></div>
+                    <div class="stat-row"><span>Average</span> <span class="stat-val" id="stat-p1-avg">0.00</span></div>
+                    <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p1-high">0</span></div>
+                    <div class="stat-row"><span>Points</span> <span class="stat-val" id="stat-p1-pts">0</span></div>
+                    <div class="stat-row"><span>Darts</span> <span class="stat-val" id="stat-p1-darts">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <h3 id="stat-p2-name">P2</h3>
+                    <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p2-legs">0</span></div>
+                    <div class="stat-row"><span>Average</span> <span class="stat-val" id="stat-p2-avg">0.00</span></div>
+                    <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p2-high">0</span></div>
+                    <div class="stat-row"><span>Points</span> <span class="stat-val" id="stat-p2-pts">0</span></div>
+                    <div class="stat-row"><span>Darts</span> <span class="stat-val" id="stat-p2-darts">0</span></div>
+                </div>
+            </div>
+
+            <div class="flex-col" style="max-width: 600px; width:100%;">
+                <button class="btn-primary" onclick="triggerRematch()">Play Rematch</button>
+                <button class="btn-secondary" onclick="location.reload()">End Session</button>
+            </div>
+        </div>
+    </main>
+</div>
 
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
@@ -293,6 +333,18 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="rematch-modal">
+    <div class="modal">
+        <h3>Rematch Setup</h3>
+        <p style="color:#aaa;">Who will throw first in the new match?</p>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button class="rematch-btn" id="rematch-p1-btn" onclick="confirmRematch(1)">Player 1</button>
+            <button class="rematch-btn" id="rematch-p2-btn" onclick="confirmRematch(2)">Player 2</button>
+            <button style="padding: 12px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 10px;" onclick="document.getElementById('rematch-modal').style.display='none'">Cancel</button>
+        </div>
+    </div>
+</div>
+
 <script>
     let appMode = 'local';
     let peer = null;
@@ -300,8 +352,8 @@
     let localPlayerNum = 1;
     
     // --- WebRTC Media Variables ---
-    let myVideoStream = null;     // Stream originating from our device OR our phone
-    let activeMediaCall = null;   // The ongoing call with the opponent
+    let myVideoStream = null;     
+    let activeMediaCall = null;   
 
     // --- State & Logic ---
     const getFreshPlayerState = (name) => ({ name: name, legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0, highestScore: 0 });
@@ -351,39 +403,31 @@
         
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
-            
-            // Generate QR Code for Phone Camera Linking
-            document.getElementById("qrcode").innerHTML = ""; // clear old
+            document.getElementById("qrcode").innerHTML = ""; 
             new QRCode(document.getElementById("qrcode"), {
                 text: window.location.href.split('?')[0] + "?cam=" + id,
                 width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff"
             });
         });
 
-        // Handle Incoming Connections (Data OR Camera Streams)
         peer.on('connection', conn => {
-            // An opponent connected to us (We are Host)
             connection = conn;
             localPlayerNum = 1;
             state.p1.name = document.getElementById('online-name').value || "Host";
             setupDataConnection();
         });
 
-        // Handle Incoming WebRTC Video Calls
         peer.on('call', call => {
-            // Check if this call is from our own external phone camera
             if(call.metadata && call.metadata.type === 'external-camera') {
-                call.answer(); // Accept the phone's feed without sending video back
+                call.answer(); 
                 call.on('stream', stream => {
-                    myVideoStream = stream; // Save this stream to beam to opponent later
+                    myVideoStream = stream; 
                     document.getElementById('video-bar').style.display = 'flex';
                     const localVid = document.getElementById('local-vid');
                     localVid.srcObject = stream;
                     localVid.style.display = 'block';
                 });
             } else {
-                // Otherwise, it's an opponent calling us with THEIR camera.
-                // Answer the call, and send them OUR stream (which might be the phone feed we just got)
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
@@ -394,11 +438,9 @@
                 });
             }
         });
-
         peer.on('error', err => { console.error("PeerJS Error:", err); });
     }
 
-    // Connect to an Opponent Scoreboard
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
@@ -408,7 +450,6 @@
         connection = peer.connect(remoteId, { reliable: true });
         setupDataConnection();
 
-        // If we have a video stream (from local or phone), call the opponent
         connection.on('open', () => {
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
@@ -444,31 +485,23 @@
                 }
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; updateUI();
+            } else if (data.type === 'REMATCH') {
+                // If the opponent triggered the rematch, reset our screen instantly
+                executeRematchReset(data.startingPlayer);
             }
         });
     }
 
     function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
 
-    // --- 3. CAMERA NODE MODE (Phone acting as webcam) ---
+    // --- 3. CAMERA NODE MODE ---
     async function initCameraNode() {
         showScreen('camera-node-screen');
-        if (!peer) {
-            peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase());
-        }
-
+        if (!peer) { peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase()); }
         try {
-            // Request Back Camera
-            myVideoStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: "environment" }, 
-                audio: false 
-            });
+            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             document.getElementById('node-camera-feed').srcObject = myVideoStream;
-            
-            // If we came from QR code, auto-beam
-            if(document.getElementById('target-board-id').value !== "") {
-                beamCameraToBoard();
-            }
+            if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
         } catch (err) {
             document.getElementById('cam-node-status').innerText = "Camera Access Denied/Failed.";
         }
@@ -477,18 +510,13 @@
     function beamCameraToBoard() {
         const targetId = document.getElementById('target-board-id').value.toUpperCase().trim();
         if(!targetId || !myVideoStream) return;
-
         document.getElementById('cam-node-status').innerText = "Beaming Feed to " + targetId + "...";
         document.getElementById('cam-connect-box').style.display = 'none';
-        
-        // Call the main scoreboard, pass metadata to identify as a camera node
         peer.call(targetId, myVideoStream, { metadata: { type: 'external-camera' }});
-        
         document.getElementById('cam-node-status').innerText = "LIVE: Streaming to Board.";
     }
 
-
-    // --- UTILS & SCORING LOGIC (Kept exact same) ---
+    // --- UTILS & SCORING LOGIC ---
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
@@ -518,7 +546,7 @@
         const p = state.turn === 1 ? state.p1 : state.p2;
         recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
         p.legs++;
-        if (p.legs >= state.settings.targetLegs) { broadcastState(); alert(p.name + " WINS!"); } 
+        if (p.legs >= state.settings.targetLegs) { broadcastState(); displayPostMatch(p); } 
         else { state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; resetLeg(); updateUI(); broadcastState(); }
     }
 
@@ -535,6 +563,48 @@
         document.getElementById('p2-name').innerText = state.p2.name; document.getElementById('p2-rem').innerText = state.p2.rem; document.getElementById('p2-legs').innerText = state.p2.legs; document.getElementById('p2-avg').innerText = calculateAverage(state.p2); renderHistory(state.p2.history, 'p2-history');
         document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
     }
+
+    // --- Rematch Logic ---
+    function triggerRematch() {
+        // Load player names into the prompt buttons
+        document.getElementById('rematch-p1-btn').innerText = state.p1.name + " Throws First";
+        document.getElementById('rematch-p2-btn').innerText = state.p2.name + " Throws First";
+        document.getElementById('rematch-modal').style.display = 'flex';
+    }
+
+    function confirmRematch(startingPlayerNum) {
+        document.getElementById('rematch-modal').style.display = 'none';
+        
+        // If online, tell the opponent that we are resetting and who starts
+        if (appMode === 'online' && connection && connection.open) { 
+            connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
+        }
+        executeRematchReset(startingPlayerNum);
+    }
+
+    function executeRematchReset(startingPlayerNum) {
+        state.p1 = getFreshPlayerState(state.p1.name);
+        state.p2 = getFreshPlayerState(state.p2.name);
+        state.startingPlayer = startingPlayerNum; 
+        
+        setupMatchUI();
+        
+        // Host broadcasts the fresh 0-0 state to assure perfect sync
+        if (appMode === 'online' && localPlayerNum === 1) {
+            broadcastState();
+        }
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (document.getElementById('match-screen').classList.contains('active') && 
+            document.getElementById('checkout-modal').style.display !== 'flex' &&
+            document.getElementById('rematch-modal').style.display !== 'flex') {
+            if (event.key >= '0' && event.key <= '9') appendNum(event.key);
+            else if (event.key === 'Enter') submitScore();
+            else if (event.key === 'Backspace') { currentInput = currentInput.slice(0, -1); updateInputUI(); }
+            else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
+        }
+    });
 </script>
 </body>
 </html>
