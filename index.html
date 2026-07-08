@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
-    <!-- PWA & Home Screen Icon Settings -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -149,7 +148,7 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* FIX: Setup Modal Background is fully transparent so cameras are clearly visible during Bull Up */
+        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -163,7 +162,7 @@
             border: 1px solid var(--tech-cyan); 
         }
         
-        /* Keep blur for the other standard modals */
+        /* Standard modals keep the dark blurred background */
         #qr-modal, #checkout-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
     </style>
 </head>
@@ -287,7 +286,7 @@
         
         <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
-            <!-- Local video disappears when remote connects to save space, but comes back for Bull Up! -->
+            <!-- Local video disappears when match starts, but is visible during Setup for Bull Up! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
@@ -501,7 +500,7 @@
         document.getElementById('match-badge').className = "connection-badge badge-local";
         document.getElementById('match-cam-btn').style.display = 'none'; 
         
-        triggerSetup();
+        initLocalSetup();
     }
 
     // --- 2. ONLINE LOBBY (Pure Original PeerJS Default) ---
@@ -513,6 +512,8 @@
 
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        
+        // REVERTED to original flawless connection method
         peer = new Peer(shortId); 
         
         peer.on('open', id => { 
@@ -585,14 +586,11 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
+        // Reverted to pure original flawless connection
         connection = peer.connect(remoteId, { reliable: true });
-        
-        // FIX: Guaranteed Handshake Catch. Only send data when port is confirmed open.
-        connection.on('open', () => {
-            document.getElementById('lobby-status').innerText = "LINK ESTABLISHED. WAITING ON HOST...";
-            const myName = document.getElementById('online-name').value || "Player 2";
-            connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
+        setupDataConnection();
 
+        connection.on('open', () => {
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
                 activeMediaCall = call;
@@ -601,42 +599,30 @@
                 });
             }
         });
-
-        setupDataConnection();
     }
 
-    // --- BULLETPROOF DATA ROUTER ---
     function setupDataConnection() {
-        connection.on('data', data => {
-            
-            // 1. Initial Handshake Logic
-            if (data.type === 'HANDSHAKE') {
-                if (localPlayerNum === 1 && data.player === 2) {
-                    // Host receives Joiner's connection
-                    state.p2.name = data.name;
-                    state.p1.name = document.getElementById('online-name').value || "Player 1";
-                    
-                    // Host replies to Joiner to pull them into setup
-                    const reply = () => {
-                        connection.send({ type: 'GOTO_SETUP', hostName: state.p1.name });
-                        triggerSetup();
-                    };
+        // This was the magic code that worked flawlessly for you the first time
+        connection.on('open', () => {
+            const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+            connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
+            document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO START...";
+        });
 
-                    // Guarantee port is open before Host sends reply
-                    if (connection.open) { reply(); } 
-                    else { connection.on('open', reply); }
+        connection.on('data', data => {
+            if (data.type === 'HANDSHAKE') {
+                if (data.player === 1) state.p1.name = data.name;
+                if (data.player === 2) state.p2.name = data.name;
+                updateUI();
+                
+                if (localPlayerNum === 1) {
+                    state.p1 = getFreshPlayerState(state.p1.name);
+                    state.p2 = getFreshPlayerState(state.p2.name);
+                    
+                    // ON INITIAL CONNECTION: Go straight to the Host Bull-Up screen
+                    showInitialHostSetup();
                 }
             } 
-            // 2. Setup Screen Trigger
-            else if (data.type === 'GOTO_SETUP') {
-                if (localPlayerNum === 2 && data.hostName) {
-                    state.p1.name = data.hostName;
-                }
-                if (document.getElementById('start-modal').style.display !== 'flex') {
-                    triggerSetup();
-                }
-            } 
-            // 3. Match Sync Logic
             else if (data.type === 'STATE_SYNC') {
                 state = data.state; 
                 if(document.getElementById('match-screen').classList.contains('active') === false && 
@@ -651,7 +637,6 @@
                 if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
                 else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
             } 
-            // 4. Rematch Bull-Up Logic
             else if (data.type === 'REMATCH_READY') {
                 remoteRematchReady = true;
                 remoteNewName = data.name;
@@ -793,45 +778,65 @@
     }
 
     // --- SETUP / REMATCH / BULL UP LOGIC ---
-    function btnPlayRematch() {
-        if (appMode === 'online' && connection && connection.open) {
-            connection.send({ type: 'GOTO_SETUP' });
-        }
-        triggerSetup();
-    }
-
-    function triggerSetup() {
-        // Flipping back to match screen makes video feeds visible behind the modal for the Bull Up
+    
+    // Called ONLY by the Host directly upon the very first network connection
+    function showInitialHostSetup() {
         showScreen('match-screen');
         
-        // Ensure BOTH videos are visible for the Bull Up phase
         const localVid = document.getElementById('local-vid');
         const remoteVid = document.getElementById('remote-vid');
         if (myVideoStream) localVid.style.display = 'block';
         if (activeMediaCall) remoteVid.style.display = 'block';
 
         document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'none';
+        
+        document.getElementById('setup-online-host').style.display = 'block';
+        
+        localNewName = state.p1.name;
+        remoteNewName = state.p2.name;
+        document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
+        document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
+    }
 
+    function initLocalSetup() {
+        showScreen('match-screen');
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'block';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'none';
+
+        const p1Input = document.getElementById('rematch-p1-name');
+        const p2Input = document.getElementById('rematch-p2-name');
+        const p1Btn = document.getElementById('start-local-p1');
+        const p2Btn = document.getElementById('start-local-p2');
+
+        p1Input.value = state.p1.name;
+        p2Input.value = state.p2.name;
+        p1Btn.innerText = state.p1.name + " Throws First";
+        p2Btn.innerText = state.p2.name + " Throws First";
+
+        p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
+        p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
+    }
+
+    function btnPlayRematch() {
         if (appMode === 'local') {
-            document.getElementById('setup-local').style.display = 'block';
-            document.getElementById('setup-online-name').style.display = 'none';
-            document.getElementById('setup-online-wait').style.display = 'none';
-            document.getElementById('setup-online-host').style.display = 'none';
-
-            const p1Input = document.getElementById('rematch-p1-name');
-            const p2Input = document.getElementById('rematch-p2-name');
-            const p1Btn = document.getElementById('start-local-p1');
-            const p2Btn = document.getElementById('start-local-p2');
-
-            // Default to current names so they carry over
-            p1Input.value = state.p1.name;
-            p2Input.value = state.p2.name;
-            p1Btn.innerText = state.p1.name + " Throws First";
-            p2Btn.innerText = state.p2.name + " Throws First";
-
-            p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
-            p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
+            initLocalSetup();
         } else {
+            // Online Mode Rematch Flow
+            showScreen('match-screen');
+            
+            const localVid = document.getElementById('local-vid');
+            const remoteVid = document.getElementById('remote-vid');
+            if (myVideoStream) localVid.style.display = 'block';
+            if (activeMediaCall) remoteVid.style.display = 'block';
+
+            document.getElementById('start-modal').style.display = 'flex';
+            
             localRematchReady = false;
             remoteRematchReady = false;
 
@@ -841,15 +846,12 @@
             document.getElementById('setup-online-host').style.display = 'none';
 
             const myNameInput = document.getElementById('rematch-my-name');
-            // Carry over your current name
             myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
         }
     }
 
     function cancelRematch() {
         document.getElementById('start-modal').style.display = 'none';
-        
-        // Hide local video again if we cancel back to stats
         if (appMode === 'online') {
             document.getElementById('local-vid').style.display = 'none';
         }
