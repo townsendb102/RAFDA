@@ -350,6 +350,7 @@
     let peer = null;
     let connection = null;
     let localPlayerNum = 1;
+    let opponentPeerId = null; // Saves opponent ID for dynamic re-calls
     
     // --- WebRTC Media Variables ---
     let myVideoStream = null;     
@@ -410,14 +411,18 @@
             });
         });
 
+        // Incoming connection (Opponent joining us)
         peer.on('connection', conn => {
             connection = conn;
             localPlayerNum = 1;
+            opponentPeerId = conn.peer;
             state.p1.name = document.getElementById('online-name').value || "Host";
             setupDataConnection();
         });
 
+        // Incoming Video Calls (Either from our phone, or from opponent)
         peer.on('call', call => {
+            // 1. Is it our Phone connecting to stream to us?
             if(call.metadata && call.metadata.type === 'external-camera') {
                 call.answer(); 
                 call.on('stream', stream => {
@@ -426,8 +431,21 @@
                     const localVid = document.getElementById('local-vid');
                     localVid.srcObject = stream;
                     localVid.style.display = 'block';
+
+                    // DYNAMIC FIX: If we already connected to an opponent, immediately forward this new feed to them!
+                    if (appMode === 'online' && opponentPeerId) {
+                        const outCall = peer.call(opponentPeerId, myVideoStream);
+                        activeMediaCall = outCall;
+                        outCall.on('stream', remoteStream => {
+                            document.getElementById('video-bar').style.display = 'flex';
+                            const remoteVid = document.getElementById('remote-vid');
+                            remoteVid.srcObject = remoteStream;
+                            remoteVid.style.display = 'block';
+                        });
+                    }
                 });
             } else {
+                // 2. Or is it the Opponent calling us to swap feeds?
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
@@ -446,10 +464,12 @@
         if (!remoteId) return;
         document.getElementById('lobby-status').innerText = "CONNECTING...";
         localPlayerNum = 2;
+        opponentPeerId = remoteId;
         
         connection = peer.connect(remoteId, { reliable: true });
         setupDataConnection();
 
+        // If we already linked our phone BEFORE joining, call the opponent right away
         connection.on('open', () => {
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
@@ -486,7 +506,7 @@
             } else if (data.type === 'STATE_SYNC') {
                 state = data.state; updateUI();
             } else if (data.type === 'REMATCH') {
-                // If the opponent triggered the rematch, reset our screen instantly
+                // Opponent initiated rematch and chose who starts
                 executeRematchReset(data.startingPlayer);
             }
         });
@@ -538,6 +558,7 @@
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
         state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
         player.rem -= actualDeduction; player.totalScored += actualDeduction; player.totalDarts += dartsUsed;
+        if (typeof displayScore === 'number' && displayScore > player.highestScore) player.highestScore = displayScore;
         player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
     }
 
@@ -566,7 +587,6 @@
 
     // --- Rematch Logic ---
     function triggerRematch() {
-        // Load player names into the prompt buttons
         document.getElementById('rematch-p1-btn').innerText = state.p1.name + " Throws First";
         document.getElementById('rematch-p2-btn').innerText = state.p2.name + " Throws First";
         document.getElementById('rematch-modal').style.display = 'flex';
@@ -575,7 +595,6 @@
     function confirmRematch(startingPlayerNum) {
         document.getElementById('rematch-modal').style.display = 'none';
         
-        // If online, tell the opponent that we are resetting and who starts
         if (appMode === 'online' && connection && connection.open) { 
             connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
         }
@@ -589,7 +608,6 @@
         
         setupMatchUI();
         
-        // Host broadcasts the fresh 0-0 state to assure perfect sync
         if (appMode === 'online' && localPlayerNum === 1) {
             broadcastState();
         }
