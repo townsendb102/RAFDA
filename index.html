@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>RAF Darts Scorer Pro</title>
     
-    <!-- --- PWA & Home Screen Icon Settings --- -->
     <link rel="apple-touch-icon" href="icon.png">
     <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
     <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
@@ -155,7 +154,6 @@
 <body>
 
 <div id="app">
-    <!-- Header Replica -->
     <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
@@ -163,7 +161,6 @@
         </header>
     </div>
 
-    <!-- 1. Main Menu Screen -->
     <main id="menu-screen" class="screen active">
         <div class="menu-grid">
             <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
@@ -201,7 +198,6 @@
         <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
     </div>
 
-    <!-- 2. Local Setup Screen -->
     <main id="local-setup-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
@@ -220,7 +216,6 @@
         </div>
     </main>
 
-    <!-- 3. Online Lobby Screen -->
     <main id="online-lobby-screen" class="screen">
         <div class="inner-content">
             <h2 class="view-title">Network Sync</h2>
@@ -244,7 +239,6 @@
         </div>
     </main>
 
-    <!-- 3b. Phone Camera Node Screen -->
     <main id="camera-node-screen" class="screen">
         <div class="inner-content" style="align-items: center; text-align: center;">
             <h2 class="view-title">Live Camera Feed</h2>
@@ -260,7 +254,6 @@
         </div>
     </main>
 
-    <!-- 4. Active Match Screen -->
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
@@ -270,15 +263,12 @@
             </div>
         </div>
         
-        <!-- WebRTC Video Feeds -->
         <div class="video-bar" id="video-bar">
-            <!-- Local video disappears when remote connects to save space! -->
             <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
         <div class="boards">
-            <!-- P1 Board -->
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -287,7 +277,6 @@
                 </div>
                 <div class="history"><table><tbody id="p1-history"></tbody></table></div>
             </div>
-            <!-- P2 Board -->
             <div class="player-board">
                 <div id="p2-panel" class="player-header">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -305,13 +294,11 @@
                 <button onclick="appendNum(4)" class="num-btn">4</button> <button onclick="appendNum(5)" class="num-btn">5</button> <button onclick="appendNum(6)" class="num-btn">6</button>
                 <button onclick="appendNum(7)" class="num-btn">7</button> <button onclick="appendNum(8)" class="num-btn">8</button> <button onclick="appendNum(9)" class="num-btn">9</button>
                 <button class="btn-clear num-btn" onclick="clearInput()">C</button> <button onclick="appendNum(0)" class="num-btn">0</button> <button class="btn-enter num-btn" onclick="submitScore()">ENT</button>
-                <!-- Undo is isolated so it remains clickable even if it's not your turn (to fix mistakes) -->
                 <button class="btn-undo" onclick="undo()">Undo Entry</button>
             </div>
         </div>
     </main>
 
-    <!-- 5. Post Match Stats Screen -->
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
@@ -345,7 +332,6 @@
                 </div>
             </div>
 
-            <!-- Export Features -->
             <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
                 <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
                 <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
@@ -359,7 +345,6 @@
     </main>
 </div>
 
-<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -369,7 +354,6 @@
     </div>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -380,7 +364,6 @@
     </div>
 </div>
 
-<!-- Who Starts Setup Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
         <h3 id="start-modal-title" style="margin-bottom: 10px;">Match Setup</h3>
@@ -469,7 +452,16 @@
 
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        peer = new Peer(shortId);
+        
+        // --- ADDED GOOGLE STUN SERVERS TO HARDEN CONNECTION ---
+        peer = new Peer(shortId, {
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' }
+                ]
+            }
+        });
         
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
@@ -592,7 +584,17 @@
     // --- 3. CAMERA NODE MODE ---
     async function initCameraNode() {
         showScreen('camera-node-screen');
-        if (!peer) { peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase()); }
+        if (!peer) { 
+            // --- ADDED GOOGLE STUN SERVERS TO HARDEN CONNECTION ---
+            peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
+                config: {
+                    'iceServers': [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' }
+                    ]
+                }
+            }); 
+        }
         try {
             myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             document.getElementById('node-camera-feed').srcObject = myVideoStream;
