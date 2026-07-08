@@ -77,42 +77,46 @@
         .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
         .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
         .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        
+        .btn-cam-small { background: transparent; border: 1px solid #888; color: #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s;}
+        .btn-cam-small:active { background: var(--tech-cyan); color: #000; border-color: var(--tech-cyan);}
 
         .lobby-box { border: 1px solid #444; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 10px; background: rgba(0,0,0,0.3); }
         .id-display { font-size: 2.2em; font-family: monospace; font-weight: bold; color: var(--tech-cyan); letter-spacing: 4px; margin: 10px 0; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
-        .status { margin-top: 15px; font-weight: bold; color: var(--tech-red); text-align: center; }
+        .status { margin-top: 15px; font-weight: bold; color: var(--tech-red); text-align: center; text-transform: uppercase; letter-spacing: 1px;}
         #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 8px; margin-top: 10px;}
 
         /* --- Match Screen --- */
         #match-screen { padding: 0; }
-        .match-info { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.5); font-weight: 600; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        .connection-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.8em; font-weight: bold; color: white; border: 1px solid;}
+        .match-info { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.8); font-weight: 600; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333;}
+        .connection-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; color: white; border: 1px solid;}
         .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
         .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-        /* Video Feeds */
-        .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(80px, 20vh, 150px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
-        .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: cover; }
+        /* Video Feeds - Constrained so they don't break the layout */
+        .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(60px, 15vh, 120px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
+        .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
         
         .boards { display: flex; flex: 1; min-height: 0; border-bottom: 1px solid #333; background: #161b22; }
         .player-board { flex: 1; display: flex; flex-direction: column; width: 50%; }
         .player-board:first-child { border-right: 1px solid #333; }
-        .player-header { padding: 10px; text-align: center; border-bottom: 1px solid #333; flex-shrink: 0; }
-        .player-header.is-turn { background: linear-gradient(to bottom, rgba(0,229,255,0.1), transparent); border-top: 3px solid var(--tech-cyan); padding-top: 7px; }
+        .player-header { padding: 8px 5px; text-align: center; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .player-header.is-turn { background: linear-gradient(to bottom, rgba(0,229,255,0.1), transparent); border-top: 3px solid var(--tech-cyan); padding-top: 5px; }
         .player-name { font-size: 1.1em; margin: 0 0 5px 0; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .score-remaining { font-size: clamp(2em, 6vw, 3.5em); font-weight: 900; line-height: 1; margin: 10px 0; color: var(--tech-cyan); text-shadow: 0 0 15px rgba(0,229,255,0.3);}
-        .stats { display: flex; justify-content: center; gap: 15px; font-size: 0.75em; color: #aaa; font-weight: 500; }
+        .score-remaining { font-size: clamp(2em, 7vw, 3.5em); font-weight: 900; line-height: 1; margin: 5px 0 10px 0; color: var(--tech-cyan); text-shadow: 0 0 15px rgba(0,229,255,0.3);}
+        .stats { display: flex; justify-content: center; gap: 10px; font-size: 0.75em; color: #aaa; font-weight: 500; }
+        .stats strong { color: white; }
         .history { flex: 1; overflow-y: auto; }
         .history table { width: 100%; border-collapse: collapse; text-align: center; }
         .history th { background: #111; padding: 4px; font-size: 0.7em; position: sticky; top: 0; color: #888; text-transform: uppercase; }
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
 
-        /* Numpad Input */
-        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; }
-        .score-display { width: 100%; max-width: 300px; height: 45px; font-size: 1.8em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
+        /* Numpad Input - Automatically dims when it is not your turn */
+        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s; }
+        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
-        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(10px, 2vh, 15px) 0; cursor: pointer; font-weight: 600; }
+        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; }
         .numpad button:active { background: #111; }
         .btn-enter { background: linear-gradient(135deg, var(--tech-cyan), #007bb5) !important; border:none !important; }
         .btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
@@ -134,14 +138,14 @@
         .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
         .modal-buttons button { flex: 1; padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;}
         
-        .rematch-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
-        .rematch-btn:active { background: var(--tech-cyan); color: #000; }
+        .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
+        .start-btn:active { background: var(--tech-cyan); color: #000; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <div class="header-drop-shadow">
+    <div class="header-drop-shadow" id="main-header">
         <header class="header-plate">
             <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
             <h1 id="alt-title" style="display:none; color: var(--raf-blue); margin:0;">RAF DARTS</h1>
@@ -244,7 +248,10 @@
     <main id="match-screen" class="screen">
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
-            <div class="connection-badge badge-local" id="match-badge">LOCAL</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button id="match-cam-btn" class="btn-cam-small" onclick="showQRModal()">📱 Link Cam</button>
+                <div class="connection-badge badge-local" id="match-badge">LOCAL</div>
+            </div>
         </div>
         
         <div class="video-bar" id="video-bar">
@@ -271,7 +278,7 @@
             </div>
         </div>
 
-        <div class="input-section">
+        <div class="input-section" id="input-section">
             <div class="score-display" id="current-input"></div>
             <div class="numpad">
                 <button onclick="appendNum(1)">1</button> <button onclick="appendNum(2)">2</button> <button onclick="appendNum(3)">3</button>
@@ -307,7 +314,7 @@
             </div>
 
             <div class="flex-col" style="max-width: 600px; width:100%;">
-                <button class="btn-primary" onclick="triggerRematch()">Play Rematch</button>
+                <button class="btn-primary" onclick="showStartModal()">Play Rematch</button>
                 <button class="btn-secondary" onclick="location.reload()">End Session</button>
             </div>
         </div>
@@ -333,14 +340,14 @@
     </div>
 </div>
 
-<div class="modal-overlay" id="rematch-modal">
+<div class="modal-overlay" id="start-modal">
     <div class="modal">
-        <h3>Rematch Setup</h3>
-        <p style="color:#aaa;">Who will throw first in the new match?</p>
+        <h3 id="start-modal-title">Who Throws First?</h3>
+        <p style="color:#aaa;">Select the starting player.</p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button class="rematch-btn" id="rematch-p1-btn" onclick="confirmRematch(1)">Player 1</button>
-            <button class="rematch-btn" id="rematch-p2-btn" onclick="confirmRematch(2)">Player 2</button>
-            <button style="padding: 12px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 10px;" onclick="document.getElementById('rematch-modal').style.display='none'">Cancel</button>
+            <button class="start-btn" id="start-p1-btn" onclick="confirmStart(1)">Player 1</button>
+            <button class="start-btn" id="start-p2-btn" onclick="confirmStart(2)">Player 2</button>
+            <button style="padding: 12px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 10px;" onclick="document.getElementById('start-modal').style.display='none'">Cancel</button>
         </div>
     </div>
 </div>
@@ -350,7 +357,7 @@
     let peer = null;
     let connection = null;
     let localPlayerNum = 1;
-    let opponentPeerId = null; // Saves opponent ID for dynamic re-calls
+    let opponentPeerId = null; 
     
     // --- WebRTC Media Variables ---
     let myVideoStream = null;     
@@ -375,7 +382,16 @@
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
         document.getElementById(screenId).classList.add('active');
+        
+        // Only show footer on the main menu
         document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
+        
+        // Hide the large main header during the match to free up layout space for the video/numpad
+        if (screenId === 'match-screen' || screenId === 'post-match-screen') {
+            document.getElementById('main-header').style.display = 'none';
+        } else {
+            document.getElementById('main-header').style.display = 'flex';
+        }
     }
 
     // --- 1. LOCAL MATCH ---
@@ -385,10 +401,12 @@
         state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
         state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
-        state.startingPlayer = 1;
+        
         document.getElementById('match-badge').innerText = "LOCAL";
         document.getElementById('match-badge').className = "connection-badge badge-local";
-        setupMatchUI();
+        document.getElementById('match-cam-btn').style.display = 'none'; // Don't need QR online link locally
+        
+        showStartModal();
     }
 
     // --- 2. ONLINE LOBBY (Scoreboard Node) ---
@@ -422,7 +440,6 @@
 
         // Incoming Video Calls (Either from our phone, or from opponent)
         peer.on('call', call => {
-            // 1. Is it our Phone connecting to stream to us?
             if(call.metadata && call.metadata.type === 'external-camera') {
                 call.answer(); 
                 call.on('stream', stream => {
@@ -432,7 +449,7 @@
                     localVid.srcObject = stream;
                     localVid.style.display = 'block';
 
-                    // DYNAMIC FIX: If we already connected to an opponent, immediately forward this new feed to them!
+                    // Forward new camera feed to opponent instantly
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
@@ -445,7 +462,6 @@
                     }
                 });
             } else {
-                // 2. Or is it the Opponent calling us to swap feeds?
                 call.answer(myVideoStream); 
                 activeMediaCall = call;
                 call.on('stream', remoteStream => {
@@ -469,7 +485,6 @@
         connection = peer.connect(remoteId, { reliable: true });
         setupDataConnection();
 
-        // If we already linked our phone BEFORE joining, call the opponent right away
         connection.on('open', () => {
             if(myVideoStream) {
                 const call = peer.call(remoteId, myVideoStream);
@@ -488,9 +503,7 @@
         connection.on('open', () => {
             const myName = document.getElementById('online-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
             connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
-            document.getElementById('match-badge').innerText = "ONLINE SYNC";
-            document.getElementById('match-badge').className = "connection-badge badge-online";
-            showScreen('match-screen');
+            document.getElementById('lobby-status').innerText = "WAITING FOR HOST TO START...";
         });
 
         connection.on('data', data => {
@@ -501,13 +514,29 @@
                 if (localPlayerNum === 1) {
                     state.p1 = getFreshPlayerState(state.p1.name);
                     state.p2 = getFreshPlayerState(state.p2.name);
-                    resetLeg(); broadcastState();
+                    showStartModal(); // Host chooses who starts the online game
                 }
             } else if (data.type === 'STATE_SYNC') {
-                state = data.state; updateUI();
+                state = data.state; 
+                
+                // If Joiner receives the first sync, boot them directly into the match screen
+                if(document.getElementById('match-screen').classList.contains('active') === false && 
+                   document.getElementById('post-match-screen').classList.contains('active') === false) {
+                    document.getElementById('match-badge').innerText = "ONLINE SYNC";
+                    document.getElementById('match-badge').className = "connection-badge badge-online";
+                    document.getElementById('match-cam-btn').style.display = 'block';
+                    showScreen('match-screen');
+                }
+                
+                updateUI();
+                
+                // Show post match automatically if the opponent triggers a win
+                if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
+                if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
+                
             } else if (data.type === 'REMATCH') {
                 // Opponent initiated rematch and chose who starts
-                executeRematchReset(data.startingPlayer);
+                executeStart(data.startingPlayer);
             }
         });
     }
@@ -540,11 +569,12 @@
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
-    function appendNum(num) { if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
-    function clearInput() { currentInput = ""; updateInputUI(); }
+    function appendNum(num) { if(appMode === 'online' && state.turn !== localPlayerNum) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
+    function clearInput() { if(appMode === 'online' && state.turn !== localPlayerNum) return; currentInput = ""; updateInputUI(); }
     function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
     function submitScore() {
+        if(appMode === 'online' && state.turn !== localPlayerNum) return;
         if (currentInput === "") return;
         const score = parseInt(currentInput);
         currentInput = ""; updateInputUI();
@@ -573,41 +603,67 @@
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
-    function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
+    function undo() { if(appMode === 'online' && state.turn !== localPlayerNum) return; if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
     function setupMatchUI() { resetLeg(); showScreen('match-screen'); updateUI(); }
     function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
     function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
     
     function updateUI() {
         document.getElementById('target-legs').innerText = state.settings.targetLegs;
+        
         document.getElementById('p1-name').innerText = state.p1.name; document.getElementById('p1-rem').innerText = state.p1.rem; document.getElementById('p1-legs').innerText = state.p1.legs; document.getElementById('p1-avg').innerText = calculateAverage(state.p1); renderHistory(state.p1.history, 'p1-history');
         document.getElementById('p2-name').innerText = state.p2.name; document.getElementById('p2-rem').innerText = state.p2.rem; document.getElementById('p2-legs').innerText = state.p2.legs; document.getElementById('p2-avg').innerText = calculateAverage(state.p2); renderHistory(state.p2.history, 'p2-history');
-        document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
-    }
-
-    // --- Rematch Logic ---
-    function triggerRematch() {
-        document.getElementById('rematch-p1-btn').innerText = state.p1.name + " Throws First";
-        document.getElementById('rematch-p2-btn').innerText = state.p2.name + " Throws First";
-        document.getElementById('rematch-modal').style.display = 'flex';
-    }
-
-    function confirmRematch(startingPlayerNum) {
-        document.getElementById('rematch-modal').style.display = 'none';
         
+        document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
+        document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
+
+        // --- Turn Restrictions (Dims numpad if it isn't your turn) ---
+        const isMyTurn = (appMode === 'local') || (state.turn === localPlayerNum);
+        const inputSection = document.getElementById('input-section');
+        if (isMyTurn) {
+            inputSection.style.opacity = '1';
+            inputSection.style.pointerEvents = 'auto';
+            document.getElementById('current-input').innerText = currentInput;
+        } else {
+            inputSection.style.opacity = '0.35';
+            inputSection.style.pointerEvents = 'none';
+            document.getElementById('current-input').innerText = "WAITING...";
+        }
+    }
+
+    // --- Starting / Rematch Prompt Logic ---
+    function showStartModal() {
+        document.getElementById('start-p1-btn').innerText = state.p1.name;
+        document.getElementById('start-p2-btn').innerText = state.p2.name;
+        document.getElementById('start-modal').style.display = 'flex';
+    }
+
+    function confirmStart(startingPlayerNum) {
+        document.getElementById('start-modal').style.display = 'none';
+        
+        // Trigger network sync if online
         if (appMode === 'online' && connection && connection.open) { 
             connection.send({ type: 'REMATCH', startingPlayer: startingPlayerNum }); 
         }
-        executeRematchReset(startingPlayerNum);
+        executeStart(startingPlayerNum);
     }
 
-    function executeRematchReset(startingPlayerNum) {
+    function executeStart(startingPlayerNum) {
         state.p1 = getFreshPlayerState(state.p1.name);
         state.p2 = getFreshPlayerState(state.p2.name);
         state.startingPlayer = startingPlayerNum; 
         
+        if (appMode === 'online') {
+            document.getElementById('match-badge').innerText = "ONLINE SYNC";
+            document.getElementById('match-badge').className = "connection-badge badge-online";
+            document.getElementById('match-cam-btn').style.display = 'block';
+        } else {
+            document.getElementById('match-cam-btn').style.display = 'none';
+        }
+        
         setupMatchUI();
         
+        // Push full state down the wire if host
         if (appMode === 'online' && localPlayerNum === 1) {
             broadcastState();
         }
@@ -616,7 +672,7 @@
     document.addEventListener('keydown', function(event) {
         if (document.getElementById('match-screen').classList.contains('active') && 
             document.getElementById('checkout-modal').style.display !== 'flex' &&
-            document.getElementById('rematch-modal').style.display !== 'flex') {
+            document.getElementById('start-modal').style.display !== 'flex') {
             if (event.key >= '0' && event.key <= '9') appendNum(event.key);
             else if (event.key === 'Enter') submitScore();
             else if (event.key === 'Backspace') { currentInput = currentInput.slice(0, -1); updateInputUI(); }
