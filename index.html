@@ -36,15 +36,27 @@
             #app { min-height: 850px; border-radius: 12px; height: 90vh; }
         }
 
-        /* --- Custom App Header (Matches Image) --- */
+        /* --- Custom App Header --- */
         .app-header {
-            background: var(--metal-gradient); text-align: center; padding: 25px 20px 40px 20px;
-            border-bottom: 3px solid #888; position: relative;
-            box-shadow: 0 8px 15px rgba(0,0,0,0.4);
-            clip-path: polygon(0 0, 100% 0, 100% 75%, 75% 75%, 70% 100%, 30% 100%, 25% 75%, 0 75%);
+            background: var(--metal-gradient); 
+            text-align: center; 
+            padding: 20px 20px;
+            border-bottom: 4px solid #888; 
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             z-index: 10;
         }
-        .main-logo { max-width: 280px; height: auto; display: block; margin: 0 auto; }
+        .main-logo { 
+            max-width: 280px; 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+            margin: 0 auto; 
+            border: none;
+            outline: none;
+            /* Blends the white background of the JPG into the metal */
+            mix-blend-mode: multiply; 
+        }
 
         /* Screen Management */
         .screen { display: none; padding: 30px 20px; flex: 1; overflow-y: auto; }
@@ -57,30 +69,51 @@
         .menu-bg { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; position: relative; }
         
         .menu-grid {
-            display: flex; gap: 30px; justify-content: center; align-items: center; padding: 20px;
-            width: 100%; flex-wrap: wrap;
+            display: grid; 
+            grid-template-columns: 1fr 1fr; /* Forces buttons side-by-side */
+            gap: clamp(10px, 3vw, 30px); 
+            justify-content: center; 
+            align-items: center; 
+            padding: 20px;
+            width: 100%; 
+            max-width: 650px;
         }
 
         .mode-btn {
-            width: 280px; height: 280px; border-radius: 16px; cursor: pointer;
-            display: flex; flex-direction: column; justify-content: space-between; align-items: center;
-            padding: 30px 20px; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; border: none;
+            width: 100%; 
+            aspect-ratio: 1 / 1; /* Keeps buttons perfectly square */
+            height: auto;
+            border-radius: 12px; 
+            cursor: pointer;
+            display: flex; flex-direction: column; justify-content: space-evenly; align-items: center;
+            padding: 15px 10px; transition: transform 0.2s, box-shadow 0.2s; text-decoration: none; border: none;
         }
-        .mode-btn:hover { transform: scale(1.05); }
-        .mode-btn h2 { font-size: 2.8em; margin: 0; color: white; text-shadow: 0 4px 6px rgba(0,0,0,0.5); text-align: center; line-height: 1.1; }
-        .mode-btn p { color: white; font-size: 0.9em; margin: 0; text-align: center; font-weight: 500; }
+        .mode-btn:hover { transform: scale(1.03); }
+        
+        .mode-btn h2 { 
+            font-size: clamp(1.2em, 5vw, 2.8em); /* Scales text to fit mobile */
+            margin: 0; color: white; text-shadow: 0 4px 6px rgba(0,0,0,0.5); text-align: center; line-height: 1.1; 
+        }
+        .mode-btn p { 
+            color: white; font-size: clamp(0.7em, 2.5vw, 0.9em); margin: 0; text-align: center; font-weight: 500; 
+        }
 
         /* Local Button Style */
         .mode-local {
             background: linear-gradient(135deg, #6b8c9e 0%, #4a5c68 50%, #7f8c8d 100%);
-            border: 4px solid #a3b9c7; box-shadow: 0 10px 25px rgba(0,0,0,0.4), inset 0 0 20px rgba(0,0,0,0.2);
+            border: clamp(2px, 1vw, 4px) solid #a3b9c7; 
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4), inset 0 0 20px rgba(0,0,0,0.2);
         }
-        .local-icon-wrapper { background: #111; padding: 5px; border-radius: 50%; border: 3px solid #ccc; width: 80px; height: 80px; display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5);}
+        .local-icon-wrapper { 
+            background: #111; padding: 5px; border-radius: 50%; border: 3px solid #ccc; 
+            width: clamp(50px, 15vw, 80px); height: clamp(50px, 15vw, 80px); 
+            display: flex; justify-content: center; align-items: center; box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
 
         /* Online Button Style */
         .mode-online {
             background: linear-gradient(135deg, #184e68 0%, #081e26 100%);
-            border: 4px solid var(--cyan-glow);
+            border: clamp(2px, 1vw, 4px) solid var(--cyan-glow);
             box-shadow: 0 0 25px rgba(77, 242, 255, 0.4), inset 0 0 30px rgba(77, 242, 255, 0.2);
             position: relative; overflow: hidden;
         }
@@ -89,12 +122,15 @@
             background-image: linear-gradient(rgba(77, 242, 255, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(77, 242, 255, 0.1) 1px, transparent 1px);
             background-size: 20px 20px; transform: perspective(200px) rotateX(40deg); transform-origin: bottom; opacity: 0.5; pointer-events: none;
         }
-        .online-icon-wrapper { font-size: 4em; filter: drop-shadow(0 0 10px var(--cyan-glow)); }
+        .online-icon-wrapper { 
+            font-size: clamp(2.5em, 10vw, 4em); 
+            filter: drop-shadow(0 0 10px var(--cyan-glow)); 
+        }
 
         .menu-footer {
             background: var(--metal-gradient); width: 100%; text-align: center; padding: 10px;
             font-weight: bold; color: #333; letter-spacing: 1px; border-top: 2px solid #888;
-            font-size: 0.9em; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); z-index: 10;
+            font-size: 0.8em; box-shadow: 0 -4px 10px rgba(0,0,0,0.3); z-index: 10;
         }
 
         /* --- Standard Views --- */
@@ -127,7 +163,7 @@
         .player-header { padding: 15px 10px; text-align: center; transition: all 0.2s; border-bottom: 1px solid var(--border); }
         .player-header.is-turn { background: #f5f8ff; border-top: 4px solid #0056b3; border-bottom: 1px solid #0056b3; }
         .player-name { font-size: 1.5em; margin: 0 0 5px 0; color: var(--raf-blue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .score-remaining { font-size: 4em; font-weight: 900; line-height: 1; margin: 10px 0; color: var(--text-dark); }
+        .score-remaining { font-size: 3.5em; font-weight: 900; line-height: 1; margin: 10px 0; color: var(--text-dark); }
         .stats { display: flex; justify-content: center; gap: 15px; font-size: 0.9em; color: #666; }
         
         .history { height: 180px; overflow-y: auto; background: #fff; }
@@ -163,6 +199,13 @@
         .modal h3 { color: var(--raf-blue); margin-top: 0; font-size: 1.8em; }
         .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
         .modal-buttons button { flex: 1; padding: 15px; font-size: 1.1em; background: var(--raf-blue); color: white; border: none; border-radius: 6px; cursor: pointer;}
+
+        /* Media Queries for very small devices */
+        @media (max-width: 400px) {
+            .score-remaining { font-size: 2.8em; }
+            .player-name { font-size: 1.2em; }
+            .stats-grid { grid-template-columns: 1fr; }
+        }
     </style>
 </head>
 <body>
