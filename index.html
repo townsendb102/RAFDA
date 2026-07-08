@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Darts Scorer</title>
+    <title>P2P Darts Scorer</title>
+    <!-- PeerJS for WebRTC Peer-to-Peer Networking -->
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <style>
         :root {
             --primary: #2c3e50;
@@ -11,24 +13,28 @@
             --bg: #ecf0f1;
             --panel: #ffffff;
             --border: #bdc3c7;
+            --alert: #e74c3c;
         }
-        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; }
         body { margin: 0; padding: 20px; background-color: var(--bg); display: flex; justify-content: center; }
         #app { background: var(--panel); max-width: 900px; width: 100%; border-radius: 8px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); overflow: hidden; }
         
-        /* Screens */
         .screen { display: none; padding: 20px; }
         .screen.active { display: block; }
         
-        /* Setup Screen */
-        .setup-form { display: flex; flex-direction: column; gap: 15px; max-width: 400px; margin: 0 auto; }
-        .setup-form label { font-weight: bold; }
-        .setup-form input, .setup-form select, .setup-form button { padding: 10px; font-size: 16px; border: 1px solid var(--border); border-radius: 4px; }
-        .setup-form button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        .setup-form button:hover { background: #1a252f; }
+        /* Lobby Screen */
+        .lobby-panel { max-width: 500px; margin: 0 auto; text-align: center; }
+        .lobby-box { border: 2px dashed var(--border); padding: 20px; border-radius: 8px; margin-bottom: 20px; background: #f8f9fa; }
+        .id-display { font-size: 2em; font-family: monospace; font-weight: bold; color: var(--primary); letter-spacing: 2px; margin: 10px 0; user-select: all; }
+        input[type="text"], select { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border: 1px solid var(--border); border-radius: 4px; text-align: center; }
+        button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: bold; padding: 12px 20px; font-size: 16px; border-radius: 4px; width: 100%; transition: background 0.2s; }
+        button:hover { background: #1a252f; }
+        button:disabled { background: var(--border); cursor: not-allowed; }
+        .status { margin-top: 15px; font-weight: bold; color: var(--alert); }
 
         /* Match Screen */
-        .match-header { text-align: center; margin-bottom: 20px; font-size: 1.2em; font-weight: bold; }
+        .match-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-size: 1.1em; font-weight: bold; border-bottom: 2px solid var(--border); padding-bottom: 10px;}
+        .connection-status { font-size: 0.8em; padding: 4px 8px; background: var(--active); color: white; border-radius: 12px; }
         .boards { display: flex; border: 2px solid var(--border); border-radius: 4px; overflow: hidden; }
         .player-board { flex: 1; display: flex; flex-direction: column; }
         .player-board:first-child { border-right: 2px solid var(--border); }
@@ -49,55 +55,50 @@
         .input-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; }
         .score-display { width: 200px; height: 60px; font-size: 2em; text-align: center; margin-bottom: 15px; border: 2px solid var(--primary); border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; }
         .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 300px; width: 100%; }
-        .numpad button { padding: 15px; font-size: 1.5em; font-weight: bold; border: 1px solid var(--border); background: #fff; border-radius: 4px; cursor: pointer; transition: background 0.1s; }
+        .numpad button { padding: 15px; font-size: 1.5em; background: #fff; border: 1px solid var(--border); color: black; }
         .numpad button:active { background: #e0e0e0; }
-        .btn-enter { background: var(--active) !important; color: white; border: none !important; }
-        .btn-clear { background: #e74c3c !important; color: white; border: none !important; }
-        .btn-undo { background: #f39c12 !important; color: white; border: none !important; grid-column: span 3; }
+        .btn-enter { background: var(--active) !important; color: white !important; grid-column: span 1; }
+        .btn-clear { background: var(--alert) !important; color: white !important; }
+        .btn-undo { background: #f39c12 !important; color: white !important; grid-column: span 3; }
 
         /* Modal */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); justify-content: center; align-items: center; }
-        .modal { background: white; padding: 20px; border-radius: 8px; text-align: center; }
-        .modal button { margin: 5px; padding: 10px 20px; font-size: 1.2em; cursor: pointer; }
+        .modal { background: white; padding: 20px; border-radius: 8px; text-align: center; max-width: 400px; }
+        .modal button { margin: 5px; width: auto; display: inline-block; }
     </style>
 </head>
 <body>
 
 <div id="app">
-    <!-- Setup Screen -->
-    <div id="setup-screen" class="screen active">
-        <h2 style="text-align:center;">Darts Match Setup</h2>
-        <div class="setup-form">
-            <label>Player 1 Name</label>
-            <input type="text" id="setup-p1-name" value="Player 1">
-            <label>Player 2 Name</label>
-            <input type="text" id="setup-p2-name" value="Player 2">
-            <label>Starting Score</label>
-            <select id="setup-score">
-                <option value="501">501</option>
-                <option value="301">301</option>
-                <option value="701">701</option>
-            </select>
-            <label>First to (Legs)</label>
-            <select id="setup-legs">
-                <option value="1">1</option>
-                <option value="2">2</option>
-                <option value="3" selected>3</option>
-                <option value="5">5</option>
-                <option value="7">7</option>
-            </select>
-            <button onclick="startMatch()">Start Match</button>
+    <!-- Lobby Screen -->
+    <div id="lobby-screen" class="screen active">
+        <div class="lobby-panel">
+            <h2>Online Match Setup</h2>
+            <p>Share your ID with a friend, or connect to theirs.</p>
+            
+            <div class="lobby-box">
+                <div>Your Shareable ID:</div>
+                <div class="id-display" id="my-peer-id">Loading...</div>
+                <button onclick="copyMyId()" id="copy-btn">Copy ID</button>
+            </div>
+
+            <div class="lobby-box">
+                <input type="text" id="my-name" placeholder="Enter your player name" value="Player 1">
+                <input type="text" id="remote-id" placeholder="Paste friend's ID here to join">
+                <button onclick="connectToPeer()" id="connect-btn">Connect & Start Match</button>
+                <div class="status" id="lobby-status"></div>
+            </div>
         </div>
     </div>
 
     <!-- Match Screen -->
     <div id="match-screen" class="screen">
         <div class="match-header">
-            First to <span id="target-legs">3</span> Legs
+            <div>First to <span id="target-legs">3</span> Legs</div>
+            <div class="connection-status">Online Sync Active</div>
         </div>
         
         <div class="boards">
-            <!-- Player 1 -->
             <div class="player-board">
                 <div id="p1-panel" class="player-info">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -109,12 +110,12 @@
                 </div>
                 <div class="history">
                     <table>
-                        <thead><tr><th>Throw</th><th>Score</th><th>Rem</th></tr></thead>
+                        <thead><tr><th>No.</th><th>Score</th><th>Rem</th></tr></thead>
                         <tbody id="p1-history"></tbody>
                     </table>
                 </div>
             </div>
-            <!-- Player 2 -->
+            
             <div class="player-board">
                 <div id="p2-panel" class="player-info">
                     <h2 class="player-name" id="p2-name">Player 2</h2>
@@ -126,14 +127,13 @@
                 </div>
                 <div class="history">
                     <table>
-                        <thead><tr><th>Throw</th><th>Score</th><th>Rem</th></tr></thead>
+                        <thead><tr><th>No.</th><th>Score</th><th>Rem</th></tr></thead>
                         <tbody id="p2-history"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- Input -->
         <div class="input-section">
             <div class="score-display" id="current-input"></div>
             <div class="numpad">
@@ -149,7 +149,7 @@
                 <button class="btn-clear" onclick="clearInput()">C</button>
                 <button onclick="appendNum(0)">0</button>
                 <button class="btn-enter" onclick="submitScore()">Enter</button>
-                <button class="btn-undo" onclick="undo()">Undo Last Score</button>
+                <button class="btn-undo" onclick="undo()">Undo</button>
             </div>
         </div>
     </div>
@@ -159,7 +159,7 @@
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Won!</h3>
-        <p>How many darts did it take to checkout?</p>
+        <p>How many darts to checkout?</p>
         <div>
             <button onclick="completeLeg(1)">1 Dart</button>
             <button onclick="completeLeg(2)">2 Darts</button>
@@ -168,65 +168,123 @@
     </div>
 </div>
 
-<!-- Match Winner Modal -->
-<div class="modal-overlay" id="winner-modal">
-    <div class="modal">
-        <h2 id="winner-text">Player Wins!</h2>
-        <button onclick="location.reload()">New Match</button>
-    </div>
-</div>
-
 <script>
-    // Game State
-    let state = {
-        settings: { startScore: 501, targetLegs: 3 },
-        p1: { name: "", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
-        p2: { name: "", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
-        turn: 1, // 1 or 2
-        startingPlayer: 1,
-        currentInput: "",
-        globalHistory: [] // For undo functionality
-    };
+    // --- Networking (PeerJS) ---
+    let peer = null;
+    let connection = null;
+    let localPlayerNum = 1; // 1 if Host, 2 if Joiner
 
-    const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
-
-    function startMatch() {
-        state.settings.startScore = parseInt(document.getElementById('setup-score').value);
-        state.settings.targetLegs = parseInt(document.getElementById('setup-legs').value);
-        state.p1.name = document.getElementById('setup-p1-name').value || "Player 1";
-        state.p2.name = document.getElementById('setup-p2-name').value || "Player 2";
+    function initNetwork() {
+        // Generate a random, readable 6-character ID
+        const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
         
-        document.getElementById('target-legs').innerText = state.settings.targetLegs;
-        document.getElementById('p1-name').innerText = state.p1.name;
-        document.getElementById('p2-name').innerText = state.p2.name;
+        peer = new Peer(shortId, { debug: 2 });
 
-        resetLeg();
-        
-        document.getElementById('setup-screen').classList.remove('active');
-        document.getElementById('match-screen').classList.add('active');
-        updateUI();
+        peer.on('open', id => {
+            document.getElementById('my-peer-id').innerText = id;
+        });
+
+        // When someone connects to US (We are the host)
+        peer.on('connection', conn => {
+            connection = conn;
+            localPlayerNum = 1; // We are player 1
+            state.p1.name = document.getElementById('my-name').value || "Host";
+            setupConnection();
+        });
+
+        peer.on('error', err => {
+            document.getElementById('lobby-status').innerText = "Network Error: " + err.type;
+        });
     }
 
+    function connectToPeer() {
+        const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
+        if (!remoteId) return;
+        
+        document.getElementById('lobby-status').innerText = "Connecting...";
+        
+        // We are joining (Player 2)
+        localPlayerNum = 2;
+        connection = peer.connect(remoteId, { reliable: true });
+        setupConnection();
+    }
+
+    function setupConnection() {
+        connection.on('open', () => {
+            // Send our name immediately
+            const myName = document.getElementById('my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+            connection.send({ type: 'HANDSHAKE', name: myName, player: localPlayerNum });
+            
+            document.getElementById('lobby-screen').classList.remove('active');
+            document.getElementById('match-screen').classList.add('active');
+            updateUI();
+        });
+
+        connection.on('data', data => {
+            if (data.type === 'HANDSHAKE') {
+                // Register the opponent's name
+                if (data.player === 1) state.p1.name = data.name;
+                if (data.player === 2) state.p2.name = data.name;
+                updateUI();
+                
+                // If we are the host, push the initial match state to the joiner
+                if (localPlayerNum === 1) broadcastState();
+            } else if (data.type === 'STATE_SYNC') {
+                // Overwrite local state with network state
+                state = data.state;
+                updateUI();
+            }
+        });
+
+        connection.on('close', () => {
+            alert("Connection lost. Please refresh and reconnect.");
+        });
+    }
+
+    function broadcastState() {
+        if (connection && connection.open) {
+            connection.send({ type: 'STATE_SYNC', state: state });
+        }
+    }
+
+    function copyMyId() {
+        const idText = document.getElementById('my-peer-id').innerText;
+        navigator.clipboard.writeText(idText);
+        const btn = document.getElementById('copy-btn');
+        btn.innerText = "Copied!";
+        setTimeout(() => btn.innerText = "Copy ID", 2000);
+    }
+
+    // --- Game Logic ---
+    let state = {
+        settings: { startScore: 501, targetLegs: 3 },
+        p1: { name: "Player 1", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
+        p2: { name: "Player 2", legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0 },
+        turn: 1, 
+        startingPlayer: 1,
+        globalHistory: [] 
+    };
+
+    let currentInput = "";
+    const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
+
     function appendNum(num) {
-        if (state.currentInput.length < 3) {
-            state.currentInput += num;
+        // Optional constraint: Only allow typing if it's our turn
+        // if (state.turn !== localPlayerNum) return; 
+
+        if (currentInput.length < 3) {
+            currentInput += num;
             updateInputUI();
         }
     }
 
-    function clearInput() {
-        state.currentInput = "";
-        updateInputUI();
-    }
-
-    function updateInputUI() {
-        document.getElementById('current-input').innerText = state.currentInput;
-    }
+    function clearInput() { currentInput = ""; updateInputUI(); }
+    function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
     function submitScore() {
-        if (state.currentInput === "") return;
-        const score = parseInt(state.currentInput);
-        state.currentInput = "";
+        if (currentInput === "") return;
+        const score = parseInt(currentInput);
+        currentInput = "";
         updateInputUI();
 
         if (score > 180 || impossibleScores.includes(score)) {
@@ -236,34 +294,24 @@
 
         const p = state.turn === 1 ? state.p1 : state.p2;
         
-        if (score > p.rem || p.rem - score === 1) {
-            // Bust
+        if (score > p.rem || p.rem - score === 1) { // Bust
             recordScore(p, 0, "Bust (" + score + ")", 3);
             switchTurn();
-        } else if (score === p.rem) {
-            // Checkout
-            document.getElementById('checkout-modal').style.display = 'flex';
-            // Save temporary state for the checkout
+        } else if (score === p.rem) { // Checkout Attempt
             p.pendingCheckoutScore = score; 
-        } else {
-            // Normal score
+            document.getElementById('checkout-modal').style.display = 'flex';
+        } else { // Normal score
             recordScore(p, score, score, 3);
             switchTurn();
         }
     }
 
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
-        state.globalHistory.push(JSON.parse(JSON.stringify(state))); // Snapshot for undo
-        
+        state.globalHistory.push(JSON.parse(JSON.stringify(state))); // Save for undo
         player.rem -= actualDeduction;
         player.totalScored += actualDeduction;
         player.totalDarts += dartsUsed;
-        
-        player.history.push({
-            throwNum: player.history.length + 1,
-            score: displayScore,
-            rem: player.rem
-        });
+        player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
     }
 
     function completeLeg(checkoutDarts) {
@@ -274,13 +322,14 @@
         p.legs++;
 
         if (p.legs >= state.settings.targetLegs) {
-            document.getElementById('winner-text').innerText = p.name + " Wins the Match!";
-            document.getElementById('winner-modal').style.display = 'flex';
+            alert(p.name + " Wins the Match!");
+            resetLeg(); // Optional auto-reset
         } else {
             state.startingPlayer = state.startingPlayer === 1 ? 2 : 1;
             resetLeg();
-            updateUI();
         }
+        updateUI();
+        broadcastState();
     }
 
     function resetLeg() {
@@ -295,20 +344,19 @@
     function switchTurn() {
         state.turn = state.turn === 1 ? 2 : 1;
         updateUI();
+        broadcastState(); // Sync network every time a turn finishes
     }
 
     function undo() {
         if (state.globalHistory.length === 0) return;
-        const previousState = state.globalHistory.pop();
-        // Restore necessary state parts
-        state.p1 = previousState.p1;
-        state.p2 = previousState.p2;
-        state.turn = previousState.turn;
-        state.currentInput = "";
+        state = state.globalHistory.pop();
+        currentInput = "";
         updateInputUI();
         updateUI();
+        broadcastState();
     }
 
+    // --- UI Updating ---
     function calculateAverage(player) {
         if (player.totalDarts === 0) return "0.00";
         return ((player.totalScored / player.totalDarts) * 3).toFixed(2);
@@ -317,9 +365,7 @@
     function renderHistory(playerHistory, elementId) {
         const tbody = document.getElementById(elementId);
         tbody.innerHTML = "";
-        // Reverse to show newest at top
-        const reversed = [...playerHistory].reverse();
-        reversed.forEach(h => {
+        [...playerHistory].reverse().forEach(h => {
             const tr = document.createElement('tr');
             tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`;
             tbody.appendChild(tr);
@@ -327,11 +373,12 @@
     }
 
     function updateUI() {
+        document.getElementById('p1-name').innerText = state.p1.name;
+        document.getElementById('p2-name').innerText = state.p2.name;
         document.getElementById('p1-rem').innerText = state.p1.rem;
         document.getElementById('p2-rem').innerText = state.p2.rem;
         document.getElementById('p1-legs').innerText = state.p1.legs;
         document.getElementById('p2-legs').innerText = state.p2.legs;
-        
         document.getElementById('p1-avg').innerText = calculateAverage(state.p1);
         document.getElementById('p2-avg').innerText = calculateAverage(state.p2);
 
@@ -345,21 +392,16 @@
     // Keyboard support
     document.addEventListener('keydown', function(event) {
         if (document.getElementById('match-screen').classList.contains('active') && 
-            document.getElementById('checkout-modal').style.display !== 'flex' &&
-            document.getElementById('winner-modal').style.display !== 'flex') {
-            
-            if (event.key >= '0' && event.key <= '9') {
-                appendNum(event.key);
-            } else if (event.key === 'Enter') {
-                submitScore();
-            } else if (event.key === 'Backspace') {
-                state.currentInput = state.currentInput.slice(0, -1);
-                updateInputUI();
-            } else if (event.key === 'Escape' || event.key === 'c' || event.key === 'C') {
-                clearInput();
-            }
+            document.getElementById('checkout-modal').style.display !== 'flex') {
+            if (event.key >= '0' && event.key <= '9') appendNum(event.key);
+            else if (event.key === 'Enter') submitScore();
+            else if (event.key === 'Backspace') { currentInput = currentInput.slice(0, -1); updateInputUI(); }
+            else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
         }
     });
+
+    // Boot up
+    initNetwork();
 </script>
 
 </body>
