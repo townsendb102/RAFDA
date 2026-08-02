@@ -1,807 +1,1077 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>RAF Darts Scorer Pro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>RAF Darts Scorer Pro</title>
+    
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icon.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icon.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#1a1e24">
 
-<link rel="apple-touch-icon" href="icon.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#1a1e24">
+    <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        :root {
+            --tech-cyan: #4df2ff;
+            --tech-red: #ff1744;
+            --raf-blue: #002A5C;
+            --raf-red: #C8102E;
+        }
 
-<script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<style>
-:root {
---tech-cyan: #4df2ff;
---tech-red: #ff1744;
---raf-blue: #002A5C;
---raf-red: #C8102E;
-}
+        * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        
+        body, html {
+            margin: 0; padding: 0; 
+            height: 100dvh; 
+            background-color: #1a1e24;
+            background-image: 
+                radial-gradient(circle at center, transparent 20%, #0a0c0f 100%),
+                linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 40px 40px, 40px 40px;
+            color: #fff;
+            display: flex; justify-content: center; 
+            overflow: hidden; 
+        }
 
-* { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+        #app { width: 100vw; max-width: 800px; height: 100%; display: flex; flex-direction: column; position: relative; }
+        
+        /* --- HEADER & FOOTER --- */
+        .header-drop-shadow { filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.5)); width: 100%; display: flex; justify-content: center; z-index: 10; flex-shrink: 0; }
+        .header-plate { background: linear-gradient(to bottom, #f5f6f8 0%, #c1c5cc 100%); width: 100%; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), 75% calc(100% - 20px), 70% 100%, 30% 100%, 25% calc(100% - 20px), 0 calc(100% - 20px)); padding: 20px 20px 35px 20px; text-align: center; }
+        .main-logo { max-width: 220px; width: 100%; display: block; margin: 0 auto; clip-path: inset(2px); mix-blend-mode: multiply; }
+        
+        .footer-drop-shadow { filter: drop-shadow(0px -8px 10px rgba(0,0,0,0.5)); width: 100%; margin-top: auto; flex-shrink: 0; }
+        .footer-plate { background: linear-gradient(to bottom, #d1d5db 0%, #9ca3af 100%); clip-path: polygon(0 20px, 25% 20px, 30% 0, 70% 0, 75% 20px, 100% 20px, 100% 100%, 0 100%); padding: 30px 10px 15px 10px; text-align: center; font-weight: 800; font-size: 0.85em; letter-spacing: 1px; color: #222; }
 
-body, html {
-margin: 0; padding: 0;
-height: 100dvh;
-background-color: #1a1e24;
-background-image:
-radial-gradient(circle at center, transparent 20%, #0a0c0f 100%),
-linear-gradient(rgba(255,255,255,0.02) 1px, transparent 1px),
-linear-gradient(90deg, rgba(255,255,255,0.02) 1px, transparent 1px);
-background-size: 100% 100%, 40px 40px, 40px 40px;
-color: #fff;
-display: flex; justify-content: center;
-overflow: hidden;
-}
+        /* --- SCREEN MANAGEMENT --- */
+        .screen { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
+        .screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-#app { width: 100vw; max-width: 800px; height: 100%; display: flex; flex-direction: column; position: relative; }
+        /* --- MENU SCREEN --- */
+        #menu-screen { align-items: center; justify-content: center; padding: 20px 0; }
+        .menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(10px, 3vw, 25px); width: 100%; max-width: 650px; padding: 0 15px; }
+        
+        .mode-btn { border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: clamp(15px, 4vw, 30px) clamp(5px, 2vw, 15px); transition: transform 0.1s ease; text-decoration: none; min-height: clamp(160px, 40vw, 220px); }
+        .mode-btn:active { transform: scale(0.96); }
+        .mode-btn h2 { font-size: clamp(1.2em, 5vw, 2.2em); margin: 0; color: white; text-align: center; text-shadow: 0 3px 5px rgba(0,0,0,0.8); line-height: 1.1; z-index: 2; }
+        .mode-btn p { color: #f0f0f0; font-size: clamp(0.7em, 3vw, 0.9em); margin: 10px 0 0 0; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 2; }
 
-/* --- HEADER & FOOTER --- */
-.header-drop-shadow { filter: drop-shadow(0px 8px 10px rgba(0,0,0,0.5)); width: 100%; display: flex; justify-content: center; z-index: 10; flex-shrink: 0; }
-.header-plate { background: linear-gradient(to bottom, #f5f6f8 0%, #c1c5cc 100%); width: 100%; clip-path: polygon(0 0, 100% 0, 100% calc(100% - 20px), 75% calc(100% - 20px), 70% 100%, 30% 100%, 25% calc(100% - 20px), 0 calc(100% - 20px)); padding: 20px 20px 35px 20px; text-align: center; }
-.main-logo { max-width: 220px; width: 100%; display: block; margin: 0 auto; clip-path: inset(2px); mix-blend-mode: multiply; }
+        .btn-local { background: linear-gradient(to bottom, #5e7a91 0%, #5e7a91 55%, #7e868c 55%, #7e868c 100%); border: clamp(3px, 1vw, 5px) solid #aebbd0; box-shadow: 0 15px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.3); }
+        .local-bezel { width: clamp(40px, 12vw, 70px); height: clamp(40px, 12vw, 70px); background: #111; border: 4px solid #aebbd0; border-radius: 50%; box-shadow: 0 8px 15px rgba(0,0,0,0.6); padding: 3px; margin: 5px 0; z-index: 2; }
+        
+        .btn-online { background: radial-gradient(circle at top, #215c6e 0%, #112836 100%); border: clamp(2px, 1vw, 4px) solid #62d8f5; box-shadow: 0 0 20px rgba(98,216,245,0.4), inset 0 0 20px rgba(98,216,245,0.3), 0 15px 25px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
+        .btn-online::before { content: ''; position: absolute; top: 30%; left: -50%; right: -50%; bottom: -50%; background-image: linear-gradient(rgba(98,216,245,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(98,216,245,0.3) 1px, transparent 1px); background-size: 20px 20px; transform: perspective(200px) rotateX(60deg); pointer-events: none; z-index: 1; }
+        .online-icon { font-size: clamp(2.5em, 10vw, 4em); margin: 5px 0; z-index: 2; filter: drop-shadow(0 0 10px rgba(98,216,245,0.8)); line-height: 1; }
 
-.footer-drop-shadow { filter: drop-shadow(0px -8px 10px rgba(0,0,0,0.5)); width: 100%; margin-top: auto; flex-shrink: 0; }
-.footer-plate { background: linear-gradient(to bottom, #d1d5db 0%, #9ca3af 100%); clip-path: polygon(0 20px, 25% 20px, 30% 0, 70% 0, 75% 20px, 100% 20px, 100% 100%, 0 100%); padding: 30px 10px 15px 10px; text-align: center; font-weight: 800; font-size: 0.85em; letter-spacing: 1px; color: #222; }
+        .btn-camera { grid-column: span 2; background: #1a1e24; border: 2px dashed #888; box-shadow: none; min-height: clamp(80px, 20vw, 120px); justify-content: center; flex-direction: row; gap: 20px; }
+        .btn-camera h2 { font-size: clamp(1.2em, 4vw, 1.8em); color: #ccc; text-shadow: none;}
+        .btn-camera p { color: #888; margin: 0; text-shadow: none;}
 
-/* --- SCREEN MANAGEMENT --- */
-.screen { display: none; flex: 1; overflow-y: auto; flex-direction: column; }
-.screen.active { display: flex; animation: fadeIn 0.3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        /* --- INNER APP STYLES --- */
+        .inner-content { padding: 20px; display: flex; flex-direction: column; flex: 1; }
+        h2.view-title { color: var(--tech-cyan); text-align: center; margin-top: 0; font-size: 1.6em; text-transform: uppercase; letter-spacing: 2px; }
+        .flex-col { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; margin: 0 auto; }
+        
+        label { font-weight: 600; color: #aaa; margin-bottom: -8px; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
+        input[type="text"], select { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #444; border-radius: 8px; background: #222; color: white; }
+        
+        .btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
+        .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
+        
+        .btn-cam-small { background: transparent; border: 1px solid #888; color: #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s;}
+        .btn-cam-small:active { background: var(--tech-cyan); color: #000; border-color: var(--tech-cyan);}
 
-/* --- MENU SCREEN --- */
-#menu-screen { align-items: center; justify-content: center; padding: 20px 0; }
-.menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: clamp(10px, 3vw, 25px); width: 100%; max-width: 650px; padding: 0 15px; }
+        .lobby-box { border: 1px solid #444; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 10px; background: rgba(0,0,0,0.3); }
+        .id-display { font-size: 2.2em; font-family: monospace; font-weight: bold; color: var(--tech-cyan); letter-spacing: 4px; margin: 10px 0; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
+        .status { margin-top: 15px; font-weight: bold; color: var(--tech-red); text-align: center; text-transform: uppercase; letter-spacing: 1px;}
+        #qrcode { background: white; padding: 10px; display: inline-block; border-radius: 8px; margin-top: 10px;}
 
-.mode-btn { border-radius: 12px; cursor: pointer; display: flex; flex-direction: column; justify-content: space-between; align-items: center; padding: clamp(15px, 4vw, 30px) clamp(5px, 2vw, 15px); transition: transform 0.1s ease; text-decoration: none; min-height: clamp(160px, 40vw, 220px); }
-.mode-btn:active { transform: scale(0.96); }
-.mode-btn h2 { font-size: clamp(1.2em, 5vw, 2.2em); margin: 0; color: white; text-align: center; text-shadow: 0 3px 5px rgba(0,0,0,0.8); line-height: 1.1; z-index: 2; }
-.mode-btn p { color: #f0f0f0; font-size: clamp(0.7em, 3vw, 0.9em); margin: 10px 0 0 0; text-align: center; text-shadow: 0 2px 4px rgba(0,0,0,0.9); z-index: 2; }
+        /* --- Match Screen --- */
+        #match-screen { padding: 0; }
+        .match-info { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.8); font-weight: 600; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333;}
+        .connection-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; color: white; border: 1px solid;}
+        .badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
+        .badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
 
-.btn-local { background: linear-gradient(to bottom, #5e7a91 0%, #5e7a91 55%, #7e868c 55%, #7e868c 100%); border: clamp(3px, 1vw, 5px) solid #aebbd0; box-shadow: 0 15px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.3); }
-.local-bezel { width: clamp(40px, 12vw, 70px); height: clamp(40px, 12vw, 70px); background: #111; border: 4px solid #aebbd0; border-radius: 50%; box-shadow: 0 8px 15px rgba(0,0,0,0.6); padding: 3px; margin: 5px 0; z-index: 2; }
+        .video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
+        .video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
+        
+        .boards { display: flex; flex: 1; min-height: 0; border-bottom: 1px solid #333; background: #161b22; }
+        .player-board { flex: 1; display: flex; flex-direction: column; width: 50%; }
+        .player-board:first-child { border-right: 1px solid #333; }
+        .player-header { padding: 8px 5px; text-align: center; border-bottom: 1px solid #333; flex-shrink: 0; }
+        .player-header.is-turn { background: linear-gradient(to bottom, rgba(0,229,255,0.1), transparent); border-top: 3px solid var(--tech-cyan); padding-top: 5px; }
+        .player-name { font-size: 1.1em; margin: 0 0 5px 0; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .score-remaining { font-size: clamp(2em, 7vw, 3.5em); font-weight: 900; line-height: 1; margin: 5px 0 10px 0; color: var(--tech-cyan); text-shadow: 0 0 15px rgba(0,229,255,0.3);}
+        .stats { display: flex; justify-content: center; gap: 10px; font-size: 0.75em; color: #aaa; font-weight: 500; }
+        .stats strong { color: white; }
+        .history { flex: 1; overflow-y: auto; }
+        .history table { width: 100%; border-collapse: collapse; text-align: center; }
+        .history th { background: #111; padding: 4px; font-size: 0.7em; position: sticky; top: 0; color: #888; text-transform: uppercase; }
+        .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
+        .score-col { font-weight: 700; color: var(--tech-cyan); }
 
-.btn-online { background: radial-gradient(circle at top, #215c6e 0%, #112836 100%); border: clamp(2px, 1vw, 4px) solid #62d8f5; box-shadow: 0 0 20px rgba(98,216,245,0.4), inset 0 0 20px rgba(98,216,245,0.3), 0 15px 25px rgba(0,0,0,0.6); position: relative; overflow: hidden; }
-.btn-online::before { content: ''; position: absolute; top: 30%; left: -50%; right: -50%; bottom: -50%; background-image: linear-gradient(rgba(98,216,245,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(98,216,245,0.3) 1px, transparent 1px); background-size: 20px 20px; transform: perspective(200px) rotateX(60deg); pointer-events: none; z-index: 1; }
-.online-icon { font-size: clamp(2.5em, 10vw, 4em); margin: 5px 0; z-index: 2; filter: drop-shadow(0 0 10px rgba(98,216,245,0.8)); line-height: 1; }
+        .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
+        .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
+        .numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
+        .numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
+        .numpad button:active { background: #111; }
+        .btn-enter { background: linear-gradient(135deg, var(--tech-cyan), #007bb5) !important; border:none !important; }
+        .btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
+        .btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; opacity: 1 !important; pointer-events: auto !important;}
 
-.btn-camera { grid-column: span 2; background: #1a1e24; border: 2px dashed #888; box-shadow: none; min-height: clamp(80px, 20vw, 120px); justify-content: center; flex-direction: row; gap: 20px; }
-.btn-camera h2 { font-size: clamp(1.2em, 4vw, 1.8em); color: #ccc; text-shadow: none;}
-.btn-camera p { color: #888; margin: 0; text-shadow: none;}
+        /* Post Match Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 600px; }
+        .stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; }
+        .stat-card h3 { color: var(--tech-cyan); font-size: 1.2em; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; text-align: center; text-transform: uppercase;}
+        .stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.8em; color: #aaa;}
+        .stat-row:last-child { border-bottom: none; }
+        .stat-val { font-weight: 700; color: white; }
+        .winner-banner { width: 100%; max-width: 600px; background: var(--tech-red); color: white; text-align: center; padding: 15px; border-radius: 12px; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;}
 
-/* --- INNER APP STYLES --- */
-.inner-content { padding: 20px; display: flex; flex-direction: column; flex: 1; }
-h2.view-title { color: var(--tech-cyan); text-align: center; margin-top: 0; font-size: 1.6em; text-transform: uppercase; letter-spacing: 2px; }
-.flex-col { display: flex; flex-direction: column; gap: 15px; width: 100%; max-width: 400px; margin: 0 auto; }
-
-label { font-weight: 600; color: #aaa; margin-bottom: -8px; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
-input[type="text"], select { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #444; border-radius: 8px; background: #222; color: white; }
-
-.btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-.btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-.btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
-.btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
-
-.btn-cam-small { background: transparent; border: 1px solid #888; color: #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s;}
-.btn-cam-small:active { background: var(--tech-cyan); color: #000; border-color: var(--tech-cyan);}
-
-.lobby-box { border: 1px solid #444; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 10px; background: rgba(0,0,0,0.3); }
-.id-display { font-size: 2.2em; font-family: monospace; font-weight: bold; color: var(--tech-cyan); letter-spacing: 4px; margin: 10px 0; text-shadow: 0 0 10px rgba(0,229,255,0.3); }
-.status { margin-top: 15px; font-weight: bold; color: var(--tech-red); text-align: center; text-transform: uppercase; letter-spacing: 1px;}
-#qrcode { background: white; padding: 10px; display: inline-block; border-radius: 8px; margin-top: 10px;}
-
-/* --- Match Screen --- */
-#match-screen { padding: 0; }
-.match-info { display: flex; justify-content: space-between; align-items: center; padding: 10px 20px; background: rgba(0,0,0,0.8); font-weight: 600; font-size: 0.85em; color: #aaa; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #333;}
-.connection-badge { padding: 4px 10px; border-radius: 4px; font-size: 0.9em; font-weight: bold; color: white; border: 1px solid;}
-.badge-online { background: rgba(255, 23, 68, 0.2); border-color: var(--tech-red); color: var(--tech-red);}
-.badge-local { background: rgba(0, 229, 255, 0.2); border-color: var(--tech-cyan); color: var(--tech-cyan);}
-
-.video-bar { display: none; background: #000; border-bottom: 1px solid #333; height: clamp(100px, 25vh, 250px); width: 100%; justify-content: center; gap: 10px; padding: 5px; flex-shrink: 0;}
-.video-feed { height: 100%; aspect-ratio: 16/9; background: #111; border: 1px solid #333; border-radius: 4px; object-fit: contain; }
-
-.boards { display: flex; flex: 1; min-height: 0; border-bottom: 1px solid #333; background: #161b22; }
-.player-board { flex: 1; display: flex; flex-direction: column; width: 50%; }
-.player-board:first-child { border-right: 1px solid #333; }
-.player-header { padding: 8px 5px; text-align: center; border-bottom: 1px solid #333; flex-shrink: 0; }
-.player-header.is-turn { background: linear-gradient(to bottom, rgba(0,229,255,0.1), transparent); border-top: 3px solid var(--tech-cyan); padding-top: 5px; }
-.player-name { font-size: 1.1em; margin: 0 0 5px 0; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.score-remaining { font-size: clamp(2em, 7vw, 3.5em); font-weight: 900; line-height: 1; margin: 5px 0 10px 0; color: var(--tech-cyan); text-shadow: 0 0 15px rgba(0,229,255,0.3);}
-.stats { display: flex; justify-content: center; gap: 10px; font-size: 0.75em; color: #aaa; font-weight: 500; }
-.stats strong { color: white; }
-.history { flex: 1; overflow-y: auto; }
-.history table { width: 100%; border-collapse: collapse; text-align: center; }
-.history th { background: #111; padding: 4px; font-size: 0.7em; position: sticky; top: 0; color: #888; text-transform: uppercase; }
-.history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
-.score-col { font-weight: 700; color: var(--tech-cyan); }
-
-.input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
-.score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
-.numpad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; max-width: 350px; }
-.numpad button { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1.2em; border-radius: 8px; padding: clamp(8px, 1.8vh, 15px) 0; cursor: pointer; font-weight: 600; transition: opacity 0.2s; }
-.numpad button:active { background: #111; }
-.btn-enter { background: linear-gradient(135deg, var(--tech-cyan), #007bb5) !important; border:none !important; }
-.btn-clear { background: linear-gradient(135deg, var(--tech-red), #b50020) !important; border:none !important; }
-.btn-undo { grid-column: span 3; background: #111 !important; color: #aaa !important; font-size: 0.9em !important; padding: 8px 0 !important; text-transform: uppercase; opacity: 1 !important; pointer-events: auto !important;}
-
-/* Post Match Stats */
-.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; width: 100%; max-width: 600px; }
-.stat-card { background: #161b22; border: 1px solid #30363d; border-radius: 12px; padding: 15px; }
-.stat-card h3 { color: var(--tech-cyan); font-size: 1.2em; margin-top: 0; margin-bottom: 10px; border-bottom: 1px solid #30363d; padding-bottom: 8px; text-align: center; text-transform: uppercase;}
-.stat-row { display: flex; justify-content: space-between; padding: 6px 0; border-bottom: 1px solid #222; font-size: 0.8em; color: #aaa;}
-.stat-row:last-child { border-bottom: none; }
-.stat-val { font-weight: 700; color: white; }
-.winner-banner { width: 100%; max-width: 600px; background: var(--tech-red); color: white; text-align: center; padding: 15px; border-radius: 12px; font-size: 1.4em; font-weight: bold; margin-bottom: 15px; text-transform: uppercase;}
-
-/* Modals */
-.modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 100; }
-.modal { background: #161b22; border: 1px solid var(--tech-cyan); padding: 25px; border-radius: 16px; text-align: center; max-width: 350px; width: 90%; }
-.modal h3 { color: var(--tech-cyan); margin-top: 0; font-size: 1.5em; text-transform: uppercase; }
-.modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
-.modal-buttons button { flex: 1; padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;}
-
-.start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
-.start-btn:active { background: var(--tech-cyan); color: #000; }
-
-/* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
-#start-modal {
-align-items: flex-end;
-padding-bottom: 20px;
-background: transparent !important;
-backdrop-filter: none !important;
--webkit-backdrop-filter: none !important;
-}
-#start-modal .modal {
-background: #161b22;
-box-shadow: 0 0 50px rgba(0,0,0,0.8);
-border: 1px solid var(--tech-cyan);
-}
-
-/* Standard modals keep the dark blurred background */
-#qr-modal, #checkout-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
-</style>
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; justify-content: center; align-items: center; z-index: 100; }
+        .modal { background: #161b22; border: 1px solid var(--tech-cyan); padding: 25px; border-radius: 16px; text-align: center; max-width: 350px; width: 90%; }
+        .modal h3 { color: var(--tech-cyan); margin-top: 0; font-size: 1.5em; text-transform: uppercase; }
+        .modal-buttons { display: flex; gap: 10px; justify-content: center; margin-top: 20px;}
+        .modal-buttons button { flex: 1; padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600;}
+        
+        .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
+        .start-btn:active { background: var(--tech-cyan); color: #000; }
+        
+        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
+        #start-modal { 
+            align-items: flex-end; 
+            padding-bottom: 20px; 
+            background: transparent !important; 
+            backdrop-filter: none !important; 
+            -webkit-backdrop-filter: none !important; 
+        }
+        #start-modal .modal { 
+            background: #161b22; 
+            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
+            border: 1px solid var(--tech-cyan); 
+        }
+        
+        /* Standard modals keep the dark blurred background */
+        #qr-modal, #checkout-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+    </style>
 </head>
 <body>
 
 <div id="app">
-<!-- Header Replica -->
-<div class="header-drop-shadow" id="main-header">
-<header class="header-plate">
-<img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
-<h1 id="alt-title" style="display:none; color: var(--raf-blue); margin:0;">RAF DARTS</h1>
-</header>
+    <div class="header-drop-shadow" id="main-header">
+        <header class="header-plate">
+            <img src="63338.jpg" alt="Royal Air Force Darts" class="main-logo" onerror="this.style.display='none'; document.getElementById('alt-title').style.display='block';">
+            <h1 id="alt-title" style="display:none; color: var(--raf-blue); margin:0;">RAF DARTS</h1>
+        </header>
+    </div>
+
+    <main id="menu-screen" class="screen active">
+        <div class="menu-grid">
+            <button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
+                <h2>PLAY<br>LOCAL</h2>
+                <div class="local-bezel">
+                    <svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
+                        <circle cx="50" cy="50" r="48" fill="#f4e3c5" stroke="#333" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="30" fill="none" stroke="#333" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="15" fill="none" stroke="#333" stroke-width="1"/>
+                        <path d="M50 2 L50 98 M2 50 L98 50 M16 16 L84 84 M16 84 L84 16" stroke="#333" stroke-width="1"/>
+                        <circle cx="50" cy="50" r="6" fill="#27ae60"/>
+                        <circle cx="50" cy="50" r="3" fill="#c0392b"/>
+                    </svg>
+                </div>
+                <p>Play single board or<br>device match.</p>
+            </button>
+
+            <button class="mode-btn btn-online" onclick="initOnlineLobby()">
+                <h2>PLAY<br>ONLINE</h2>
+                <div class="online-icon">🌐🎯</div>
+                <p>Connect and play against<br>other players.</p>
+            </button>
+
+            <button class="mode-btn btn-camera" onclick="initCameraNode()">
+                <div style="font-size: 2em;">📱📷</div>
+                <div>
+                    <h2>EXTERNAL CAMERA</h2>
+                    <p>Use this device as a wireless webcam</p>
+                </div>
+            </button>
+        </div>
+    </main>
+
+    <div class="footer-drop-shadow" id="menu-footer">
+        <footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
+    </div>
+
+    <main id="local-setup-screen" class="screen">
+        <div class="inner-content">
+            <h2 class="view-title">Match Setup</h2>
+            <div class="flex-col">
+                <label>Player 1 Name</label>
+                <input type="text" id="local-p1" value="Player 1">
+                <label>Player 2 Name</label>
+                <input type="text" id="local-p2" value="Player 2">
+                <label>Starting Score</label>
+                <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
+                <button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
+                <button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
+            </div>
+        </div>
+    </main>
+
+    <main id="online-lobby-screen" class="screen">
+        <div class="inner-content">
+            <h2 class="view-title">Network Sync</h2>
+            <div class="flex-col">
+                <div class="lobby-box">
+                    <div style="color: #aaa; font-weight: 600; font-size: 0.8em;">YOUR NETWORK ID</div>
+                    <div class="id-display" id="my-peer-id">WAIT...</div>
+                    <button class="btn-secondary" onclick="copyMyId()" id="copy-btn" style="width: 100%; margin-bottom:10px;">Copy ID</button>
+                    
+                    <button class="btn-cam-link" onclick="showQRModal()">📱 Link Phone Camera</button>
+                </div>
+                
+                <label>Your Name</label>
+                <input type="text" id="online-name" placeholder="Enter your name" value="Player 1">
+                
+                <label>Opponent ID</label>
+                <input type="text" id="remote-id" placeholder="Paste ID here">
+                <button class="btn-danger" onclick="connectToPeer()" id="connect-btn" style="margin-top: 10px;">Establish Link</button>
+                <button class="btn-secondary" onclick="showScreen('menu-screen')">Abort</button>
+                <div class="status" id="lobby-status"></div>
+            </div>
+        </div>
+    </main>
+
+    <main id="camera-node-screen" class="screen">
+        <div class="inner-content" style="align-items: center; text-align: center;">
+            <h2 class="view-title">Live Camera Feed</h2>
+            <p style="color: #888;">Point this camera at the dartboard.</p>
+            <video id="node-camera-feed" class="video-feed" style="width: 100%; max-width: 400px; margin-bottom: 20px;" autoplay playsinline muted></video>
+            
+            <div class="flex-col" id="cam-connect-box">
+                <label>Target Scoreboard ID</label>
+                <input type="text" id="target-board-id" placeholder="Paste Main Board ID">
+                <button class="btn-primary" onclick="beamCameraToBoard()">Beam Camera Feed</button>
+            </div>
+            <div id="cam-node-status" style="color: var(--tech-cyan); font-weight: bold; margin-top: 20px;"></div>
+        </div>
+    </main>
+
+    <main id="match-screen" class="screen">
+        <div class="match-info">
+            <div>Race to <span id="target-legs">3</span></div>
+            <div style="display:flex; gap:10px; align-items:center;">
+                <button id="match-cam-btn" class="btn-cam-small" onclick="showQRModal()">📱 Link Cam</button>
+                <div class="connection-badge badge-local" id="match-badge">LOCAL</div>
+            </div>
+        </div>
+        
+        <div class="video-bar" id="video-bar">
+            <video id="local-vid" class="video-feed" autoplay playsinline muted></video>
+            <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
+        </div>
+
+        <div class="boards">
+            <div class="player-board">
+                <div id="p1-panel" class="player-header">
+                    <h2 class="player-name" id="p1-name">Player 1</h2>
+                    <div class="score-remaining" id="p1-rem">501</div>
+                    <div class="stats"><span>L: <strong id="p1-legs">0</strong></span> <span>A: <strong id="p1-avg">0.00</strong></span></div>
+                </div>
+                <div class="history"><table><tbody id="p1-history"></tbody></table></div>
+            </div>
+            <div class="player-board">
+                <div id="p2-panel" class="player-header">
+                    <h2 class="player-name" id="p2-name">Player 2</h2>
+                    <div class="score-remaining" id="p2-rem">501</div>
+                    <div class="stats"><span>L: <strong id="p2-legs">0</strong></span> <span>A: <strong id="p2-avg">0.00</strong></span></div>
+                </div>
+                <div class="history"><table><tbody id="p2-history"></tbody></table></div>
+            </div>
+        </div>
+
+        <div class="input-section" id="input-section">
+            <div class="score-display" id="current-input"></div>
+            <div class="numpad">
+                <button onclick="appendNum(1)" class="num-btn">1</button> <button onclick="appendNum(2)" class="num-btn">2</button> <button onclick="appendNum(3)" class="num-btn">3</button>
+                <button onclick="appendNum(4)" class="num-btn">4</button> <button onclick="appendNum(5)" class="num-btn">5</button> <button onclick="appendNum(6)" class="num-btn">6</button>
+                <button onclick="appendNum(7)" class="num-btn">7</button> <button onclick="appendNum(8)" class="num-btn">8</button> <button onclick="appendNum(9)" class="num-btn">9</button>
+                <button class="btn-clear num-btn" onclick="clearInput()">C</button> <button onclick="appendNum(0)" class="num-btn">0</button> <button class="btn-enter num-btn" onclick="submitScore()">ENT</button>
+                <button class="btn-undo" onclick="undo()">Undo Entry</button>
+            </div>
+        </div>
+    </main>
+
+    <main id="post-match-screen" class="screen">
+        <div class="inner-content" style="align-items: center;">
+            <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
+            
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h3 id="stat-p1-name">P1</h3>
+                    <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p1-legs">0</span></div>
+                    <div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p1-avg">0.00</span></div>
+                    <div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p1-first9">0.00</span></div>
+                    <div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p1-100s">0</span></div>
+                    <div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p1-140s">0</span></div>
+                    <div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p1-180s">0</span></div>
+                    <div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p1-highout">0</span></div>
+                    <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p1-high">0</span></div>
+                    <div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p1-pts">0</span></div>
+                    <div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p1-darts">0</span></div>
+                </div>
+                <div class="stat-card">
+                    <h3 id="stat-p2-name">P2</h3>
+                    <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p2-legs">0</span></div>
+                    <div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p2-avg">0.00</span></div>
+                    <div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p2-first9">0.00</span></div>
+                    <div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p2-100s">0</span></div>
+                    <div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p2-140s">0</span></div>
+                    <div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p2-180s">0</span></div>
+                    <div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p2-highout">0</span></div>
+                    <div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p2-high">0</span></div>
+                    <div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p2-pts">0</span></div>
+                    <div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p2-darts">0</span></div>
+                </div>
+            </div>
+
+            <div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
+                <button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
+                <button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
+            </div>
+
+            <div class="flex-col" style="max-width: 600px; width:100%;">
+                <button class="btn-primary" onclick="btnPlayRematch()">Play Rematch</button>
+                <button class="btn-secondary" onclick="location.reload()">End Session</button>
+            </div>
+        </div>
+    </main>
 </div>
 
-<!-- 1. Main Menu Screen -->
-<main id="menu-screen" class="screen active">
-<div class="menu-grid">
-<button class="mode-btn btn-local" onclick="showScreen('local-setup-screen')">
-<h2>PLAY<br>LOCAL</h2>
-<div class="local-bezel">
-<svg viewBox="0 0 100 100" style="width: 100%; height: 100%;">
-<circle cx="50" cy="50" r="48" fill="#f4e3c5" stroke="#333" stroke-width="1"/>
-<circle cx="50" cy="50" r="30" fill="none" stroke="#333" stroke-width="1"/>
-<circle cx="50" cy="50" r="15" fill="none" stroke="#333" stroke-width="1"/>
-<path d="M50 2 L50 98 M2 50 L98 50 M16 16 L84 84 M16 84 L84 16" stroke="#333" stroke-width="1"/>
-<circle cx="50" cy="50" r="6" fill="#27ae60"/>
-<circle cx="50" cy="50" r="3" fill="#c0392b"/>
-</svg>
-</div>
-<p>Play single board or<br>device match.</p>
-</button>
-
-<button class="mode-btn btn-online" onclick="initOnlineLobby()">
-<h2>PLAY<br>ONLINE</h2>
-<div class="online-icon">🌐🎯</div>
-<p>Connect and play against<br>other players.</p>
-</button>
-
-<button class="mode-btn btn-camera" onclick="initCameraNode()">
-<div style="font-size: 2em;">📱📷</div>
-<div>
-<h2>EXTERNAL CAMERA</h2>
-<p>Use this device as a wireless webcam</p>
-</div>
-</button>
-</div>
-</main>
-
-<div class="footer-drop-shadow" id="menu-footer">
-<footer class="footer-plate">SELECT PLAY MODE - ROYAL AIR FORCE DARTS</footer>
-</div>
-
-<!-- 2. Local Setup Screen -->
-<main id="local-setup-screen" class="screen">
-<div class="inner-content">
-<h2 class="view-title">Match Setup</h2>
-<div class="flex-col">
-<label>Player 1 Name</label>
-<input type="text" id="local-p1" value="Player 1">
-<label>Player 2 Name</label>
-<input type="text" id="local-p2" value="Player 2">
-<label>Starting Score</label>
-<select id="local-score"><option value="501">501</option><option value="301">301</option></select>
-<label>Match Format</label>
-<select id="local-legs">
-<option value="1">Best of 1 (First to 1)</option>
-<option value="2">Best of 3 (First to 2)</option>
-<option value="3" selected>Best of 5 (First to 3)</option>
-<option value="4">Best of 7 (First to 4)</option>
-<option value="6">Best of 11 (First to 6)</option>
-</select>
-<button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
-<button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
-</div>
-</div>
-</main>
-
-<!-- 3. Online Lobby Screen -->
-<main id="online-lobby-screen" class="screen">
-<div class="inner-content">
-<h2 class="view-title">Network Sync</h2>
-<div class="flex-col">
-<div class="lobby-box">
-<div style="color: #aaa; font-weight: 600; font-size: 0.8em;">YOUR NETWORK ID</div>
-<div class="id-display" id="my-peer-id">WAIT...</div>
-<button class="btn-secondary" onclick="copyMyId()" id="copy-btn" style="width: 100%; margin-bottom:10px;">Copy ID</button>
-
-<button class="btn-cam-link" onclick="showQRModal()">📱 Link Phone Camera</button>
-</div>
-
-<label>Your Name</label>
-<input type="text" id="online-name" placeholder="Enter your name" value="Player 1">
-
-<label>Opponent ID</label>
-<input type="text" id="remote-id" placeholder="Paste ID here">
-<button class="btn-danger" onclick="connectToPeer()" id="connect-btn" style="margin-top: 10px;">Establish Link</button>
-<button class="btn-secondary" onclick="showScreen('menu-screen')">Abort</button>
-<div class="status" id="lobby-status"></div>
-</div>
-</div>
-</main>
-
-<!-- 3b. Phone Camera Node Screen -->
-<main id="camera-node-screen" class="screen">
-<div class="inner-content" style="align-items: center; text-align: center;">
-<h2 class="view-title">Live Camera Feed</h2>
-<p style="color: #888;">Point this camera at the dartboard.</p>
-<video id="node-camera-feed" class="video-feed" style="width: 100%; max-width: 400px; margin-bottom: 20px;" autoplay playsinline muted></video>
-
-<div class="flex-col" id="cam-connect-box">
-<label>Target Scoreboard ID</label>
-<input type="text" id="target-board-id" placeholder="Paste Main Board ID">
-<button class="btn-primary" onclick="beamCameraToBoard()">Beam Camera Feed</button>
-</div>
-<div id="cam-node-status" style="color: var(--tech-cyan); font-weight: bold; margin-top: 20px;"></div>
-</div>
-</main>
-
-<!-- 4. Active Match Screen -->
-<main id="match-screen" class="screen">
-<div class="match-info">
-<div>Race to <span id="target-legs">3</span></div>
-<div style="display:flex; gap:10px; align-items:center;">
-<button id="match-cam-btn" class="btn-cam-small" onclick="showQRModal()">📱 Link Cam</button>
-<div class="connection-badge badge-local" id="match-badge">LOCAL</div>
-</div>
-</div>
-
-<!-- WebRTC Video Feeds -->
-<div class="video-bar" id="video-bar">
-<video id="local-vid" class="video-feed" autoplay playsinline muted></video>
-<video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
-</div>
-
-<div class="boards">
-<!-- P1 Board -->
-<div class="player-board">
-<div id="p1-panel" class="player-header">
-<h2 class="player-name" id="p1-name">Player 1</h2>
-<div class="score-remaining" id="p1-rem">501</div>
-<div class="stats"><span>L: <strong id="p1-legs">0</strong></span> <span>A: <strong id="p1-avg">0.00</strong></span></div>
-</div>
-<div class="history"><table><tbody id="p1-history"></tbody></table></div>
-</div>
-<!-- P2 Board -->
-<div class="player-board">
-<div id="p2-panel" class="player-header">
-<h2 class="player-name" id="p2-name">Player 2</h2>
-<div class="score-remaining" id="p2-rem">501</div>
-<div class="stats"><span>L: <strong id="p2-legs">0</strong></span> <span>A: <strong id="p2-avg">0.00</strong></span></div>
-</div>
-<div class="history"><table><tbody id="p2-history"></tbody></table></div>
-</div>
-</div>
-
-<div class="input-section" id="input-section">
-<div class="score-display" id="current-input"></div>
-<div class="numpad">
-<button onclick="appendNum(1)" class="num-btn">1</button> <button onclick="appendNum(2)" class="num-btn">2</button> <button onclick="appendNum(3)" class="num-btn">3</button>
-<button onclick="appendNum(4)" class="num-btn">4</button> <button onclick="appendNum(5)" class="num-btn">5</button> <button onclick="appendNum(6)" class="num-btn">6</button>
-<button onclick="appendNum(7)" class="num-btn">7</button> <button onclick="appendNum(8)" class="num-btn">8</button> <button onclick="appendNum(9)" class="num-btn">9</button>
-<button class="btn-clear num-btn" onclick="clearInput()">C</button> <button onclick="appendNum(0)" class="num-btn">0</button> <button class="btn-enter num-btn" onclick="submitScore()">ENT</button>
-<button class="btn-undo" onclick="undo()">Undo Entry</button>
-</div>
-</div>
-</main>
-
-<!-- 5. Post Match Stats Screen -->
-<main id="post-match-screen" class="screen">
-<div class="inner-content" style="align-items: center;">
-<div class="winner-banner" id="winner-banner">PLAYER WINS</div>
-
-<div class="stats-grid">
-<div class="stat-card">
-<h3 id="stat-p1-name">P1</h3>
-<div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p1-legs">0</span></div>
-<div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p1-avg">0.00</span></div>
-<div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p1-first9">0.00</span></div>
-<div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p1-100s">0</span></div>
-<div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p1-140s">0</span></div>
-<div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p1-180s">0</span></div>
-<div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p1-highout">0</span></div>
-<div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p1-high">0</span></div>
-<div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p1-pts">0</span></div>
-<div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p1-darts">0</span></div>
-</div>
-<div class="stat-card">
-<h3 id="stat-p2-name">P2</h3>
-<div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p2-legs">0</span></div>
-<div class="stat-row"><span>Match Average</span> <span class="stat-val" id="stat-p2-avg">0.00</span></div>
-<div class="stat-row"><span>First 9 Avg</span> <span class="stat-val" id="stat-p2-first9">0.00</span></div>
-<div class="stat-row"><span>100+</span> <span class="stat-val" id="stat-p2-100s">0</span></div>
-<div class="stat-row"><span>140+</span> <span class="stat-val" id="stat-p2-140s">0</span></div>
-<div class="stat-row"><span>180s</span> <span class="stat-val" id="stat-p2-180s">0</span></div>
-<div class="stat-row"><span>High Checkout</span> <span class="stat-val" id="stat-p2-highout">0</span></div>
-<div class="stat-row"><span>High Score</span> <span class="stat-val" id="stat-p2-high">0</span></div>
-<div class="stat-row"><span>Total Points</span> <span class="stat-val" id="stat-p2-pts">0</span></div>
-<div class="stat-row"><span>Darts Thrown</span> <span class="stat-val" id="stat-p2-darts">0</span></div>
-</div>
-</div>
-
-<div class="flex-col" style="max-width: 600px; width:100%; gap: 10px; margin-bottom: 20px;">
-<button class="btn-cam-link" onclick="exportStatsText()" style="border-color: var(--tech-cyan); color: var(--tech-cyan);">📋 Copy Text Summary</button>
-<button class="btn-cam-link" onclick="exportStatsCSV()" style="border-color: #27ae60; color: #27ae60;">💾 Download CSV Log</button>
-</div>
-
-<div class="flex-col" style="max-width: 600px; width:100%;">
-<button class="btn-primary" onclick="btnPlayRematch()">Play Rematch</button>
-<button class="btn-secondary" onclick="location.reload()">End Session</button>
-</div>
-</div>
-</main>
-</div>
-
-<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
-<div class="modal">
-<h3>Link Camera</h3>
-<p style="color:#aaa;">Scan this with your phone's camera to use it as the dartboard webcam.</p>
-<div id="qrcode"></div>
-<div class="modal-buttons"><button onclick="document.getElementById('qr-modal').style.display='none'">Close</button></div>
-</div>
+    <div class="modal">
+        <h3>Link Camera</h3>
+        <p style="color:#aaa;">Scan this with your phone's camera to use it as the dartboard webcam.</p>
+        <div id="qrcode"></div>
+        <div class="modal-buttons"><button onclick="document.getElementById('qr-modal').style.display='none'">Close</button></div>
+    </div>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
-<div class="modal">
-<h3>Leg Cleared</h3>
-<p style="color:#aaa;">Darts thrown for checkout?</p>
-<div class="modal-buttons">
-<button onclick="completeLeg(1)">1</button><button onclick="completeLeg(2)">2</button><button onclick="completeLeg(3)">3</button>
-</div>
-</div>
+    <div class="modal">
+        <h3>Leg Cleared</h3>
+        <p style="color:#aaa;">Darts thrown for checkout?</p>
+        <div class="modal-buttons">
+            <button onclick="completeLeg(1)">1</button><button onclick="completeLeg(2)">2</button><button onclick="completeLeg(3)">3</button>
+        </div>
+    </div>
 </div>
 
-<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
-<div class="modal" style="padding: 20px;">
+    <div class="modal" style="padding: 20px;">
 
-<!-- LOCAL MODE SETTINGS -->
-<div id="setup-local" style="text-align: left;">
-<h3 id="start-modal-title" style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
-<div style="margin-bottom: 10px;">
-<label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
-<input type="text" id="rematch-p1-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-</div>
-<div style="margin-bottom: 15px;">
-<label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 2 Name</label>
-<input type="text" id="rematch-p2-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-</div>
-<div style="margin-bottom: 15px;">
-<label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
-<select id="rematch-local-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-<option value="1">Best of 1 (First to 1)</option>
-<option value="2">Best of 3 (First to 2)</option>
-<option value="3" selected>Best of 5 (First to 3)</option>
-<option value="4">Best of 7 (First to 4)</option>
-<option value="6">Best of 11 (First to 6)</option>
-</select>
-</div>
-<p style="color:#aaa; margin-top:0; margin-bottom:10px; font-size:0.9em; text-align: center;">Who throws first?</p>
-<div style="display: flex; flex-direction: column; gap: 10px;">
-<button class="start-btn" id="start-local-p1" onclick="confirmStartLocal(1)">Player 1</button>
-<button class="start-btn" id="start-local-p2" onclick="confirmStartLocal(2)">Player 2</button>
-</div>
-</div>
+        <div id="setup-local" style="text-align: left;">
+            <h3 id="start-modal-title" style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
+            <div style="margin-bottom: 10px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 1 Name</label>
+                <input type="text" id="rematch-p1-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Player 2 Name</label>
+                <input type="text" id="rematch-p2-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
+                <select id="rematch-local-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+                    <option value="1">Best of 1 (First to 1)</option>
+                    <option value="2">Best of 3 (First to 2)</option>
+                    <option value="3" selected>Best of 5 (First to 3)</option>
+                    <option value="4">Best of 7 (First to 4)</option>
+                    <option value="6">Best of 11 (First to 6)</option>
+                </select>
+            </div>
+            <p style="color:#aaa; margin-top:0; margin-bottom:10px; font-size:0.9em; text-align: center;">Who throws first?</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="start-btn" id="start-local-p1" onclick="confirmStartLocal(1)">Player 1</button>
+                <button class="start-btn" id="start-local-p2" onclick="confirmStartLocal(2)">Player 2</button>
+            </div>
+        </div>
 
-<!-- ONLINE MODE SETTINGS: INITIAL NAME ENTRY -->
-<div id="setup-online-name" style="display:none; text-align: left;">
-<h3 style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
-<div style="margin-bottom: 15px;">
-<label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
-<input type="text" id="rematch-my-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-</div>
-<button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
-</div>
+        <div id="setup-online-name" style="display:none; text-align: left;">
+            <h3 style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
+            <div style="margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Your Name</label>
+                <input type="text" id="rematch-my-name" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+            </div>
+            <button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
+        </div>
 
-<!-- ONLINE MODE SETTINGS: JOINER WAITING FOR HOST -->
-<div id="setup-online-wait" style="display:none;">
-<p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
-</div>
+        <div id="setup-online-wait" style="display:none;">
+            <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
+        </div>
 
-<!-- ONLINE MODE SETTINGS: HOST CHOOSES LEGS & BULL UP -->
-<div id="setup-online-host" style="display:none; text-align: left;">
-<p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
+        <div id="setup-online-host" style="display:none; text-align: left;">
+            <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
+            
+            <div style="margin-bottom: 15px;">
+                <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
+                <select id="online-host-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
+                    <option value="1">Best of 1 (First to 1)</option>
+                    <option value="2">Best of 3 (First to 2)</option>
+                    <option value="3" selected>Best of 5 (First to 3)</option>
+                    <option value="4">Best of 7 (First to 4)</option>
+                    <option value="6">Best of 11 (First to 6)</option>
+                </select>
+            </div>
 
-<div style="margin-bottom: 15px;">
-<label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
-<select id="online-host-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
-<option value="1">Best of 1 (First to 1)</option>
-<option value="2">Best of 3 (First to 2)</option>
-<option value="3" selected>Best of 5 (First to 3)</option>
-<option value="4">Best of 7 (First to 4)</option>
-<option value="6">Best of 11 (First to 6)</option>
-</select>
-</div>
+            <p style="color:#aaa; font-size:0.9em; margin-bottom:15px; text-align: center;">Check the camera feed.<br>Who is closest to the bull?</p>
+            <div style="display: flex; flex-direction: column; gap: 10px;">
+                <button class="start-btn" id="start-online-host" onclick="confirmStartOnline(1)">Me</button>
+                <button class="start-btn" id="start-online-joiner" onclick="confirmStartOnline(2)">Opponent</button>
+            </div>
+        </div>
 
-<p style="color:#aaa; font-size:0.9em; margin-bottom:15px; text-align: center;">Check the camera feed.<br>Who is closest to the bull?</p>
-<div style="display: flex; flex-direction: column; gap: 10px;">
-<button class="start-btn" id="start-online-host" onclick="confirmStartOnline(1)">Me</button>
-<button class="start-btn" id="start-online-joiner" onclick="confirmStartOnline(2)">Opponent</button>
-</div>
-</div>
-
-<button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 15px; width: 100%;" onclick="cancelRematch()">Cancel</button>
-</div>
+        <button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 15px; width: 100%;" onclick="cancelRematch()">Cancel</button>
+    </div>
 </div>
 
 <script>
-let appMode = 'local';
-let peer = null;
-let connection = null;
-let localPlayerNum = 1;
-let opponentPeerId = null;
+    let appMode = 'local';
+    let peer = null;
+    let connection = null;
+    let localPlayerNum = 1;
+    let opponentPeerId = null; 
+    
+    let myVideoStream = null;     
+    let activeMediaCall = null;   
 
-let myVideoStream = null;
- let activeMediaCall = null;
+    const getFreshPlayerState = (name) => ({ 
+        name: name, legs: 0, rem: 501, history: [], 
+        totalScored: 0, totalDarts: 0, highestScore: 0,
+        scores100s: 0, scores140s: 0, scores180s: 0,
+        highestCheckout: 0, first9Scored: 0, first9Darts: 0
+    });
 
-const getFreshPlayerState = (name) => ({
-name: name, legs: 0, rem: 501, history: [],
-totalScored: 0, totalDarts: 0, highestScore: 0,
-scores100s: 0, scores140s: 0, scores180s: 0,
-highestCheckout: 0, first9Scored: 0, first9Darts: 0
-});
+    let state = { settings: { startScore: 501, targetLegs: 3 }, p1: getFreshPlayerState("Player 1"), p2: getFreshPlayerState("Player 2"), turn: 1, startingPlayer: 1, globalHistory: [] };
+    let currentInput = "";
+    const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
 
-let state = { settings: { startScore: 501, targetLegs: 3 }, p1: getFreshPlayerState("Player 1"), p2: getFreshPlayerState("Player 2"), turn: 1, startingPlayer: 1, globalHistory: [] };
-let currentInput = "";
-const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
+    // Rematch Sync Tracking
+    let localRematchReady = false;
+    let remoteRematchReady = false;
+    let localNewName = "";
+    let remoteNewName = "";
 
-// Rematch Sync Tracking
-let localRematchReady = false;
-let remoteRematchReady = false;
-let localNewName = "";
-let remoteNewName = "";
+    window.onload = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const camTarget = urlParams.get('cam');
+        if (camTarget) {
+            document.getElementById('target-board-id').value = camTarget;
+            initCameraNode();
+        }
+    };
 
-window.onload = () => {
-const urlParams = new URLSearchParams(window.location.search);
-const camTarget = urlParams.get('cam');
-if (camTarget) {
-document.getElementById('target-board-id').value = camTarget;
-initCameraNode();
-}
-};
+    function showScreen(screenId) {
+        document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
+        document.getElementById(screenId).classList.add('active');
+        
+        document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
+        
+        if (screenId === 'match-screen' || screenId === 'post-match-screen') {
+            document.getElementById('main-header').style.display = 'none';
+        } else {
+            document.getElementById('main-header').style.display = 'flex';
+        }
+    }
 
-function showScreen(screenId) {
-document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
-document.getElementById(screenId).classList.add('active');
+    // --- 1. LOCAL MATCH ---
+    function startLocalMatch() {
+        appMode = 'local';
+        state.settings.startScore = parseInt(document.getElementById('local-score').value);
+        state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
+        state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
+        
+        document.getElementById('match-badge').innerText = "LOCAL";
+        document.getElementById('match-badge').className = "connection-badge badge-local";
+        document.getElementById('match-cam-btn').style.display = 'none'; 
+        
+        initLocalSetup();
+    }
 
-document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
+    // --- 2. ONLINE LOBBY (Pure Original PeerJS Default) ---
+    function initOnlineLobby() {
+        appMode = 'online';
+        showScreen('online-lobby-screen');
+        if (!peer) initPeer();
+    }
 
-if (screenId === 'match-screen' || screenId === 'post-match-screen') {
-document.getElementById('main-header').style.display = 'none';
-} else {
-document.getElementById('main-header').style.display = 'flex';
-}
-}
+    function initPeer() {
+        const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        peer = new Peer(shortId); 
+        
+        peer.on('open', id => { 
+            document.getElementById('my-peer-id').innerText = id; 
+            document.getElementById("qrcode").innerHTML = ""; 
+            new QRCode(document.getElementById("qrcode"), {
+                text: window.location.href.split('?')[0] + "?cam=" + id,
+                width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff"
+            });
+        });
 
-// --- 1. LOCAL MATCH ---
-function startLocalMatch() {
-appMode = 'local';
-state.settings.startScore = parseInt(document.getElementById('local-score').value);
-state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
-state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
-state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
+        // HOST listens for connection
+        peer.on('connection', conn => {
+            connection = conn;
+            localPlayerNum = 1;
+            opponentPeerId = conn.peer;
+            
+            conn.on('data', data => handleNetworkData(data, conn));
+        });
 
-document.getElementById('match-badge').innerText = "LOCAL";
-document.getElementById('match-badge').className = "connection-badge badge-local";
-document.getElementById('match-cam-btn').style.display = 'none';
+        peer.on('call', call => {
+            if(call.metadata && call.metadata.type === 'external-camera') {
+                call.answer(); 
+                call.on('stream', stream => {
+                    myVideoStream = stream; 
+                    setupRemoteVideoStream(stream, true);
+                    
+                    if (appMode === 'online' && opponentPeerId) {
+                        const outCall = peer.call(opponentPeerId, myVideoStream);
+                        activeMediaCall = outCall;
+                        outCall.on('stream', remoteStream => {
+                            setupRemoteVideoStream(remoteStream, false);
+                        });
+                    }
+                });
+            } else {
+                call.answer(myVideoStream); 
+                activeMediaCall = call;
+                call.on('stream', remoteStream => {
+                    setupRemoteVideoStream(remoteStream, false);
+                });
+            }
+        });
+        peer.on('error', err => { console.error("PeerJS Error:", err); });
+    }
 
-initLocalSetup();
-}
+    function setupRemoteVideoStream(stream, isLocal) {
+        document.getElementById('video-bar').style.display = 'flex';
+        
+        if (isLocal) {
+            const localVid = document.getElementById('local-vid');
+            localVid.srcObject = stream;
+            localVid.style.display = 'block';
+        } else {
+            const remoteVid = document.getElementById('remote-vid');
+            remoteVid.srcObject = stream;
+            remoteVid.style.display = 'block';
+        }
 
-// --- 2. ONLINE LOBBY ---
-function initOnlineLobby() {
-appMode = 'online';
-showScreen('online-lobby-screen');
-if (!peer) initPeer();
-}
+        const localVid = document.getElementById('local-vid');
+        if (document.getElementById('start-modal').style.display !== 'flex') {
+            localVid.style.display = 'none';
+        } else {
+            localVid.style.display = 'block';
+        }
+    }
 
-function initPeer() {
-const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+    // JOINER connecting to HOST
+    function connectToPeer() {
+        const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
+        if (!remoteId) return;
+        document.getElementById('lobby-status').innerText = "CONNECTING...";
+        localPlayerNum = 2;
+        opponentPeerId = remoteId;
+        
+        connection = peer.connect(remoteId, { reliable: true });
+        
+        connection.on('open', () => {
+            document.getElementById('lobby-status').innerText = "SYNCING...";
+            const myName = document.getElementById('online-name').value || "Player 2";
+            connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
-// --- ADDED GOOGLE STUN SERVERS BACK TO BYPASS MOBILE FIREWALLS ---
-peer = new Peer(shortId, {
-config: {
-'iceServers': [
-{ urls: 'stun:stun.l.google.com:19302' },
-{ urls: 'stun:stun1.l.google.com:19302' },
-{ urls: 'stun:stun2.l.google.com:19302' }
- ]
-}
-});
+            if(myVideoStream) {
+                const call = peer.call(remoteId, myVideoStream);
+                activeMediaCall = call;
+                call.on('stream', remoteStream => {
+                    setupRemoteVideoStream(remoteStream, false);
+                });
+            }
+        });
 
-peer.on('open', id => {
-document.getElementById('my-peer-id').innerText = id;
-document.getElementById("qrcode").innerHTML = "";
-new QRCode(document.getElementById("qrcode"), {
-text: window.location.href.split('?')[0] + "?cam=" + id,
-width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff"
-});
-});
+        connection.on('data', data => handleNetworkData(data, connection));
+    }
 
-// HOST listens for connection
-peer.on('connection', conn => {
-connection = conn;
-localPlayerNum = 1;
-opponentPeerId = conn.peer;
+    // --- BULLETPROOF DATA ROUTER ---
+    function handleNetworkData(data, conn) {
+        if (data.type === 'HANDSHAKE') {
+            // HOST receives Joiner's connection
+            if (localPlayerNum === 1 && data.player === 2) {
+                state.p1.name = document.getElementById('online-name').value || "Player 1";
+                state.p2.name = data.name;
+                
+                const reply = () => {
+                    conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
+                    showInitialHostSetup();
+                };
 
-conn.on('data', data => handleNetworkData(data, conn));
-});
+                if (connection.open) { reply(); } 
+                else { connection.on('open', reply); }
+            }
+        } 
+        else if (data.type === 'JOINER_AWAIT_BULLUP') {
+            // JOINER receives Host's command to enter the Bull Up room
+            if (localPlayerNum === 2) {
+                state.p1.name = data.hostName;
+                showInitialJoinerWait(); 
+            }
+        } 
+        else if (data.type === 'STATE_SYNC') {
+            state = data.state; 
+            if(document.getElementById('match-screen').classList.contains('active') === false && 
+               document.getElementById('post-match-screen').classList.contains('active') === false) {
+                document.getElementById('match-badge').innerText = "ONLINE SYNC";
+                document.getElementById('match-badge').className = "connection-badge badge-online";
+                document.getElementById('match-cam-btn').style.display = 'block';
+                showScreen('match-screen');
+            }
+            updateUI();
+            
+            if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
+            else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
+        } 
+        else if (data.type === 'REMATCH_READY') {
+            remoteRematchReady = true;
+            remoteNewName = data.name;
+            checkOnlineRematchState();
+        } 
+        else if (data.type === 'REMATCH_START') {
+            document.getElementById('start-modal').style.display = 'none';
+            if (data.targetLegs) { state.settings.targetLegs = data.targetLegs; }
+            executeStart(data.startingPlayer, data.p1Name, data.p2Name);
+        }
+    }
 
-peer.on('call', call => {
-if(call.metadata && call.metadata.type === 'external-camera') {
-call.answer();
-call.on('stream', stream => {
-myVideoStream = stream;
-setupRemoteVideoStream(stream, true);
+    function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
 
-if (appMode === 'online' && opponentPeerId) {
-const outCall = peer.call(opponentPeerId, myVideoStream);
-activeMediaCall = outCall;
-outCall.on('stream', remoteStream => {
-setupRemoteVideoStream(remoteStream, false);
-});
-}
-});
-} else {
-call.answer(myVideoStream);
-activeMediaCall = call;
-call.on('stream', remoteStream => {
-setupRemoteVideoStream(remoteStream, false);
-});
-}
-});
-peer.on('error', err => { console.error("PeerJS Error:", err); });
-}
+    // --- 3. CAMERA NODE MODE ---
+    async function initCameraNode() {
+        showScreen('camera-node-screen');
+        if (!peer) { peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase()); }
+        try {
+            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            document.getElementById('node-camera-feed').srcObject = myVideoStream;
+            if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
+        } catch (err) {
+            document.getElementById('cam-node-status').innerText = "Camera Access Denied/Failed.";
+        }
+    }
 
-function setupRemoteVideoStream(stream, isLocal) {
-document.getElementById('video-bar').style.display = 'flex';
+    function beamCameraToBoard() {
+        const targetId = document.getElementById('target-board-id').value.toUpperCase().trim();
+        if(!targetId || !myVideoStream) return;
+        document.getElementById('cam-node-status').innerText = "Beaming Feed to " + targetId + "...";
+        document.getElementById('cam-connect-box').style.display = 'none';
+        peer.call(targetId, myVideoStream, { metadata: { type: 'external-camera' }});
+        document.getElementById('cam-node-status').innerText = "LIVE: Streaming to Board.";
+    }
 
-if (isLocal) {
-const localVid = document.getElementById('local-vid');
-localVid.srcObject = stream;
-localVid.style.display = 'block';
-} else {
-const remoteVid = document.getElementById('remote-vid');
-remoteVid.srcObject = stream;
-remoteVid.style.display = 'block';
-}
+    // --- UTILS & SCORING LOGIC ---
+    function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
+    function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
+    
+    function isMyTurn() { 
+        if (appMode === 'local') return true;
+        return Number(state.turn) === Number(localPlayerNum); 
+    }
 
-const localVid = document.getElementById('local-vid');
-if (document.getElementById('start-modal').style.display !== 'flex') {
-localVid.style.display = 'none';
-} else {
-localVid.style.display = 'block';
-}
-}
+    function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
+    function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
+    function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
-// JOINER connecting to HOST
-function connectToPeer() {
-const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
-if (!remoteId) return;
-document.getElementById('lobby-status').innerText = "CONNECTING...";
-localPlayerNum = 2;
-opponentPeerId = remoteId;
+    function submitScore() {
+        if(!isMyTurn()) return;
+        if (currentInput === "") return;
+        const score = parseInt(currentInput);
+        currentInput = ""; updateInputUI();
+        if (score > 180 || impossibleScores.includes(score)) { alert("INVALID SCORE"); return; }
+        
+        const p = state.turn === 1 ? state.p1 : state.p2;
+        if (score > p.rem || p.rem - score === 1) { recordScore(p, 0, "Bust", 3); switchTurn(); } 
+        else if (score === p.rem) { p.pendingCheckoutScore = score; document.getElementById('checkout-modal').style.display = 'flex'; } 
+        else { recordScore(p, score, score, 3); switchTurn(); }
+    }
 
-connection = peer.connect(remoteId, { reliable: true });
+    function recordScore(player, actualDeduction, displayScore, dartsUsed) {
+        state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
+        
+        if (player.history.length < 3) {
+            player.first9Scored += actualDeduction;
+            player.first9Darts += dartsUsed;
+        }
 
-connection.on('open', () => {
-document.getElementById('lobby-status').innerText = "SYNCING...";
-const myName = document.getElementById('online-name').value || "Player 2";
-connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
+        player.rem -= actualDeduction; 
+        player.totalScored += actualDeduction; 
+        player.totalDarts += dartsUsed;
+        
+        if (typeof displayScore === 'number') {
+            if (displayScore === 180) player.scores180s++;
+            else if (displayScore >= 140) player.scores140s++;
+            else if (displayScore >= 100) player.scores100s++;
 
-if(myVideoStream) {
-const call = peer.call(remoteId, myVideoStream);
-activeMediaCall = call;
-call.on('stream', remoteStream => {
-setupRemoteVideoStream(remoteStream, false);
-});
-}
-});
+            if (displayScore > player.highestScore) player.highestScore = displayScore;
+        }
+        
+        player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
+    }
 
-connection.on('data', data => handleNetworkData(data, connection));
-}
+    function completeLeg(checkoutDarts) {
+        document.getElementById('checkout-modal').style.display = 'none';
+        const p = state.turn === 1 ? state.p1 : state.p2;
+        
+        if (p.pendingCheckoutScore > p.highestCheckout) {
+            p.highestCheckout = p.pendingCheckoutScore;
+        }
 
-// --- BULLETPROOF DATA ROUTER ---
-function handleNetworkData(data, conn) {
-if (data.type === 'HANDSHAKE') {
-// HOST receives Joiner's connection
-if (localPlayerNum === 1 && data.player === 2) {
-state.p1.name = document.getElementById('online-name').value || "Player 1";
-state.p2.name = data.name;
+        recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
+        p.legs++;
+        
+        if (p.legs >= state.settings.targetLegs) { 
+            broadcastState(); 
+            displayPostMatch(p); 
+        } 
+        else { 
+            state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; 
+            resetLeg(); updateUI(); broadcastState(); 
+        }
+    }
 
-const reply = () => {
-conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
-showInitialHostSetup();
-};
+    function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
+    function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
+    function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
+    function setupMatchUI() { resetLeg(); showScreen('match-screen'); updateUI(); }
+    
+    function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
+    function calculateFirst9Average(player) { return player.first9Darts === 0 ? "0.00" : ((player.first9Scored / player.first9Darts) * 3).toFixed(2); }
+    
+    function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
+    
+    function updateUI() {
+        document.getElementById('target-legs').innerText = state.settings.targetLegs;
+        
+        document.getElementById('p1-name').innerText = state.p1.name; document.getElementById('p1-rem').innerText = state.p1.rem; document.getElementById('p1-legs').innerText = state.p1.legs; document.getElementById('p1-avg').innerText = calculateAverage(state.p1); renderHistory(state.p1.history, 'p1-history');
+        document.getElementById('p2-name').innerText = state.p2.name; document.getElementById('p2-rem').innerText = state.p2.rem; document.getElementById('p2-legs').innerText = state.p2.legs; document.getElementById('p2-avg').innerText = calculateAverage(state.p2); renderHistory(state.p2.history, 'p2-history');
+        
+        document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
+        document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
 
-if (connection.open) { reply(); }
-else { connection.on('open', reply); }
-}
-}
-else if (data.type === 'JOINER_AWAIT_BULLUP') {
-// JOINER receives Host's command to enter the Bull Up room
-if (localPlayerNum === 2) {
-state.p1.name = data.hostName;
-showInitialJoinerWait();
-}
-}
-else if (data.type === 'STATE_SYNC') {
-state = data.state;
-if(document.getElementById('match-screen').classList.contains('active') === false &&
-document.getElementById('post-match-screen').classList.contains('active') === false) {
-document.getElementById('match-badge').innerText = "ONLINE SYNC";
-document.getElementById('match-badge').className = "connection-badge badge-online";
-document.getElementById('match-cam-btn').style.display = 'block';
-showScreen('match-screen');
-}
-updateUI();
+        const active = isMyTurn();
+        const numpadBtns = document.querySelectorAll('.num-btn');
+        const scoreDisp = document.getElementById('current-input');
+        
+        if (active) {
+            scoreDisp.style.opacity = '1';
+            scoreDisp.innerText = currentInput;
+            numpadBtns.forEach(btn => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; });
+        } else {
+            scoreDisp.style.opacity = '0.35';
+            scoreDisp.innerText = "WAITING...";
+            numpadBtns.forEach(btn => { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none'; });
+        }
+    }
 
-if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
-else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
-}
-else if (data.type === 'REMATCH_READY') {
-remoteRematchReady = true;
-remoteNewName = data.name;
-checkOnlineRematchState();
-}
-else if (data.type === 'REMATCH_START') {
-document.getElementById('start-modal').style.display = 'none';
-if (data.targetLegs) { state.settings.targetLegs = data.targetLegs; }
-executeStart(data.startingPlayer, data.p1Name, data.p2Name);
-}
-}
+    // --- SETUP / REMATCH / BULL UP LOGIC ---
+    
+    function showInitialHostSetup() {
+        showScreen('match-screen');
+        
+        const localVid = document.getElementById('local-vid');
+        const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) localVid.style.display = 'block';
+        if (activeMediaCall) remoteVid.style.display = 'block';
 
-function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'none';
+        
+        document.getElementById('setup-online-host').style.display = 'block';
+        
+        document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
+        
+        localNewName = state.p1.name;
+        remoteNewName = state.p2.name;
+        document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
+        document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
+    }
 
-// --- 3. CAMERA NODE MODE ---
-async function initCameraNode() {
-showScreen('camera-node-screen');
-if (!peer) {
-peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
-config: {
-'iceServers': [
-{ urls: 'stun:stun.l.google.com:19302' },
-{ urls: 'stun:stun1.l.google.com:19302' },
-{ urls: 'stun:stun2.l.google.com:19302' }
- ]
-}
-});
-}
-try {
-myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-document.getElementById('node-camera-feed').srcObject = myVideoStream;
-if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
-} catch (err) {
-document.getElementById('cam-node-status').innerText = "Camera Access Denied/Failed.";
-}
-}
+    function showInitialJoinerWait() {
+        showScreen('match-screen');
+        
+        const localVid = document.getElementById('local-vid');
+        const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) localVid.style.display = 'block';
+        if (activeMediaCall) remoteVid.style.display = 'block';
 
-function beamCameraToBoard() {
-const targetId = document.getElementById('target-board-id').value.toUpperCase().trim();
-if(!targetId || !myVideoStream) return;
-document.getElementById('cam-node-status').innerText = "Beaming Feed to " + targetId + "...";
-document.getElementById('cam-connect-box').style.display = 'none';
-peer.call(targetId, myVideoStream, { metadata: { type: 'external-camera' }});
-document.getElementById('cam-node-status').innerText = "LIVE: Streaming to Board.";
-}
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'none';
+        
+        document.getElementById('setup-online-wait').style.display = 'block';
+        document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to set Match Format and Bull Up...`;
+    }
 
-// --- UTILS & SCORING LOGIC ---
-function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
-function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
+    function initLocalSetup() {
+        showScreen('match-screen');
+        document.getElementById('start-modal').style.display = 'flex';
+        document.getElementById('setup-local').style.display = 'block';
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'none';
 
-function isMyTurn() {
-if (appMode === 'local') return true;
-return Number(state.turn) === Number(localPlayerNum);
-}
+        const p1Input = document.getElementById('rematch-p1-name');
+        const p2Input = document.getElementById('rematch-p2-name');
+        const p1Btn = document.getElementById('start-local-p1');
+        const p2Btn = document.getElementById('start-local-p2');
 
-function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
-function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
-function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
+        document.getElementById('rematch-local-legs').value = state.settings.targetLegs;
 
-function submitScore() {
-if(!isMyTurn()) return;
-if (currentInput === "") return;
-const score = parseInt(currentInput);
-currentInput = ""; updateInputUI();
-if (score > 180 || impossibleScores.includes(score)) { alert("INVALID SCORE"); return; }
+        p1Input.value = state.p1.name;
+        p2Input.value = state.p2.name;
+        p1Btn.innerText = state.p1.name + " Throws First";
+        p2Btn.innerText = state.p2.name + " Throws First";
 
-const p = state.turn === 1 ? state.p1 : state.p2;
-if (score > p.rem || p.rem - score === 1) { recordScore(p, 0, "Bust", 3); switchTurn(); }
-else if (score === p.rem) { p.pendingCheckoutScore = score; document.getElementById('checkout-modal').style.display = 'flex'; }
-else { recordScore(p, score, score, 3); switchTurn(); }
-}
+        p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
+        p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
+    }
 
-function recordScore(player, actualDeduction, displayScore, dartsUsed) {
-state.globalHistory.push(JSON.parse(JSON.stringify(state)));
+    function btnPlayRematch() {
+        if (appMode === 'local') {
+            initLocalSetup();
+        } else {
+            showScreen('match-screen');
+            
+            const localVid = document.getElementById('local-vid');
+            const remoteVid = document.getElementById('remote-vid');
+            if (myVideoStream) localVid.style.display = 'block';
+            if (activeMediaCall) remoteVid.style.display = 'block';
 
-if (player.history.length < 3) {
-player.first9Scored += actualDeduction;
-player.first9Darts += dartsUsed;
-}
+            document.getElementById('start-modal').style.display = 'flex';
+            
+            localRematchReady = false;
+            remoteRematchReady = false;
 
-player.rem -= actualDeduction;
-player.totalScored += actualDeduction;
-player.totalDarts += dartsUsed;
+            document.getElementById('setup-local').style.display = 'none';
+            document.getElementById('setup-online-name').style.display = 'block';
+            document.getElementById('setup-online-wait').style.display = 'none';
+            document.getElementById('setup-online-host').style.display = 'none';
 
-if (typeof displayScore === 'number') {
-if (displayScore === 180) player.scores180s++;
-else if (displayScore >= 140) player.scores140s++;
-else if (displayScore >= 100) player.scores100s++;
+            const myNameInput = document.getElementById('rematch-my-name');
+            myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
+        }
+    }
 
-if (displayScore > player.highestScore) player.highestScore = displayScore;
-}
+    function cancelRematch() {
+        document.getElementById('start-modal').style.display = 'none';
+        if (appMode === 'online') {
+            document.getElementById('local-vid').style.display = 'none';
+        }
+        showScreen('post-match-screen');
+    }
 
-player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
-}
+    function confirmStartLocal(startingPlayerNum) {
+        document.getElementById('start-modal').style.display = 'none';
+        const newP1 = document.getElementById('rematch-p1-name').value || "Player 1";
+        const newP2 = document.getElementById('rematch-p2-name').value || "Player 2";
+        
+        state.settings.targetLegs = parseInt(document.getElementById('rematch-local-legs').value);
+        
+        executeStart(startingPlayerNum, newP1, newP2);
+    }
 
-function completeLeg(checkoutDarts) {
-document.getElementById('checkout-modal').style.display = 'none';
-const p = state.turn === 1 ? state.p1 : state.p2;
+    function confirmReadyOnline() {
+        localNewName = document.getElementById('rematch-my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
+        localRematchReady = true;
 
-if (p.pendingCheckoutScore > p.highestCheckout) {
-p.highestCheckout = p.pendingCheckoutScore;
-}
+        document.getElementById('setup-online-name').style.display = 'none';
+        document.getElementById('setup-online-wait').style.display = 'block';
 
-recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
-p.legs++;
+        if (connection && connection.open) {
+            connection.send({ type: 'REMATCH_READY', name: localNewName });
+        }
+        checkOnlineRematchState();
+    }
 
-if (p.legs >= state.settings.targetLegs) {
-broadcastState();
-displayPostMatch(p);
-}
-else {
-state.startingPlayer = state.startingPlayer === 1 ? 2 : 1;
-resetLeg(); updateUI(); broadcastState();
-}
-}
+    function checkOnlineRematchState() {
+        if (localRematchReady && remoteRematchReady) {
+            document.getElementById('setup-online-wait').style.display = 'none';
 
-function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
-function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
-function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; up
+            if (localPlayerNum === 1) {
+                document.getElementById('setup-online-host').style.display = 'block';
+                
+                document.getElementById('online-host-legs').value = state.settings.targetLegs;
+                
+                state.p2.name = remoteNewName;
+                document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
+                document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
+            } else {
+                document.getElementById('setup-online-wait').style.display = 'block';
+                document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to set Match Format and Bull Up...`;
+            }
+        }
+    }
+
+    function confirmStartOnline(startingPlayerNum) {
+        document.getElementById('start-modal').style.display = 'none';
+        
+        const targetLegs = parseInt(document.getElementById('online-host-legs').value);
+        state.settings.targetLegs = targetLegs;
+
+        if (connection && connection.open) {
+            connection.send({
+                type: 'REMATCH_START',
+                startingPlayer: startingPlayerNum,
+                p1Name: localNewName,
+                p2Name: remoteNewName,
+                targetLegs: targetLegs 
+            });
+        }
+        executeStart(startingPlayerNum, localNewName, remoteNewName);
+    }
+
+    function executeStart(startingPlayerNum, p1Name, p2Name) {
+        if(p1Name) state.p1.name = p1Name;
+        if(p2Name) state.p2.name = p2Name;
+
+        state.p1 = getFreshPlayerState(state.p1.name);
+        state.p2 = getFreshPlayerState(state.p2.name);
+        state.startingPlayer = startingPlayerNum; 
+        
+        if (appMode === 'online') {
+            document.getElementById('match-badge').innerText = "ONLINE SYNC";
+            document.getElementById('match-badge').className = "connection-badge badge-online";
+            document.getElementById('match-cam-btn').style.display = 'block';
+            
+            document.getElementById('local-vid').style.display = 'none';
+        } else {
+            document.getElementById('match-cam-btn').style.display = 'none';
+        }
+        
+        setupMatchUI();
+        if (appMode === 'online' && localPlayerNum === 1) { broadcastState(); }
+    }
+
+    function displayPostMatch(winningPlayer) {
+        document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
+        
+        // Populate P1 Stats
+        document.getElementById('stat-p1-name').innerText = state.p1.name;
+        document.getElementById('stat-p1-legs').innerText = state.p1.legs;
+        document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
+        document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1);
+        document.getElementById('stat-p1-100s').innerText = state.p1.scores100s;
+        document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
+        document.getElementById('stat-p1-180s').innerText = state.p1.scores180s;
+        document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout;
+        document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
+        document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
+        document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
+
+        // Populate P2 Stats
+        document.getElementById('stat-p2-name').innerText = state.p2.name;
+        document.getElementById('stat-p2-legs').innerText = state.p2.legs;
+        document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
+        document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2);
+        document.getElementById('stat-p2-100s').innerText = state.p2.scores100s;
+        document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
+        document.getElementById('stat-p2-180s').innerText = state.p2.scores180s;
+        document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout;
+        document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
+        document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
+        document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
+
+        showScreen('post-match-screen');
+    }
+
+    function exportStatsText() {
+        const winnerName = state.p1.legs >= state.settings.targetLegs ? state.p1.name : state.p2.name;
+        const summary = `🎯 RAF DARTS MATCH SUMMARY 🎯\n` +
+            `------------------------------------------\n` +
+            `Result: ${state.p1.name} (${state.p1.legs}) vs (${state.p2.legs}) ${state.p2.name}\n` +
+            `Winner: ${winnerName}\n\n` +
+            `[${state.p1.name}]\n` +
+            `• Match Avg: ${calculateAverage(state.p1)}\n` +
+            `• First 9 Avg: ${calculateFirst9Average(state.p1)}\n` +
+            `• High Checkout: ${state.p1.highestCheckout}\n` +
+            `• High Score: ${state.p1.highestScore}\n` +
+            `• 100+ / 140+ / 180s: ${state.p1.scores100s} / ${state.p1.scores140s} / ${state.p1.scores180s}\n` +
+            `• Total Darts: ${state.p1.totalDarts}\n\n` +
+            `[${state.p2.name}]\n` +
+            `• Match Avg: ${calculateAverage(state.p2)}\n` +
+            `• First 9 Avg: ${calculateFirst9Average(state.p2)}\n` +
+            `• High Checkout: ${state.p2.highestCheckout}\n` +
+            `• High Score: ${state.p2.highestScore}\n` +
+            `• 100+ / 140+ / 180s: ${state.p2.scores100s} / ${state.p2.scores140s} / ${state.p2.scores180s}\n` +
+            `• Total Darts: ${state.p2.totalDarts}\n` +
+            `------------------------------------------\n` +
+            `Generated via RAF Darts Scorer Pro`;
+        
+        navigator.clipboard.writeText(summary).then(() => {
+            alert("Match report copied to clipboard! Ready to paste.");
+        }).catch(err => {
+            alert("Unable to auto-copy. Check browser permissions.");
+        });
+    }
+
+    function exportStatsCSV() {
+        const rows = [
+            ["Metric", state.p1.name, state.p2.name],
+            ["Legs Won", state.p1.legs, state.p2.legs],
+            ["Match Average", calculateAverage(state.p1), calculateAverage(state.p2)],
+            ["First 9 Average", calculateFirst9Average(state.p1), calculateFirst9Average(state.p2)],
+            ["100+ Hits", state.p1.scores100s, state.p2.scores100s],
+            ["140+ Hits", state.p1.scores140s, state.p2.scores140s],
+            ["180 Hits", state.p1.scores180s, state.p2.scores180s],
+            ["Highest Checkout", state.p1.highestCheckout, state.p2.highestCheckout],
+            ["Highest Score Thrown", state.p1.highestScore, state.p2.highestScore],
+            ["Total Points Scored", state.p1.totalScored, state.p2.totalScored],
+            ["Total Darts Thrown", state.p1.totalDarts, state.p2.totalDarts]
+        ];
+
+        let csvContent = "data:text/csv;charset=utf-8," 
+            + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+        
+        const encodedUri = encodeURI(csvContent);
+        const link = document.createElement("a");
+        link.setAttribute("href", encodedUri);
+        const dateStr = new Date().toISOString().slice(0,10);
+        link.setAttribute("download", `RAF_Match_${state.p1.name}_vs_${state.p2.name}_${dateStr}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    }
+
+    document.addEventListener('keydown', function(event) {
+        if (document.getElementById('match-screen').classList.contains('active') && 
+            document.getElementById('checkout-modal').style.display !== 'flex' &&
+            document.getElementById('start-modal').style.display !== 'flex') {
+            if (event.key >= '0' && event.key <= '9') appendNum(event.key);
+            else if (event.key === 'Enter') submitScore();
+            else if (event.key === 'Backspace') { clearInput(); }
+            else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
+        }
+    });
+</script>
+</body>
+</html>
