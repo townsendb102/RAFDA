@@ -148,7 +148,7 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
+        /* Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -223,6 +223,14 @@
                 <input type="text" id="local-p2" value="Player 2">
                 <label>Starting Score</label>
                 <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
+                <label>Match Format</label>
+                <select id="local-legs">
+                    <option value="1">Best of 1 (First to 1)</option>
+                    <option value="2">Best of 3 (First to 2)</option>
+                    <option value="3" selected>Best of 5 (First to 3)</option>
+                    <option value="4">Best of 7 (First to 4)</option>
+                    <option value="6">Best of 11 (First to 6)</option>
+                </select>
                 <button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
                 <button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
             </div>
@@ -518,7 +526,19 @@
 
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
-        peer = new Peer(shortId); 
+        
+        // --- ADDED STUN SERVERS HERE SO EXTERNAL USERS CAN CONNECT ---
+        peer = new Peer(shortId, {
+            config: {
+                'iceServers': [
+                    { urls: 'stun:stun.l.google.com:19302' },
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'stun:stun2.l.google.com:19302' },
+                    { urls: 'stun:stun3.l.google.com:19302' },
+                    { urls: 'stun:stun4.l.google.com:19302' }
+                ]
+            }
+        }); 
         
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
@@ -667,7 +687,20 @@
     // --- 3. CAMERA NODE MODE ---
     async function initCameraNode() {
         showScreen('camera-node-screen');
-        if (!peer) { peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase()); }
+        if (!peer) { 
+            // --- ADDED STUN SERVERS HERE TOO ---
+            peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
+                config: {
+                    'iceServers': [
+                        { urls: 'stun:stun.l.google.com:19302' },
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'stun:stun2.l.google.com:19302' },
+                        { urls: 'stun:stun3.l.google.com:19302' },
+                        { urls: 'stun:stun4.l.google.com:19302' }
+                    ]
+                }
+            }); 
+        }
         try {
             myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             document.getElementById('node-camera-feed').srcObject = myVideoStream;
