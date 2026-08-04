@@ -495,9 +495,7 @@
     let previewStream = null;
     let previewTrack = null;
 
-    // --- FIX: GENERATE UNAMBIGUOUS IDs ---
     function generateCleanID() {
-        // Excludes 0, O, 1, I, L to completely prevent typos
         const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
         let result = '';
         for (let i = 0; i < 5; i++) {
@@ -644,7 +642,6 @@
         initLocalSetup();
     }
 
-    // --- 2. ONLINE LOBBY ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -654,15 +651,15 @@
     function initPeer() {
         const shortId = generateCleanID();
         
-        // --- ADDED TURN SERVERS FOR FIREWALL BYPASS ---
+        // --- ADDED TURNS (TURN OVER TLS) TO ENCRYPT AND DISGUISE TRAFFIC ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
                     { urls: 'stun:global.stun.twilio.com:3478' },
-                    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                    { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:80?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                 ]
             }
         }); 
@@ -747,14 +744,15 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        connection = peer.connect(remoteId, { reliable: true });
+        // Removed reliable: true to prevent SCTP hangs on strict networks
+        connection = peer.connect(remoteId);
         
-        // Increased timeout to 20 seconds to allow TURN server relay negotiation
+        // Increased timeout to 25 seconds to allow encrypted TURNS relay negotiation
         window.connTimeout = setTimeout(() => {
             if (!connection || !connection.open) {
                 document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.</span>';
             }
-        }, 20000);
+        }, 25000);
 
         connection.on('open', () => {
             clearTimeout(window.connTimeout);
@@ -846,9 +844,9 @@
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
                         { urls: 'stun:global.stun.twilio.com:3478' },
-                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                        { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:80?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                     ]
                 }
             }); 
