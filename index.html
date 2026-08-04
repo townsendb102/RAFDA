@@ -163,7 +163,7 @@
         }
         
         /* Standard modals keep the dark blurred background */
-        #qr-modal, #checkout-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+        #qr-modal, #checkout-modal, #camera-preview-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
     </style>
 </head>
 <body>
@@ -246,9 +246,8 @@
                     <div class="id-display" id="my-peer-id">WAIT...</div>
                     <button class="btn-secondary" onclick="copyMyId()" id="copy-btn" style="width: 100%; margin-bottom:15px;">Copy ID</button>
                     
-                    <!-- ADDED: Use Built-in Camera Option -->
                     <div style="display: flex; flex-direction: column; gap: 10px;">
-                        <button class="btn-cam-link" onclick="useLocalCamera()">📷 Use Built-in Camera</button>
+                        <button class="btn-cam-link" onclick="openCameraPreview()">📷 Use Built-in Camera</button>
                         <button class="btn-cam-link" style="background: transparent; border-color: #555; color: #aaa;" onclick="showQRModal()">📱 Link External Phone</button>
                     </div>
                 </div>
@@ -284,9 +283,8 @@
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <!-- ADDED: Match Screen built-in camera toggle -->
                 <div id="match-cam-buttons" style="display:none; gap:5px;">
-                    <button class="btn-cam-small" onclick="useLocalCamera()">📷 Built-in</button>
+                    <button class="btn-cam-small" onclick="openCameraPreview()">📷 Built-in</button>
                     <button class="btn-cam-small" onclick="showQRModal()">📱 Link Ext.</button>
                 </div>
                 <div class="connection-badge badge-local" id="match-badge">LOCAL</div>
@@ -373,6 +371,28 @@
             </div>
         </div>
     </main>
+</div>
+
+<!-- Camera Preview Modal -->
+<div class="modal-overlay" id="camera-preview-modal">
+    <div class="modal">
+        <h3 style="margin-bottom: 10px;">Camera Setup</h3>
+        
+        <!-- Live Video Preview -->
+        <video id="preview-vid" style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; margin-bottom: 15px; object-fit: contain;" autoplay playsinline muted></video>
+        
+        <!-- Hardware Zoom Controls -->
+        <div id="zoom-container" style="display: none; margin-bottom: 15px; text-align: left;">
+            <label style="color:var(--tech-cyan); font-size:0.85em; margin-bottom:5px; display:block; text-transform: uppercase; font-weight: bold;">Zoom Adjust</label>
+            <input type="range" id="camera-zoom" style="width: 100%; cursor: pointer;">
+        </div>
+        <p id="zoom-not-supported" style="display: none; color: #888; font-size: 0.8em; margin-bottom: 15px;">Hardware zoom is not supported by this camera.</p>
+        
+        <div class="modal-buttons">
+            <button onclick="confirmCameraPreview()" style="background: var(--tech-cyan); color: #000;">Confirm & Use</button>
+            <button onclick="cancelCameraPreview()">Cancel</button>
+        </div>
+    </div>
 </div>
 
 <div class="modal-overlay" id="qr-modal">
@@ -472,6 +492,10 @@
     let myVideoStream = null;     
     let activeMediaCall = null;   
 
+    // --- NEW PREVIEW VARIABLES ---
+    let previewStream = null;
+    let previewTrack = null;
+
     const getFreshPlayerState = (name) => ({ 
         name: name, legs: 0, rem: 501, history: [], 
         totalScored: 0, totalDarts: 0, highestScore: 0,
@@ -511,33 +535,90 @@
         }
     }
 
-    // --- NEW: USE LOCAL CAMERA LOGIC ---
-    async function useLocalCamera() {
+    // --- NEW: CAMERA PREVIEW & ZOOM LOGIC ---
+    async function openCameraPreview() {
+        document.getElementById('camera-preview-modal').style.display = 'flex';
         try {
-            // Prefer the rear camera if on mobile, otherwise it grabs default
-            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            // Prefer the rear camera if on mobile
+            previewStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
             
-            document.getElementById('video-bar').style.display = 'flex';
-            const localVid = document.getElementById('local-vid');
-            localVid.srcObject = myVideoStream;
-            
-            // Show local video if in Setup, hide if match is actively playing
-            if (document.getElementById('start-modal').style.display !== 'flex') {
-                localVid.style.display = 'none';
-            } else {
-                localVid.style.display = 'block';
-            }
+            const previewVid = document.getElementById('preview-vid');
+            previewVid.srcObject = previewStream;
 
-            // If already connected to opponent, beam them the video immediately
-            if (appMode === 'online' && opponentPeerId && connection && connection.open) {
-                const outCall = peer.call(opponentPeerId, myVideoStream);
-                activeMediaCall = outCall;
-                outCall.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream, false);
-                });
-            }
+            const [track] = previewStream.getVideoTracks();
+            previewTrack = track;
+            
+            // Allow 500ms for hardware to report its capabilities to the browser
+            setTimeout(() => {
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                const zoomContainer = document.getElementById('zoom-container');
+                const zoomSlider = document.getElementById('camera-zoom');
+                const zoomNotSupported = document.getElementById('zoom-not-supported');
+                
+                if (capabilities.zoom) {
+                    zoomContainer.style.display = 'block';
+                    zoomNotSupported.style.display = 'none';
+                    zoomSlider.min = capabilities.zoom.min;
+                    zoomSlider.max = capabilities.zoom.max;
+                    zoomSlider.step = capabilities.zoom.step;
+                    zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
+                    
+                    // Live adjust hardware zoom as slider moves
+                    zoomSlider.oninput = (e) => {
+                        track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
+                    };
+                } else {
+                    zoomContainer.style.display = 'none';
+                    zoomNotSupported.style.display = 'block';
+                }
+            }, 500);
+
         } catch (err) {
+            document.getElementById('camera-preview-modal').style.display = 'none';
             alert("Camera access was denied or no camera found on this device.");
+        }
+    }
+
+    function cancelCameraPreview() {
+        document.getElementById('camera-preview-modal').style.display = 'none';
+        if (previewStream) {
+            previewStream.getTracks().forEach(track => track.stop());
+            previewStream = null;
+            previewTrack = null;
+        }
+    }
+
+    function confirmCameraPreview() {
+        document.getElementById('camera-preview-modal').style.display = 'none';
+        if (!previewStream) return;
+        
+        // Kill old stream if it exists to save battery/bandwidth
+        if (myVideoStream) {
+            myVideoStream.getTracks().forEach(t => t.stop());
+        }
+
+        // Lock in the preview stream
+        myVideoStream = previewStream;
+        previewStream = null; 
+        
+        document.getElementById('video-bar').style.display = 'flex';
+        const localVid = document.getElementById('local-vid');
+        localVid.srcObject = myVideoStream;
+        
+        // Show local video if in Setup, hide if match is actively playing
+        if (document.getElementById('start-modal').style.display !== 'flex') {
+            localVid.style.display = 'none';
+        } else {
+            localVid.style.display = 'block';
+        }
+
+        // If already connected to opponent, beam them the video immediately
+        if (appMode === 'online' && opponentPeerId && connection && connection.open) {
+            const outCall = peer.call(opponentPeerId, myVideoStream);
+            activeMediaCall = outCall;
+            outCall.on('stream', remoteStream => {
+                setupRemoteVideoStream(remoteStream, false);
+            });
         }
     }
 
@@ -695,6 +776,15 @@
             if (localPlayerNum === 2) {
                 state.p1.name = data.hostName;
                 showInitialJoinerWait(); 
+                
+                // STRICT SEQUENCING: Only initiate video call AFTER data handshake completes successfully
+                if(myVideoStream && opponentPeerId) {
+                    const call = peer.call(opponentPeerId, myVideoStream);
+                    activeMediaCall = call;
+                    call.on('stream', remoteStream => {
+                        setupRemoteVideoStream(remoteStream, false);
+                    });
+                }
             }
         } 
         else if (data.type === 'STATE_SYNC') {
