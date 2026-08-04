@@ -223,14 +223,6 @@
                 <input type="text" id="local-p2" value="Player 2">
                 <label>Starting Score</label>
                 <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
-                <label>Match Format</label>
-                <select id="local-legs">
-                    <option value="1">Best of 1 (First to 1)</option>
-                    <option value="2">Best of 3 (First to 2)</option>
-                    <option value="3" selected>Best of 5 (First to 3)</option>
-                    <option value="4">Best of 7 (First to 4)</option>
-                    <option value="6">Best of 11 (First to 6)</option>
-                </select>
                 <button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
                 <button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
             </div>
@@ -517,7 +509,7 @@
         initLocalSetup();
     }
 
-    // --- 2. ONLINE LOBBY (Pure Original PeerJS Default) ---
+    // --- 2. ONLINE LOBBY WITH GOOGLE STUN SERVERS ADDED ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -527,18 +519,14 @@
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
         
-        // --- ADDED STUN SERVERS HERE SO EXTERNAL USERS CAN CONNECT ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun2.l.google.com:19302' },
-                    { urls: 'stun:stun3.l.google.com:19302' },
-                    { urls: 'stun:stun4.l.google.com:19302' }
+                    { urls: 'stun:stun1.l.google.com:19302' }
                 ]
             }
-        }); 
+        });
         
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
@@ -639,21 +627,21 @@
             if (localPlayerNum === 1 && data.player === 2) {
                 state.p1.name = document.getElementById('online-name').value || "Player 1";
                 state.p2.name = data.name;
+                updateUI();
                 
-                const reply = () => {
-                    conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
-                    showInitialHostSetup();
-                };
-
-                if (connection.open) { reply(); } 
-                else { connection.on('open', reply); }
+                // HOST goes to the setup screen AND tells the joiner to launch theirs
+                state.p1 = getFreshPlayerState(state.p1.name);
+                state.p2 = getFreshPlayerState(state.p2.name);
+                
+                conn.send({ type: 'LAUNCH_SETUP', hostName: state.p1.name });
+                initRematch();
             }
         } 
-        else if (data.type === 'JOINER_AWAIT_BULLUP') {
-            // JOINER receives Host's command to enter the Bull Up room
+        else if (data.type === 'LAUNCH_SETUP') {
+            // JOINER receives Host's command to enter the Setup room
             if (localPlayerNum === 2) {
                 state.p1.name = data.hostName;
-                showInitialJoinerWait(); 
+                initRematch(); 
             }
         } 
         else if (data.type === 'STATE_SYNC') {
@@ -688,15 +676,11 @@
     async function initCameraNode() {
         showScreen('camera-node-screen');
         if (!peer) { 
-            // --- ADDED STUN SERVERS HERE TOO ---
             peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
                 config: {
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun2.l.google.com:19302' },
-                        { urls: 'stun:stun3.l.google.com:19302' },
-                        { urls: 'stun:stun4.l.google.com:19302' }
+                        { urls: 'stun:stun1.l.google.com:19302' }
                     ]
                 }
             }); 
@@ -824,47 +808,6 @@
     }
 
     // --- SETUP / REMATCH / BULL UP LOGIC ---
-    
-    function showInitialHostSetup() {
-        showScreen('match-screen');
-        
-        const localVid = document.getElementById('local-vid');
-        const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) localVid.style.display = 'block';
-        if (activeMediaCall) remoteVid.style.display = 'block';
-
-        document.getElementById('start-modal').style.display = 'flex';
-        document.getElementById('setup-local').style.display = 'none';
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-wait').style.display = 'none';
-        
-        document.getElementById('setup-online-host').style.display = 'block';
-        
-        document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
-        
-        localNewName = state.p1.name;
-        remoteNewName = state.p2.name;
-        document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
-        document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
-    }
-
-    function showInitialJoinerWait() {
-        showScreen('match-screen');
-        
-        const localVid = document.getElementById('local-vid');
-        const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) localVid.style.display = 'block';
-        if (activeMediaCall) remoteVid.style.display = 'block';
-
-        document.getElementById('start-modal').style.display = 'flex';
-        document.getElementById('setup-local').style.display = 'none';
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-host').style.display = 'none';
-        
-        document.getElementById('setup-online-wait').style.display = 'block';
-        document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to set Match Format and Bull Up...`;
-    }
-
     function initLocalSetup() {
         showScreen('match-screen');
         document.getElementById('start-modal').style.display = 'flex';
@@ -893,26 +836,33 @@
         if (appMode === 'local') {
             initLocalSetup();
         } else {
-            showScreen('match-screen');
-            
-            const localVid = document.getElementById('local-vid');
-            const remoteVid = document.getElementById('remote-vid');
-            if (myVideoStream) localVid.style.display = 'block';
-            if (activeMediaCall) remoteVid.style.display = 'block';
-
-            document.getElementById('start-modal').style.display = 'flex';
-            
-            localRematchReady = false;
-            remoteRematchReady = false;
-
-            document.getElementById('setup-local').style.display = 'none';
-            document.getElementById('setup-online-name').style.display = 'block';
-            document.getElementById('setup-online-wait').style.display = 'none';
-            document.getElementById('setup-online-host').style.display = 'none';
-
-            const myNameInput = document.getElementById('rematch-my-name');
-            myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
+            if (connection && connection.open) {
+                connection.send({ type: 'LAUNCH_SETUP', hostName: state.p1.name });
+            }
+            initRematch();
         }
+    }
+
+    function initRematch() {
+        showScreen('match-screen');
+        
+        const localVid = document.getElementById('local-vid');
+        const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) localVid.style.display = 'block';
+        if (activeMediaCall) remoteVid.style.display = 'block';
+
+        document.getElementById('start-modal').style.display = 'flex';
+        
+        localRematchReady = false;
+        remoteRematchReady = false;
+
+        document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'block';
+        document.getElementById('setup-online-wait').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'none';
+
+        const myNameInput = document.getElementById('rematch-my-name');
+        myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
     }
 
     function cancelRematch() {
@@ -953,7 +903,7 @@
             if (localPlayerNum === 1) {
                 document.getElementById('setup-online-host').style.display = 'block';
                 
-                document.getElementById('online-host-legs').value = state.settings.targetLegs;
+                document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
                 
                 state.p2.name = remoteNewName;
                 document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
@@ -1008,7 +958,6 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -1021,7 +970,6 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
