@@ -539,7 +539,6 @@
     async function openCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'flex';
         try {
-            // FIX: "ideal: environment" prevents Android from choosing dead/depth cameras
             previewStream = await navigator.mediaDevices.getUserMedia({ 
                 video: { facingMode: { ideal: "environment" } }, 
                 audio: false 
@@ -547,8 +546,6 @@
             
             const previewVid = document.getElementById('preview-vid');
             previewVid.srcObject = previewStream;
-            
-            // FIX: Explicitly tell Android to play the stream inside the modal
             previewVid.play().catch(e => console.warn("Auto-play prevented", e));
 
             const [track] = previewStream.getVideoTracks();
@@ -611,7 +608,6 @@
         const localVid = document.getElementById('local-vid');
         localVid.srcObject = myVideoStream;
         
-        // FIX: Force play
         localVid.play().catch(e => console.warn(e));
         
         // Show local video if in Setup, hide if match is actively playing
@@ -656,11 +652,15 @@
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
         
+        // --- ADDED TURN SERVERS BACK FOR FIREWALL BYPASS ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
+                    { urls: 'stun:stun1.l.google.com:19302' },
+                    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                 ]
             }
         }); 
@@ -736,17 +736,25 @@
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
-        document.getElementById('lobby-status').innerText = "CONNECTING...";
+        document.getElementById('lobby-status').innerText = "CONNECTING (BYPASSING FIREWALL)...";
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
         connection = peer.connect(remoteId);
         
+        let connTimeout = setTimeout(() => {
+            if (!connection || !connection.open) {
+                document.getElementById('lobby-status').innerHTML = "CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.";
+            }
+        }, 15000);
+
         connection.on('open', () => {
+            clearTimeout(connTimeout);
             document.getElementById('lobby-status').innerText = "SYNCING DATA...";
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
+            // STRICT SEQUENCING: Wait 1.5 seconds for data handshake before throwing video down the pipe
             if(myVideoStream) {
                 setTimeout(() => {
                     const call = peer.call(remoteId, myVideoStream);
@@ -759,6 +767,7 @@
         });
 
         connection.on('error', err => {
+            clearTimeout(connTimeout);
             document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size:0.8em;">ERROR: ' + err.type + '</span>';
         });
 
@@ -788,7 +797,8 @@
                 state.p1.name = data.hostName;
                 showInitialJoinerWait(); 
                 
-                if(myVideoStream && opponentPeerId) {
+                // STRICT SEQUENCING: Fallback if video wasn't started in the open event
+                if(myVideoStream && opponentPeerId && !activeMediaCall) {
                     const call = peer.call(opponentPeerId, myVideoStream);
                     activeMediaCall = call;
                     call.on('stream', remoteStream => {
@@ -833,7 +843,10 @@
                 config: {
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
+                        { urls: 'stun:stun1.l.google.com:19302' },
+                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                     ]
                 }
             }); 
