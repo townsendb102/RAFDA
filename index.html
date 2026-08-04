@@ -148,7 +148,7 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
+        /* Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -244,9 +244,13 @@
                 <div class="lobby-box">
                     <div style="color: #aaa; font-weight: 600; font-size: 0.8em;">YOUR NETWORK ID</div>
                     <div class="id-display" id="my-peer-id">WAIT...</div>
-                    <button class="btn-secondary" onclick="copyMyId()" id="copy-btn" style="width: 100%; margin-bottom:10px;">Copy ID</button>
+                    <button class="btn-secondary" onclick="copyMyId()" id="copy-btn" style="width: 100%; margin-bottom:15px;">Copy ID</button>
                     
-                    <button class="btn-cam-link" onclick="showQRModal()">📱 Link Phone Camera</button>
+                    <!-- ADDED: Use Built-in Camera Option -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <button class="btn-cam-link" onclick="useLocalCamera()">📷 Use Built-in Camera</button>
+                        <button class="btn-cam-link" style="background: transparent; border-color: #555; color: #aaa;" onclick="showQRModal()">📱 Link External Phone</button>
+                    </div>
                 </div>
                 
                 <label>Your Name</label>
@@ -280,7 +284,11 @@
         <div class="match-info">
             <div>Race to <span id="target-legs">3</span></div>
             <div style="display:flex; gap:10px; align-items:center;">
-                <button id="match-cam-btn" class="btn-cam-small" onclick="showQRModal()">📱 Link Cam</button>
+                <!-- ADDED: Match Screen built-in camera toggle -->
+                <div id="match-cam-buttons" style="display:none; gap:5px;">
+                    <button class="btn-cam-small" onclick="useLocalCamera()">📷 Built-in</button>
+                    <button class="btn-cam-small" onclick="showQRModal()">📱 Link Ext.</button>
+                </div>
                 <div class="connection-badge badge-local" id="match-badge">LOCAL</div>
             </div>
         </div>
@@ -367,7 +375,6 @@
     </main>
 </div>
 
-<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -377,7 +384,6 @@
     </div>
 </div>
 
-<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -388,11 +394,9 @@
     </div>
 </div>
 
-<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
 
-        <!-- LOCAL MODE SETTINGS -->
         <div id="setup-local" style="text-align: left;">
             <h3 id="start-modal-title" style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
             <div style="margin-bottom: 10px;">
@@ -420,7 +424,6 @@
             </div>
         </div>
 
-        <!-- ONLINE MODE SETTINGS: INITIAL NAME ENTRY -->
         <div id="setup-online-name" style="display:none; text-align: left;">
             <h3 style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
             <div style="margin-bottom: 15px;">
@@ -430,12 +433,10 @@
             <button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
         </div>
 
-        <!-- ONLINE MODE SETTINGS: JOINER WAITING FOR HOST -->
         <div id="setup-online-wait" style="display:none;">
             <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
         </div>
 
-        <!-- ONLINE MODE SETTINGS: HOST CHOOSES LEGS & BULL UP -->
         <div id="setup-online-host" style="display:none; text-align: left;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
             
@@ -510,17 +511,46 @@
         }
     }
 
+    // --- NEW: USE LOCAL CAMERA LOGIC ---
+    async function useLocalCamera() {
+        try {
+            // Prefer the rear camera if on mobile, otherwise it grabs default
+            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            
+            document.getElementById('video-bar').style.display = 'flex';
+            const localVid = document.getElementById('local-vid');
+            localVid.srcObject = myVideoStream;
+            
+            // Show local video if in Setup, hide if match is actively playing
+            if (document.getElementById('start-modal').style.display !== 'flex') {
+                localVid.style.display = 'none';
+            } else {
+                localVid.style.display = 'block';
+            }
+
+            // If already connected to opponent, beam them the video immediately
+            if (appMode === 'online' && opponentPeerId && connection && connection.open) {
+                const outCall = peer.call(opponentPeerId, myVideoStream);
+                activeMediaCall = outCall;
+                outCall.on('stream', remoteStream => {
+                    setupRemoteVideoStream(remoteStream, false);
+                });
+            }
+        } catch (err) {
+            alert("Camera access was denied or no camera found on this device.");
+        }
+    }
+
     // --- 1. LOCAL MATCH ---
     function startLocalMatch() {
         appMode = 'local';
         state.settings.startScore = parseInt(document.getElementById('local-score').value);
-        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
         state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
         
         document.getElementById('match-badge').innerText = "LOCAL";
         document.getElementById('match-badge').className = "connection-badge badge-local";
-        document.getElementById('match-cam-btn').style.display = 'none'; 
+        document.getElementById('match-cam-buttons').style.display = 'none'; 
         
         initLocalSetup();
     }
@@ -617,16 +647,14 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        // Put reliable back to normal to prevent dropouts
-        connection = peer.connect(remoteId, { reliable: true });
+        connection = peer.connect(remoteId);
         
         connection.on('open', () => {
-            document.getElementById('lobby-status').innerText = "SYNCING...";
+            document.getElementById('lobby-status').innerText = "SYNCING DATA...";
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
-            // FIX: THE STAGGER DELAY.
-            // Wait 1.5 seconds before firing the video request so the text data can safely connect without crashing Safari
+            // STRICT SEQUENCING: Wait 1.5 seconds for data handshake before throwing video down the pipe
             if(myVideoStream) {
                 setTimeout(() => {
                     const call = peer.call(remoteId, myVideoStream);
@@ -639,7 +667,7 @@
         });
 
         connection.on('error', err => {
-            document.getElementById('lobby-status').innerText = "ERROR: " + err;
+            document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size:0.8em;">ERROR: ' + err.type + '</span>';
         });
 
         connection.on('data', data => handleNetworkData(data, connection));
@@ -675,7 +703,7 @@
                document.getElementById('post-match-screen').classList.contains('active') === false) {
                 document.getElementById('match-badge').innerText = "ONLINE SYNC";
                 document.getElementById('match-badge').className = "connection-badge badge-online";
-                document.getElementById('match-cam-btn').style.display = 'block';
+                document.getElementById('match-cam-buttons').style.display = 'flex';
                 showScreen('match-screen');
             }
             updateUI();
@@ -1003,11 +1031,11 @@
         if (appMode === 'online') {
             document.getElementById('match-badge').innerText = "ONLINE SYNC";
             document.getElementById('match-badge').className = "connection-badge badge-online";
-            document.getElementById('match-cam-btn').style.display = 'block';
+            document.getElementById('match-cam-buttons').style.display = 'flex';
             
             document.getElementById('local-vid').style.display = 'none';
         } else {
-            document.getElementById('match-cam-btn').style.display = 'none';
+            document.getElementById('match-cam-buttons').style.display = 'none';
         }
         
         setupMatchUI();
