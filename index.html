@@ -492,9 +492,19 @@
     let myVideoStream = null;     
     let activeMediaCall = null;   
 
-    // --- NEW PREVIEW VARIABLES ---
     let previewStream = null;
     let previewTrack = null;
+
+    // --- FIX: GENERATE UNAMBIGUOUS IDs ---
+    function generateCleanID() {
+        // Excludes 0, O, 1, I, L to completely prevent typos
+        const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+        let result = '';
+        for (let i = 0; i < 5; i++) {
+            result += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        return result;
+    }
 
     const getFreshPlayerState = (name) => ({ 
         name: name, legs: 0, rem: 501, history: [], 
@@ -507,11 +517,11 @@
     let currentInput = "";
     const impossibleScores = [163, 166, 169, 172, 173, 175, 176, 178, 179];
 
-    // Rematch Sync Tracking
     let localRematchReady = false;
     let remoteRematchReady = false;
     let localNewName = "";
     let remoteNewName = "";
+    window.connTimeout = null;
 
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -535,7 +545,6 @@
         }
     }
 
-    // --- NEW: CAMERA PREVIEW & ZOOM LOGIC ---
     async function openCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'flex';
         try {
@@ -551,7 +560,6 @@
             const [track] = previewStream.getVideoTracks();
             previewTrack = track;
             
-            // Allow 500ms for hardware to report its capabilities to the browser
             setTimeout(() => {
                 const capabilities = track.getCapabilities ? track.getCapabilities() : {};
                 const zoomContainer = document.getElementById('zoom-container');
@@ -566,7 +574,6 @@
                     zoomSlider.step = capabilities.zoom.step;
                     zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
                     
-                    // Live adjust hardware zoom as slider moves
                     zoomSlider.oninput = (e) => {
                         track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
                     };
@@ -595,12 +602,10 @@
         document.getElementById('camera-preview-modal').style.display = 'none';
         if (!previewStream) return;
         
-        // Kill old stream if it exists to save battery/bandwidth
         if (myVideoStream) {
             myVideoStream.getTracks().forEach(t => t.stop());
         }
 
-        // Lock in the preview stream
         myVideoStream = previewStream;
         previewStream = null; 
         
@@ -610,14 +615,12 @@
         
         localVid.play().catch(e => console.warn(e));
         
-        // Show local video if in Setup, hide if match is actively playing
         if (document.getElementById('start-modal').style.display !== 'flex') {
             localVid.style.display = 'none';
         } else {
             localVid.style.display = 'block';
         }
 
-        // If already connected to opponent, beam them the video immediately
         if (appMode === 'online' && opponentPeerId && connection && connection.open) {
             const outCall = peer.call(opponentPeerId, myVideoStream);
             activeMediaCall = outCall;
@@ -627,7 +630,6 @@
         }
     }
 
-    // --- 1. LOCAL MATCH ---
     function startLocalMatch() {
         appMode = 'local';
         state.settings.startScore = parseInt(document.getElementById('local-score').value);
@@ -642,7 +644,6 @@
         initLocalSetup();
     }
 
-    // --- 2. ONLINE LOBBY ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -650,17 +651,13 @@
     }
 
     function initPeer() {
-        const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
+        const shortId = generateCleanID();
         
-        // --- ADDED TURN SERVERS BACK FOR FIREWALL BYPASS ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                    { urls: 'stun:global.stun.twilio.com:3478' }
                 ]
             }
         }); 
@@ -674,7 +671,6 @@
             });
         });
 
-        // HOST listens for connection
         peer.on('connection', conn => {
             connection = conn;
             localPlayerNum = 1;
@@ -706,7 +702,15 @@
                 });
             }
         });
-        peer.on('error', err => { console.error("PeerJS Error:", err); });
+
+        // --- FIX: INSTANT TYPO DETECTION ---
+        peer.on('error', err => { 
+            console.error("PeerJS Error:", err); 
+            if (err.type === 'peer-unavailable') {
+                if (window.connTimeout) clearTimeout(window.connTimeout);
+                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">ERROR: ID NOT FOUND.<br>Check for typos!</span>';
+            }
+        });
     }
 
     function setupRemoteVideoStream(stream, isLocal) {
@@ -732,29 +736,28 @@
         }
     }
 
-    // JOINER connecting to HOST
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
-        document.getElementById('lobby-status').innerText = "CONNECTING (BYPASSING FIREWALL)...";
+        document.getElementById('lobby-status').innerText = "SEARCHING FOR MATCH...";
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        connection = peer.connect(remoteId);
+        // Re-added reliable:true as data channels need it to ensure score syncs don't drop
+        connection = peer.connect(remoteId, { reliable: true });
         
-        let connTimeout = setTimeout(() => {
+        window.connTimeout = setTimeout(() => {
             if (!connection || !connection.open) {
-                document.getElementById('lobby-status').innerHTML = "CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.";
+                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.</span>';
             }
-        }, 15000);
+        }, 12000);
 
         connection.on('open', () => {
-            clearTimeout(connTimeout);
+            clearTimeout(window.connTimeout);
             document.getElementById('lobby-status').innerText = "SYNCING DATA...";
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
-            // STRICT SEQUENCING: Wait 1.5 seconds for data handshake before throwing video down the pipe
             if(myVideoStream) {
                 setTimeout(() => {
                     const call = peer.call(remoteId, myVideoStream);
@@ -767,17 +770,15 @@
         });
 
         connection.on('error', err => {
-            clearTimeout(connTimeout);
+            clearTimeout(window.connTimeout);
             document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size:0.8em;">ERROR: ' + err.type + '</span>';
         });
 
         connection.on('data', data => handleNetworkData(data, connection));
     }
 
-    // --- BULLETPROOF DATA ROUTER ---
     function handleNetworkData(data, conn) {
         if (data.type === 'HANDSHAKE') {
-            // HOST receives Joiner's connection
             if (localPlayerNum === 1 && data.player === 2) {
                 state.p1.name = document.getElementById('online-name').value || "Player 1";
                 state.p2.name = data.name;
@@ -792,12 +793,10 @@
             }
         } 
         else if (data.type === 'JOINER_AWAIT_BULLUP') {
-            // JOINER receives Host's command to enter the Bull Up room
             if (localPlayerNum === 2) {
                 state.p1.name = data.hostName;
                 showInitialJoinerWait(); 
                 
-                // STRICT SEQUENCING: Fallback if video wasn't started in the open event
                 if(myVideoStream && opponentPeerId && !activeMediaCall) {
                     const call = peer.call(opponentPeerId, myVideoStream);
                     activeMediaCall = call;
@@ -835,18 +834,14 @@
 
     function broadcastState() { if (appMode === 'online' && connection && connection.open) connection.send({ type: 'STATE_SYNC', state: state }); }
 
-    // --- 3. CAMERA NODE MODE ---
     async function initCameraNode() {
         showScreen('camera-node-screen');
         if (!peer) { 
-            peer = new Peer(Math.random().toString(36).substring(2, 8).toUpperCase(), {
+            peer = new Peer(generateCleanID(), {
                 config: {
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                        { urls: 'stun:global.stun.twilio.com:3478' }
                     ]
                 }
             }); 
@@ -875,7 +870,6 @@
         document.getElementById('cam-node-status').innerText = "LIVE: Streaming to Board.";
     }
 
-    // --- UTILS & SCORING LOGIC ---
     function showQRModal() { document.getElementById('qr-modal').style.display = 'flex'; }
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
@@ -979,8 +973,6 @@
         }
     }
 
-    // --- SETUP / REMATCH / BULL UP LOGIC ---
-    
     function showInitialHostSetup() {
         showScreen('match-screen');
         
@@ -1182,7 +1174,6 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -1195,7 +1186,6 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
