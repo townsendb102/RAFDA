@@ -644,6 +644,7 @@
         initLocalSetup();
     }
 
+    // --- 2. ONLINE LOBBY ---
     function initOnlineLobby() {
         appMode = 'online';
         showScreen('online-lobby-screen');
@@ -653,11 +654,15 @@
     function initPeer() {
         const shortId = generateCleanID();
         
+        // --- ADDED TURN SERVERS FOR FIREWALL BYPASS ---
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:global.stun.twilio.com:3478' }
+                    { urls: 'stun:global.stun.twilio.com:3478' },
+                    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                 ]
             }
         }); 
@@ -703,7 +708,6 @@
             }
         });
 
-        // --- FIX: INSTANT TYPO DETECTION ---
         peer.on('error', err => { 
             console.error("PeerJS Error:", err); 
             if (err.type === 'peer-unavailable') {
@@ -743,14 +747,14 @@
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        // Re-added reliable:true as data channels need it to ensure score syncs don't drop
         connection = peer.connect(remoteId, { reliable: true });
         
+        // Increased timeout to 20 seconds to allow TURN server relay negotiation
         window.connTimeout = setTimeout(() => {
             if (!connection || !connection.open) {
                 document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.</span>';
             }
-        }, 12000);
+        }, 20000);
 
         connection.on('open', () => {
             clearTimeout(window.connTimeout);
@@ -841,7 +845,10 @@
                 config: {
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:global.stun.twilio.com:3478' }
+                        { urls: 'stun:global.stun.twilio.com:3478' },
+                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
                     ]
                 }
             }); 
@@ -1174,6 +1181,7 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
+        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -1186,6 +1194,7 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
+        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
