@@ -148,7 +148,7 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
+        /* 100% Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -367,6 +367,7 @@
     </main>
 </div>
 
+<!-- QR Modal -->
 <div class="modal-overlay" id="qr-modal">
     <div class="modal">
         <h3>Link Camera</h3>
@@ -376,6 +377,7 @@
     </div>
 </div>
 
+<!-- Checkout Modal -->
 <div class="modal-overlay" id="checkout-modal">
     <div class="modal">
         <h3>Leg Cleared</h3>
@@ -386,9 +388,11 @@
     </div>
 </div>
 
+<!-- Setup & Bull Up Modal -->
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
 
+        <!-- LOCAL MODE SETTINGS -->
         <div id="setup-local" style="text-align: left;">
             <h3 id="start-modal-title" style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
             <div style="margin-bottom: 10px;">
@@ -416,6 +420,7 @@
             </div>
         </div>
 
+        <!-- ONLINE MODE SETTINGS: INITIAL NAME ENTRY -->
         <div id="setup-online-name" style="display:none; text-align: left;">
             <h3 style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
             <div style="margin-bottom: 15px;">
@@ -425,10 +430,12 @@
             <button class="btn-primary" style="width:100%;" onclick="confirmReadyOnline()">Ready</button>
         </div>
 
+        <!-- ONLINE MODE SETTINGS: JOINER WAITING FOR HOST -->
         <div id="setup-online-wait" style="display:none;">
             <p style="color:var(--tech-cyan); font-weight:bold; margin: 20px 0;" id="wait-text">Waiting for opponent...</p>
         </div>
 
+        <!-- ONLINE MODE SETTINGS: HOST CHOOSES LEGS & BULL UP -->
         <div id="setup-online-host" style="display:none; text-align: left;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
             
@@ -528,26 +535,11 @@
     function initPeer() {
         const shortId = Math.random().toString(36).substring(2, 8).toUpperCase();
         
-        // ADDED: Public TURN Server configuration to guarantee firewall punching on mobile data
         peer = new Peer(shortId, {
             config: {
                 'iceServers': [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { 
-                        urls: 'turn:openrelay.metered.ca:80', 
-                        username: 'openrelayproject', 
-                        credential: 'openrelayproject' 
-                    },
-                    { 
-                        urls: 'turn:openrelay.metered.ca:443', 
-                        username: 'openrelayproject', 
-                        credential: 'openrelayproject' 
-                    },
-                    { 
-                        urls: 'turn:openrelay.metered.ca:443?transport=tcp', 
-                        username: 'openrelayproject', 
-                        credential: 'openrelayproject' 
-                    }
+                    { urls: 'stun:stun1.l.google.com:19302' }
                 ]
             }
         }); 
@@ -621,38 +613,33 @@
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
-        document.getElementById('lobby-status').innerText = "CONNECTING (PUNCHING FIREWALL)...";
+        document.getElementById('lobby-status').innerText = "CONNECTING...";
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
-        // Removed { reliable: true } as it crashes some strict firewalls
-        connection = peer.connect(remoteId);
-        
-        // Timeout to warn user if firewall entirely blocks the connection
-        let connTimeout = setTimeout(() => {
-            if (!connection || !connection.open) {
-                document.getElementById('lobby-status').innerHTML = "CONNECTION FAILED.<br>Strict Firewall Detected. Try again.";
-            }
-        }, 12000);
+        // Put reliable back to normal to prevent dropouts
+        connection = peer.connect(remoteId, { reliable: true });
         
         connection.on('open', () => {
-            clearTimeout(connTimeout);
             document.getElementById('lobby-status').innerText = "SYNCING...";
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
+            // FIX: THE STAGGER DELAY.
+            // Wait 1.5 seconds before firing the video request so the text data can safely connect without crashing Safari
             if(myVideoStream) {
-                const call = peer.call(remoteId, myVideoStream);
-                activeMediaCall = call;
-                call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream, false);
-                });
+                setTimeout(() => {
+                    const call = peer.call(remoteId, myVideoStream);
+                    activeMediaCall = call;
+                    call.on('stream', remoteStream => {
+                        setupRemoteVideoStream(remoteStream, false);
+                    });
+                }, 1500);
             }
         });
 
         connection.on('error', err => {
-            clearTimeout(connTimeout);
-            document.getElementById('lobby-status').innerText = "CONNECTION ERROR: " + err;
+            document.getElementById('lobby-status').innerText = "ERROR: " + err;
         });
 
         connection.on('data', data => handleNetworkData(data, connection));
@@ -718,9 +705,7 @@
                 config: {
                     'iceServers': [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                        { urls: 'stun:stun1.l.google.com:19302' }
                     ]
                 }
             }); 
