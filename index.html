@@ -539,11 +539,17 @@
     async function openCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'flex';
         try {
-            // Prefer the rear camera if on mobile
-            previewStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
+            // FIX: "ideal: environment" prevents Android from choosing dead/depth cameras
+            previewStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: { ideal: "environment" } }, 
+                audio: false 
+            });
             
             const previewVid = document.getElementById('preview-vid');
             previewVid.srcObject = previewStream;
+            
+            // FIX: Explicitly tell Android to play the stream inside the modal
+            previewVid.play().catch(e => console.warn("Auto-play prevented", e));
 
             const [track] = previewStream.getVideoTracks();
             previewTrack = track;
@@ -605,6 +611,9 @@
         const localVid = document.getElementById('local-vid');
         localVid.srcObject = myVideoStream;
         
+        // FIX: Force play
+        localVid.play().catch(e => console.warn(e));
+        
         // Show local video if in Setup, hide if match is actively playing
         if (document.getElementById('start-modal').style.display !== 'flex') {
             localVid.style.display = 'none';
@@ -626,6 +635,7 @@
     function startLocalMatch() {
         appMode = 'local';
         state.settings.startScore = parseInt(document.getElementById('local-score').value);
+        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
         state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
         
@@ -706,10 +716,12 @@
             const localVid = document.getElementById('local-vid');
             localVid.srcObject = stream;
             localVid.style.display = 'block';
+            localVid.play().catch(e => console.warn(e));
         } else {
             const remoteVid = document.getElementById('remote-vid');
             remoteVid.srcObject = stream;
             remoteVid.style.display = 'block';
+            remoteVid.play().catch(e => console.warn(e));
         }
 
         const localVid = document.getElementById('local-vid');
@@ -735,7 +747,6 @@
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
 
-            // STRICT SEQUENCING: Wait 1.5 seconds for data handshake before throwing video down the pipe
             if(myVideoStream) {
                 setTimeout(() => {
                     const call = peer.call(remoteId, myVideoStream);
@@ -777,7 +788,6 @@
                 state.p1.name = data.hostName;
                 showInitialJoinerWait(); 
                 
-                // STRICT SEQUENCING: Only initiate video call AFTER data handshake completes successfully
                 if(myVideoStream && opponentPeerId) {
                     const call = peer.call(opponentPeerId, myVideoStream);
                     activeMediaCall = call;
@@ -829,8 +839,14 @@
             }); 
         }
         try {
-            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" }, audio: false });
-            document.getElementById('node-camera-feed').srcObject = myVideoStream;
+            myVideoStream = await navigator.mediaDevices.getUserMedia({ 
+                video: { facingMode: { ideal: "environment" } }, 
+                audio: false 
+            });
+            const camVid = document.getElementById('node-camera-feed');
+            camVid.srcObject = myVideoStream;
+            camVid.play().catch(e => console.warn(e));
+
             if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
         } catch (err) {
             document.getElementById('cam-node-status').innerText = "Camera Access Denied/Failed.";
@@ -957,8 +973,14 @@
         
         const localVid = document.getElementById('local-vid');
         const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) localVid.style.display = 'block';
-        if (activeMediaCall) remoteVid.style.display = 'block';
+        if (myVideoStream) {
+            localVid.style.display = 'block';
+            localVid.play().catch(e=>console.warn(e));
+        }
+        if (activeMediaCall) {
+            remoteVid.style.display = 'block';
+            remoteVid.play().catch(e=>console.warn(e));
+        }
 
         document.getElementById('start-modal').style.display = 'flex';
         document.getElementById('setup-local').style.display = 'none';
@@ -980,8 +1002,14 @@
         
         const localVid = document.getElementById('local-vid');
         const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) localVid.style.display = 'block';
-        if (activeMediaCall) remoteVid.style.display = 'block';
+        if (myVideoStream) {
+            localVid.style.display = 'block';
+            localVid.play().catch(e=>console.warn(e));
+        }
+        if (activeMediaCall) {
+            remoteVid.style.display = 'block';
+            remoteVid.play().catch(e=>console.warn(e));
+        }
 
         document.getElementById('start-modal').style.display = 'flex';
         document.getElementById('setup-local').style.display = 'none';
@@ -1024,8 +1052,14 @@
             
             const localVid = document.getElementById('local-vid');
             const remoteVid = document.getElementById('remote-vid');
-            if (myVideoStream) localVid.style.display = 'block';
-            if (activeMediaCall) remoteVid.style.display = 'block';
+            if (myVideoStream) {
+                localVid.style.display = 'block';
+                localVid.play().catch(e=>console.warn(e));
+            }
+            if (activeMediaCall) {
+                remoteVid.style.display = 'block';
+                remoteVid.play().catch(e=>console.warn(e));
+            }
 
             document.getElementById('start-modal').style.display = 'flex';
             
