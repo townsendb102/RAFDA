@@ -378,10 +378,8 @@
     <div class="modal">
         <h3 style="margin-bottom: 10px;">Camera Setup</h3>
         
-        <!-- Live Video Preview -->
         <video id="preview-vid" style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; margin-bottom: 15px; object-fit: contain;" autoplay playsinline muted></video>
         
-        <!-- Hardware Zoom Controls -->
         <div id="zoom-container" style="display: none; margin-bottom: 15px; text-align: left;">
             <label style="color:var(--tech-cyan); font-size:0.85em; margin-bottom:5px; display:block; text-transform: uppercase; font-weight: bold;">Zoom Adjust</label>
             <input type="range" id="camera-zoom" style="width: 100%; cursor: pointer;">
@@ -651,18 +649,17 @@
     function initPeer() {
         const shortId = generateCleanID();
         
-        // --- ADDED THE ULTIMATE KITCHEN SINK FIREWALL BYPASS CONFIG ---
+        // --- INJECTED METERED.CA DEDICATED SERVERS ---
         peer = new Peer(shortId, {
             config: {
-                iceCandidatePoolSize: 10,
+                iceTransportPolicy: 'all',
                 iceServers: [
                     { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' },
-                    { urls: 'stun:stun.cloudflare.com:3478' },
-                    { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-                    { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                    { urls: "stun:stun.relay.metered.ca:80" },
+                    { urls: "turn:standard.relay.metered.ca:80", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                    { urls: "turn:standard.relay.metered.ca:80?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                    { urls: "turn:standard.relay.metered.ca:443", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                    { urls: "turns:standard.relay.metered.ca:443?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" }
                 ]
             }
         }); 
@@ -743,7 +740,8 @@
     function connectToPeer() {
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
-        document.getElementById('lobby-status').innerHTML = "NEGOTIATING RELAYS...<br>(This may take up to 20 seconds)";
+        
+        document.getElementById('lobby-status').innerHTML = '<span style="color:#aaa; font-size: 0.85em;">NEGOTIATING RELAYS...<br>(Please wait up to 15 seconds)</span>';
         localPlayerNum = 2;
         opponentPeerId = remoteId;
         
@@ -751,9 +749,9 @@
         
         window.connTimeout = setTimeout(() => {
             if (!connection || !connection.open) {
-                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">CONNECTION FAILED.<br>Strict Firewall Blocked Traffic.</span>';
+                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.85em;">FIREWALL BLOCK DETECTED.<br>The Base Wi-Fi is killing the signal.<br><strong>FIX:</strong> Connect laptop to Phone Hotspot.</span>';
             }
-        }, 25000);
+        }, 15000);
 
         connection.on('open', () => {
             clearTimeout(window.connTimeout);
@@ -842,15 +840,13 @@
         if (!peer) { 
             peer = new Peer(generateCleanID(), {
                 config: {
-                    iceCandidatePoolSize: 10,
-                    'iceServers': [
+                    iceServers: [
                         { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' },
-                        { urls: 'stun:stun.cloudflare.com:3478' },
-                        { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' },
-                        { urls: 'turns:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
+                        { urls: "stun:stun.relay.metered.ca:80" },
+                        { urls: "turn:standard.relay.metered.ca:80", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                        { urls: "turn:standard.relay.metered.ca:80?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                        { urls: "turn:standard.relay.metered.ca:443", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
+                        { urls: "turns:standard.relay.metered.ca:443?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" }
                     ]
                 }
             }); 
@@ -905,7 +901,9 @@
     }
 
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
-        state.globalHistory.push(JSON.parse(JSON.stringify(state))); 
+        let safeState = JSON.parse(JSON.stringify(state));
+        safeState.globalHistory = []; 
+        state.globalHistory.push(safeState); 
         
         if (player.history.length < 3) {
             player.first9Scored += actualDeduction;
