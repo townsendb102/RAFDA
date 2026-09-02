@@ -70,10 +70,6 @@
         .btn-online::before { content: ''; position: absolute; top: 30%; left: -50%; right: -50%; bottom: -50%; background-image: linear-gradient(rgba(98,216,245,0.3) 1px, transparent 1px), linear-gradient(90deg, rgba(98,216,245,0.3) 1px, transparent 1px); background-size: 20px 20px; transform: perspective(200px) rotateX(60deg); pointer-events: none; z-index: 1; }
         .online-icon { font-size: clamp(2.5em, 10vw, 4em); margin: 5px 0; z-index: 2; filter: drop-shadow(0 0 10px rgba(98,216,245,0.8)); line-height: 1; }
 
-        .btn-camera { grid-column: span 2; background: #1a1e24; border: 2px dashed #888; box-shadow: none; min-height: clamp(80px, 20vw, 120px); justify-content: center; flex-direction: row; gap: 20px; }
-        .btn-camera h2 { font-size: clamp(1.2em, 4vw, 1.8em); color: #ccc; text-shadow: none;}
-        .btn-camera p { color: #888; margin: 0; text-shadow: none;}
-
         /* --- INNER APP STYLES --- */
         .inner-content { padding: 20px; display: flex; flex-direction: column; flex: 1; }
         h2.view-title { color: var(--tech-cyan); text-align: center; margin-top: 0; font-size: 1.6em; text-transform: uppercase; letter-spacing: 2px; }
@@ -198,14 +194,6 @@
                 <div class="online-icon">🌐🎯</div>
                 <p>Connect and play against<br>other players.</p>
             </button>
-
-            <button class="mode-btn btn-camera" onclick="initCameraNode()">
-                <div style="font-size: 2em;">📱📷</div>
-                <div>
-                    <h2>EXTERNAL CAMERA</h2>
-                    <p>Use this device as a wireless webcam</p>
-                </div>
-            </button>
         </div>
     </main>
 
@@ -249,6 +237,7 @@
                     <div style="display: flex; flex-direction: column; gap: 10px;">
                         <button class="btn-cam-link" onclick="openCameraPreview()">📷 Use Built-in Camera</button>
                         <button class="btn-cam-link" style="background: transparent; border-color: #555; color: #aaa;" onclick="showQRModal()">📱 Link External Phone</button>
+                        <button class="btn-cam-link" style="background: transparent; border-color: #888; color: #ccc;" onclick="initCameraNode()">🎥 Act as Camera Node</button>
                     </div>
                 </div>
                 
@@ -270,6 +259,11 @@
             <p style="color: #888;">Point this camera at the dartboard.</p>
             <video id="node-camera-feed" class="video-feed" style="width: 100%; max-width: 400px; margin-bottom: 20px;" autoplay playsinline muted></video>
             
+            <div id="node-zoom-container" style="display: none; margin-bottom: 20px; width: 100%; max-width: 400px; text-align: left;">
+                <label style="color:var(--tech-cyan); font-size:0.85em; margin-bottom:5px; display:block; text-transform: uppercase; font-weight: bold;">Zoom Adjust</label>
+                <input type="range" id="node-camera-zoom" style="width: 100%; cursor: pointer;">
+            </div>
+
             <div class="flex-col" id="cam-connect-box">
                 <label>Target Scoreboard ID</label>
                 <input type="text" id="target-board-id" placeholder="Paste Main Board ID">
@@ -859,6 +853,25 @@
             const camVid = document.getElementById('node-camera-feed');
             camVid.srcObject = myVideoStream;
             camVid.play().catch(e => console.warn(e));
+
+            const [track] = myVideoStream.getVideoTracks();
+            setTimeout(() => {
+                const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+                const zoomContainer = document.getElementById('node-zoom-container');
+                const zoomSlider = document.getElementById('node-camera-zoom');
+                
+                if (capabilities.zoom) {
+                    zoomContainer.style.display = 'block';
+                    zoomSlider.min = capabilities.zoom.min;
+                    zoomSlider.max = capabilities.zoom.max;
+                    zoomSlider.step = capabilities.zoom.step;
+                    zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
+                    
+                    zoomSlider.oninput = (e) => {
+                        track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
+                    };
+                }
+            }, 500);
 
             if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
         } catch (err) {
