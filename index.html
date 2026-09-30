@@ -115,6 +115,8 @@
         .history th { background: #111; padding: 4px; font-size: 0.7em; position: sticky; top: 0; color: #888; text-transform: uppercase; }
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
+        .score-col span { display: inline-block; transition: all 0.2s; }
+        .score-col:active span { opacity: 0.5; }
 
         .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
         .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
@@ -966,7 +968,150 @@
     function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
     function calculateFirst9Average(player) { return player.first9Darts === 0 ? "0.00" : ((player.first9Scored / player.first9Darts) * 3).toFixed(2); }
     
-    function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
+    // RENDER HISTORY UPDATED TO ADD CLICKABLE EDITS
+    function renderHistory(playerHistory, elementId) { 
+        const tbody = document.getElementById(elementId); 
+        tbody.innerHTML = ""; 
+        const playerKey = elementId === 'p1-history' ? 'p1' : 'p2';
+        
+        [...playerHistory].reverse().forEach(h => { 
+            const originalIndex = h.throwNum - 1;
+            const tr = document.createElement('tr'); 
+            tr.innerHTML = `
+                <td>${h.throwNum}</td>
+                <td class="score-col" onclick="editScore('${playerKey}', ${originalIndex})" style="cursor: pointer;" title="Tap to Edit">
+                    <span style="border-bottom: 1px dashed var(--tech-cyan); padding-bottom: 1px;">${h.score}</span>
+                </td>
+                <td>${h.rem}</td>
+            `; 
+            tbody.appendChild(tr); 
+        }); 
+    }
+
+    // NEW INLINE EDIT FUNCTION
+    function editScore(playerKey, index) {
+        let p = state[playerKey];
+        if (!p || !p.history[index]) return;
+
+        let h = p.history[index];
+        let currentVal = h.score === "Bust" ? 0 : h.score;
+        let newScoreStr = prompt(`Edit Throw #${h.throwNum} for ${p.name}:\nEnter new score:`, currentVal);
+        
+        if (newScoreStr === null || newScoreStr.trim() === "") return;
+        
+        let newScore = parseInt(newScoreStr);
+        if (isNaN(newScore) || newScore < 0 || newScore > 180 || impossibleScores.includes(newScore)) {
+            alert("INVALID SCORE");
+            return;
+        }
+
+        // Save global history for UNDO button support
+        let safeState = JSON.parse(JSON.stringify(state));
+        safeState.globalHistory = []; 
+        state.globalHistory.push(safeState);
+
+        // 1. Revert ALL stats contributed by the current leg so they don't compound
+        let tempRem = state.settings.startScore;
+        for (let i = 0; i < p.history.length; i++) {
+            let turn = p.history[i];
+            let actualDeduction = tempRem - turn.rem;
+            
+            p.totalScored -= actualDeduction;
+            p.totalDarts -= 3;
+            
+            if (i < 3) {
+                p.first9Scored -= actualDeduction;
+                p.first9Darts -= 3;
+            }
+            
+            if (turn.score === 180) p.scores180s--;
+            else if (turn.score >= 140) p.scores140s--;
+            else if (turn.score >= 100) p.scores100s--;
+            
+            tempRem = turn.rem;
+        }
+
+        // 2. Apply the new score
+        p.history[index].score = newScore;
+
+        // 3. Replay history to recalculate correct remainders, busts, and stats
+        tempRem = state.settings.startScore;
+        let newHistory = [];
+        let legWon = false;
+
+        for (let i = 0; i < p.history.length; i++) {
+            let turn = p.history[i];
+            let attemptScore = parseInt(turn.score) || 0; // Catch 'Bust' or non-numbers
+            
+            let actualDeduction = 0;
+            let displayScore = attemptScore;
+            let dartsUsed = 3;
+
+            // Enforce Bust Logic
+            if (attemptScore > tempRem || tempRem - attemptScore === 1) {
+                actualDeduction = 0;
+                displayScore = "Bust";
+            } 
+            // Enforce mid-edit checkout
+            else if (attemptScore === tempRem) {
+                actualDeduction = attemptScore;
+                displayScore = attemptScore;
+                legWon = true;
+                
+                let checkoutDarts = prompt(`Editing Throw #${turn.throwNum} results in a CHECKOUT!\nHow many darts were used (1-3)?`, "3");
+                dartsUsed = parseInt(checkoutDarts) || 3;
+                if (dartsUsed < 1 || dartsUsed > 3) dartsUsed = 3;
+                if (displayScore > p.highestCheckout) p.highestCheckout = displayScore;
+            } 
+            // Normal Valid Score
+            else {
+                actualDeduction = attemptScore;
+                displayScore = attemptScore;
+            }
+
+            tempRem -= actualDeduction;
+            
+            // Re-apply correct stats
+            p.totalScored += actualDeduction;
+            p.totalDarts += dartsUsed;
+            if (i < 3) {
+                p.first9Scored += actualDeduction;
+                p.first9Darts += dartsUsed;
+            }
+            
+            if (displayScore === 180) p.scores180s++;
+            else if (displayScore >= 140) p.scores140s++;
+            else if (displayScore >= 100) p.scores100s++;
+            
+            if (displayScore > p.highestScore) p.highestScore = displayScore;
+
+            turn.score = displayScore;
+            turn.rem = tempRem;
+            newHistory.push(turn);
+
+            // If a previous throw was edited and caused a win, discard any throws in the array that happened after it
+            if (legWon) break;
+        }
+
+        p.history = newHistory;
+        p.rem = tempRem;
+
+        // If the edit caused the player to win the leg, trigger win condition
+        if (legWon) {
+            p.legs++;
+            if (p.legs >= state.settings.targetLegs) { 
+                broadcastState(); 
+                displayPostMatch(p); 
+                return;
+            } else { 
+                state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; 
+                resetLeg(); 
+            }
+        }
+
+        updateUI();
+        broadcastState();
+    }
     
     function updateUI() {
         document.getElementById('target-legs').innerText = state.settings.targetLegs;
