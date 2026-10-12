@@ -150,7 +150,6 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -165,6 +164,25 @@
         }
         
         #qr-modal, #checkout-modal, #camera-preview-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+
+        /* --- PRACTICE GAME STYLES --- */
+        #cricket-board-view { display: none; flex: 1; flex-direction: column; background: #161b22; }
+        .cricket-header { display: flex; justify-content: space-between; padding: 10px 15px; background: #0d1117; border-bottom: 1px solid #333; }
+        .cricket-p-card { text-align: center; flex: 1; }
+        .cricket-p-card.is-turn { color: var(--tech-cyan); text-shadow: 0 0 8px rgba(0,229,255,0.4); }
+        .cricket-table { width: 100%; border-collapse: collapse; text-align: center; }
+        .cricket-table th { background: #111; padding: 6px; font-size: 0.8em; color: #888; }
+        .cricket-table td { padding: 8px 4px; border-bottom: 1px solid #262c36; font-size: 1.2em; font-weight: bold; }
+        .cricket-mark { font-family: monospace; font-size: 1.3em; letter-spacing: 2px; color: white; }
+        .cricket-closed { color: #27ae60; }
+
+        #drill-board-view { display: none; flex: 1; flex-direction: column; align-items: center; justify-content: center; background: #161b22; padding: 20px; text-align: center; }
+        .drill-target { font-size: 5em; font-weight: 900; color: var(--tech-cyan); margin-bottom: 10px; text-shadow: 0 0 15px rgba(0,229,255,0.3); }
+        .drill-subtext { font-size: 1.2em; color: #ddd; margin-bottom: 20px; }
+
+        .drill-btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; max-width: 400px; }
+        .drill-btn { background: #21262d; border: 1px solid #30363d; color: white; font-size: 1em; padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .drill-btn:active { background: var(--tech-cyan); color: #000; }
     </style>
 </head>
 <body>
@@ -210,20 +228,36 @@
         <div class="inner-content">
             <h2 class="view-title">Match Setup</h2>
             <div class="flex-col">
+                <label>Select Game Type</label>
+                <select id="local-game-mode" onchange="toggleLocalGameSettings()">
+                    <option value="x01">Standard X01</option>
+                    <option value="cricket">Cricket (15 - Bull)</option>
+                    <option value="atc">Around the Clock</option>
+                    <option value="bobs27">Bob's 27</option>
+                    <option value="121">121 Checkout</option>
+                </select>
+
                 <label>Player 1 Name</label>
                 <input type="text" id="local-p1" value="Player 1">
                 <label>Player 2 Name</label>
                 <input type="text" id="local-p2" value="Player 2">
-                <label>Starting Score</label>
-                <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
-                <label>Match Format</label>
-                <select id="local-legs">
-                    <option value="1">Best of 1 (First to 1)</option>
-                    <option value="2">Best of 3 (First to 2)</option>
-                    <option value="3" selected>Best of 5 (First to 3)</option>
-                    <option value="4">Best of 7 (First to 4)</option>
-                    <option value="6">Best of 11 (First to 6)</option>
-                </select>
+                
+                <div id="setup-score-wrap">
+                    <label>Starting Score</label>
+                    <select id="local-score"><option value="501">501</option><option value="301">301</option></select>
+                </div>
+                
+                <div id="setup-format-wrap">
+                    <label>Match Format</label>
+                    <select id="local-legs">
+                        <option value="1">Best of 1 (First to 1)</option>
+                        <option value="2">Best of 3 (First to 2)</option>
+                        <option value="3" selected>Best of 5 (First to 3)</option>
+                        <option value="4">Best of 7 (First to 4)</option>
+                        <option value="6">Best of 11 (First to 6)</option>
+                    </select>
+                </div>
+
                 <button class="btn-primary" onclick="startLocalMatch()" style="margin-top: 10px;">Start Match</button>
                 <button class="btn-secondary" onclick="showScreen('menu-screen')">Back</button>
             </div>
@@ -279,7 +313,7 @@
 
     <main id="match-screen" class="screen">
         <div class="match-info">
-            <div>Race to <span id="target-legs">3</span></div>
+            <div id="match-format-title">Race to <span id="target-legs">3</span></div>
             <div style="display:flex; gap:10px; align-items:center;">
                 <div id="match-cam-buttons" style="display:none; gap:5px;">
                     <button class="btn-cam-small" onclick="openCameraPreview()">📷 Built-in</button>
@@ -294,7 +328,7 @@
             <video id="remote-vid" class="video-feed" autoplay playsinline style="display:none;"></video>
         </div>
 
-        <div class="boards">
+        <div class="boards" id="x01-board-view">
             <div class="player-board">
                 <div id="p1-panel" class="player-header">
                     <h2 class="player-name" id="p1-name">Player 1</h2>
@@ -315,7 +349,36 @@
             </div>
         </div>
 
-        <div class="input-section" id="input-section">
+        <!-- NEW: Cricket Board View -->
+        <div id="cricket-board-view">
+            <div class="cricket-header">
+                <div class="cricket-p-card" id="cricket-p1-card">
+                    <div style="font-size:0.9em; font-weight:bold;" id="cricket-p1-name">Player 1</div>
+                    <div style="font-size:1.8em; font-weight:900;" id="cricket-p1-pts">0</div>
+                </div>
+                <div style="align-self: center; font-weight:bold; color:#666; font-size:0.8em;">VS</div>
+                <div class="cricket-p-card" id="cricket-p2-card">
+                    <div style="font-size:0.9em; font-weight:bold;" id="cricket-p2-name">Player 2</div>
+                    <div style="font-size:1.8em; font-weight:900;" id="cricket-p2-pts">0</div>
+                </div>
+            </div>
+            <div style="flex:1; overflow-y:auto;">
+                <table class="cricket-table">
+                    <thead><tr><th style="width:37%;">P1</th><th style="width:26%; color:#f39c12;">TARGET</th><th style="width:37%;">P2</th></tr></thead>
+                    <tbody id="cricket-table-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- NEW: Drill Board View -->
+        <div id="drill-board-view">
+            <div style="font-size:1em; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:5px;" id="drill-title">Player 1</div>
+            <div class="drill-target" id="drill-target">D1</div>
+            <div class="drill-subtext" id="drill-sub">Score: 27</div>
+        </div>
+
+        <!-- X01 Numpad -->
+        <div class="input-section" id="input-section-x01">
             <div class="score-display" id="current-input"></div>
             <div class="numpad">
                 <button onclick="appendNum(1)" class="num-btn">1</button> <button onclick="appendNum(2)" class="num-btn">2</button> <button onclick="appendNum(3)" class="num-btn">3</button>
@@ -325,13 +388,45 @@
                 <button class="btn-undo" onclick="undo()">Undo Entry</button>
             </div>
         </div>
+
+        <!-- NEW: Cricket Input Box -->
+        <div class="input-section" id="cricket-input-box">
+            <div style="display:flex; gap:8px; width:100%; max-width:350px; margin-bottom:10px;">
+                <button class="drill-btn" id="btn-mult-1" style="flex:1; padding:8px;" onclick="setCricketMult(1)">1x</button>
+                <button class="drill-btn" id="btn-mult-2" style="flex:1; padding:8px;" onclick="setCricketMult(2)">2x</button>
+                <button class="drill-btn" id="btn-mult-3" style="flex:1; padding:8px;" onclick="setCricketMult(3)">3x</button>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:8px; width:100%; max-width:350px;">
+                <button class="drill-btn" onclick="hitCricket(20)">20</button>
+                <button class="drill-btn" onclick="hitCricket(19)">19</button>
+                <button class="drill-btn" onclick="hitCricket(18)">18</button>
+                <button class="drill-btn" onclick="hitCricket(17)">17</button>
+                <button class="drill-btn" onclick="hitCricket(16)">16</button>
+                <button class="drill-btn" onclick="hitCricket(15)">15</button>
+                <button class="drill-btn" style="color:var(--tech-cyan);" onclick="hitCricket(25)">BULL</button>
+                <button class="drill-btn" style="color:var(--tech-red);" onclick="hitCricket(0)">MISS</button>
+            </div>
+            <div style="display:flex; gap:8px; width:100%; max-width:350px; margin-top:10px;">
+                <button class="btn-secondary" style="flex:1;" onclick="undoPractice()">Undo</button>
+                <button class="btn-primary" style="flex:2;" onclick="passTurnCricket()">Next Turn</button>
+            </div>
+        </div>
+
+        <!-- NEW: Drill Input Box -->
+        <div class="input-section" id="drill-input-box">
+            <div id="drill-dynamic-buttons" class="drill-btn-grid"></div>
+            <button class="btn-secondary" style="width:100%; max-width:400px; padding:10px; margin-top:10px;" onclick="undoPractice()">Undo Last Visit</button>
+        </div>
+
     </main>
 
     <main id="post-match-screen" class="screen">
         <div class="inner-content" style="align-items: center;">
             <div class="winner-banner" id="winner-banner">PLAYER WINS</div>
             
-            <div class="stats-grid">
+            <div id="practice-result-msg" style="display:none; text-align:center; font-size:1.5em; margin-bottom:20px; font-weight:bold;"></div>
+
+            <div class="stats-grid" id="standard-stats-grid">
                 <div class="stat-card">
                     <h3 id="stat-p1-name">P1</h3>
                     <div class="stat-row"><span>Legs Won</span> <span class="stat-val" id="stat-p1-legs">0</span></div>
@@ -563,6 +658,11 @@
     let remoteNewName = "";
     window.connTimeout = null;
 
+    /* --- SAFE LOCAL PRACTICE EXTENSION VARIABLES --- */
+    let activeGameMode = 'x01';
+    let cricketMult = 1;
+    let practiceState = { p1: {}, p2: {}, turn: 1, history: [], cricketDartsThrown: 0 };
+
     window.onload = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const camTarget = urlParams.get('cam');
@@ -586,6 +686,13 @@
         } else {
             document.getElementById('main-header').style.display = 'flex';
         }
+    }
+
+    /* --- NEW GAME MODE TOGGLE --- */
+    function toggleLocalGameSettings() {
+        const gm = document.getElementById('local-game-mode').value;
+        document.getElementById('setup-score-wrap').style.display = (gm === 'x01') ? 'block' : 'none';
+        document.getElementById('setup-format-wrap').style.display = (gm === 'x01' || gm === 'cricket') ? 'block' : 'none';
     }
 
     async function openCameraPreview() {
@@ -675,8 +782,10 @@
 
     function startLocalMatch() {
         appMode = 'local';
-        state.settings.startScore = parseInt(document.getElementById('local-score').value);
-        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value);
+        activeGameMode = document.getElementById('local-game-mode') ? document.getElementById('local-game-mode').value : 'x01';
+        
+        state.settings.startScore = parseInt(document.getElementById('local-score').value || 501);
+        state.settings.targetLegs = parseInt(document.getElementById('local-legs').value || 3);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
         state.p2 = getFreshPlayerState(document.getElementById('local-p2').value || "Player 2");
         
@@ -689,6 +798,7 @@
 
     function initOnlineLobby() {
         appMode = 'online';
+        activeGameMode = 'x01'; // Force strictly to X01 for online play
         showScreen('online-lobby-screen');
         if (!peer) initPeer();
     }
@@ -954,16 +1064,17 @@
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
     function isMyTurn() { 
+        if (activeGameMode !== 'x01') return true; // Local Practice turns are strictly UI driven
         if (appMode === 'local') return true;
         return Number(state.turn) === Number(localPlayerNum); 
     }
 
-    function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
-    function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
+    function appendNum(num) { if(!isMyTurn() || activeGameMode !== 'x01') return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
+    function clearInput() { if(!isMyTurn() || activeGameMode !== 'x01') return; currentInput = ""; updateInputUI(); }
     function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
     function submitScore() {
-        if(!isMyTurn()) return;
+        if(!isMyTurn() || activeGameMode !== 'x01') return;
         if (currentInput === "") return;
         const score = parseInt(currentInput);
         currentInput = ""; updateInputUI();
@@ -1037,6 +1148,7 @@
     }
 
     window.editScore = function(playerNum, historyIndex) {
+        if (activeGameMode !== 'x01') return;
         if (appMode === 'online' && localPlayerNum !== playerNum) {
             alert("Security Lock: You can only edit your own past scores.");
             return;
@@ -1116,6 +1228,34 @@
     }
     
     function updateUI() {
+        if (activeGameMode !== 'x01') {
+            document.getElementById('x01-board-view').style.display = 'none';
+            document.getElementById('input-section-x01').style.display = 'none';
+            document.getElementById('cricket-board-view').style.display = (activeGameMode === 'cricket') ? 'flex' : 'none';
+            document.getElementById('cricket-input-box').style.display = (activeGameMode === 'cricket') ? 'flex' : 'none';
+            document.getElementById('drill-board-view').style.display = ['atc', 'bobs27', '121'].includes(activeGameMode) ? 'flex' : 'none';
+            document.getElementById('drill-input-box').style.display = ['atc', 'bobs27', '121'].includes(activeGameMode) ? 'flex' : 'none';
+            
+            if (activeGameMode === 'cricket') {
+                document.getElementById('match-format-title').innerHTML = `Cricket Race to <span id="target-legs">${state.settings.targetLegs}</span>`;
+                renderCricketUI();
+            } else {
+                if (activeGameMode === 'atc') document.getElementById('match-format-title').innerText = "Around the Clock (1 - Bull)";
+                if (activeGameMode === 'bobs27') document.getElementById('match-format-title').innerText = "Bob's 27 Double Drill";
+                if (activeGameMode === '121') document.getElementById('match-format-title').innerText = "121 Checkout Practice";
+                renderDrillUI();
+            }
+            return; // Skip original X01 logic
+        }
+
+        // --- ORIGINAL X01 DOM UPDATES ---
+        document.getElementById('x01-board-view').style.display = 'flex';
+        document.getElementById('input-section-x01').style.display = 'flex';
+        document.getElementById('cricket-board-view').style.display = 'none';
+        document.getElementById('cricket-input-box').style.display = 'none';
+        document.getElementById('drill-board-view').style.display = 'none';
+        document.getElementById('drill-input-box').style.display = 'none';
+
         document.getElementById('target-legs').innerText = state.settings.targetLegs;
         
         document.getElementById('p1-name').innerText = state.p1.name; 
@@ -1271,8 +1411,14 @@
         const newP1 = document.getElementById('rematch-p1-name').value || "Player 1";
         const newP2 = document.getElementById('rematch-p2-name').value || "Player 2";
         
+        if (activeGameMode !== 'x01') {
+            initPracticeGame(activeGameMode, newP1, newP2);
+            practiceState.turn = startingPlayerNum;
+            showScreen('match-screen');
+            return;
+        }
+
         state.settings.targetLegs = parseInt(document.getElementById('rematch-local-legs').value);
-        
         executeStart(startingPlayerNum, newP1, newP2);
     }
 
@@ -1351,34 +1497,42 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        document.getElementById('stat-p1-name').innerText = state.p1.name;
-        document.getElementById('stat-p1-legs').innerText = state.p1.legs;
-        document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
-        document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1);
-        document.getElementById('stat-p1-100s').innerText = state.p1.scores100s;
-        document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
-        document.getElementById('stat-p1-180s').innerText = state.p1.scores180s;
-        document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout;
-        document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
-        document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
-        document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
+        if (activeGameMode !== 'x01') {
+            document.getElementById('standard-stats-grid').style.display = 'none';
+        } else {
+            document.getElementById('standard-stats-grid').style.display = 'grid';
+            if (document.getElementById('practice-result-msg')) document.getElementById('practice-result-msg').style.display = 'none';
+            
+            document.getElementById('stat-p1-name').innerText = state.p1.name;
+            document.getElementById('stat-p1-legs').innerText = state.p1.legs;
+            document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
+            document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1);
+            document.getElementById('stat-p1-100s').innerText = state.p1.scores100s;
+            document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
+            document.getElementById('stat-p1-180s').innerText = state.p1.scores180s;
+            document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout;
+            document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
+            document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
+            document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        document.getElementById('stat-p2-name').innerText = state.p2.name;
-        document.getElementById('stat-p2-legs').innerText = state.p2.legs;
-        document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
-        document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2);
-        document.getElementById('stat-p2-100s').innerText = state.p2.scores100s;
-        document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
-        document.getElementById('stat-p2-180s').innerText = state.p2.scores180s;
-        document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout;
-        document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
-        document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
-        document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
+            document.getElementById('stat-p2-name').innerText = state.p2.name;
+            document.getElementById('stat-p2-legs').innerText = state.p2.legs;
+            document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
+            document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2);
+            document.getElementById('stat-p2-100s').innerText = state.p2.scores100s;
+            document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
+            document.getElementById('stat-p2-180s').innerText = state.p2.scores180s;
+            document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout;
+            document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
+            document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
+            document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
+        }
 
         showScreen('post-match-screen');
     }
 
     function exportStatsText() {
+        if (activeGameMode !== 'x01') return alert("Stats copy is only available for Standard X01 games.");
         const winnerName = state.p1.legs >= state.settings.targetLegs ? state.p1.name : state.p2.name;
         const summary = `🎯 RAF DARTS MATCH SUMMARY 🎯\n` +
             `------------------------------------------\n` +
@@ -1409,6 +1563,7 @@
     }
 
     function exportStatsCSV() {
+        if (activeGameMode !== 'x01') return alert("CSV Download is only available for Standard X01 games.");
         const rows = [
             ["Metric", state.p1.name, state.p2.name],
             ["Legs Won", state.p1.legs, state.p2.legs],
@@ -1437,6 +1592,7 @@
     }
 
     document.addEventListener('keydown', function(event) {
+        if (activeGameMode !== 'x01') return; // Protect original listener
         if (document.getElementById('match-screen').classList.contains('active') && 
             document.getElementById('checkout-modal').style.display !== 'flex' &&
             document.getElementById('start-modal').style.display !== 'flex') {
@@ -1446,6 +1602,195 @@
             else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
         }
     });
+
+    // =========================================================================
+    // --- LOCAL PRACTICE MODES EXTENSION LOGIC ---
+    // (Completely isolated from X01 and Networking)
+    // =========================================================================
+    function initPracticeGame(mode, p1n, p2n) {
+        cricketMult = 1;
+        practiceState = {
+            p1: { name: p1n, marks: {20:0,19:0,18:0,17:0,16:0,15:0,25:0}, pts: 0, darts: 0, bobs: 27, bobsRound: 1, atc: 1, target121: 121 },
+            p2: { name: p2n, marks: {20:0,19:0,18:0,17:0,16:0,15:0,25:0}, pts: 0, darts: 0, bobs: 27, bobsRound: 1, atc: 1, target121: 121 },
+            turn: 1, history: [], cricketDartsThrown: 0
+        };
+        updateUI();
+    }
+
+    function savePracticeState() {
+        practiceState.history.push(JSON.stringify({p1: practiceState.p1, p2: practiceState.p2, turn: practiceState.turn, cricketDartsThrown: practiceState.cricketDartsThrown}));
+    }
+
+    function undoPractice() {
+        if (practiceState.history.length === 0) return;
+        const last = JSON.parse(practiceState.history.pop());
+        practiceState.p1 = last.p1;
+        practiceState.p2 = last.p2;
+        practiceState.turn = last.turn;
+        practiceState.cricketDartsThrown = last.cricketDartsThrown;
+        updateUI();
+    }
+
+    function renderCricketUI() {
+        const p1 = practiceState.p1;
+        const p2 = practiceState.p2;
+        document.getElementById('cricket-p1-name').innerText = p1.name;
+        document.getElementById('cricket-p1-pts').innerText = p1.pts;
+        document.getElementById('cricket-p2-name').innerText = p2.name;
+        document.getElementById('cricket-p2-pts').innerText = p2.pts;
+        
+        document.getElementById('cricket-p1-card').className = 'cricket-p-card' + (practiceState.turn === 1 ? ' is-turn' : '');
+        document.getElementById('cricket-p2-card').className = 'cricket-p-card' + (practiceState.turn === 2 ? ' is-turn' : '');
+
+        const tbody = document.getElementById('cricket-table-body');
+        tbody.innerHTML = '';
+        [20, 19, 18, 17, 16, 15, 25].forEach(s => {
+            const m1 = Math.min(3, p1.marks[s] || 0);
+            const m2 = Math.min(3, p2.marks[s] || 0);
+            const chars = ["", "/", "X", "⨂"];
+            tbody.innerHTML += `<tr>
+                <td class="cricket-mark ${m1===3?'cricket-closed':''}">${chars[m1]}</td>
+                <td style="color:#f39c12; font-weight:900;">${s===25?'BULL':s}</td>
+                <td class="cricket-mark ${m2===3?'cricket-closed':''}">${chars[m2]}</td>
+            </tr>`;
+        });
+        
+        [1,2,3].forEach(m => document.getElementById(`btn-mult-${m}`).style.background = m === cricketMult ? 'var(--tech-gold)' : '#21262d');
+        [1,2,3].forEach(m => document.getElementById(`btn-mult-${m}`).style.color = m === cricketMult ? '#000' : 'white');
+    }
+
+    function setCricketMult(m) {
+        cricketMult = m;
+        updateUI();
+    }
+
+    function hitCricket(sector) {
+        savePracticeState();
+        const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
+        const opp = practiceState.turn === 1 ? practiceState.p2 : practiceState.p1;
+
+        cur.darts++;
+        practiceState.cricketDartsThrown++;
+
+        if (sector !== 0) {
+            const hits = (sector === 25 && cricketMult === 3) ? 2 : cricketMult; 
+            const currentMarks = cur.marks[sector] || 0;
+            const newMarks = currentMarks + hits;
+            cur.marks[sector] = Math.min(newMarks, 3);
+
+            if (newMarks > 3) {
+                const oppClosed = (opp.marks[sector] || 0) >= 3;
+                if (!oppClosed) cur.pts += (newMarks - Math.max(3, currentMarks)) * sector;
+            }
+        }
+
+        cricketMult = 1;
+        const allClosed = [20,19,18,17,16,15,25].every(s => (cur.marks[s] || 0) >= 3);
+        if (allClosed && cur.pts >= opp.pts) return finishPractice(cur);
+
+        if (practiceState.cricketDartsThrown >= 3) {
+            practiceState.cricketDartsThrown = 0;
+            if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
+        }
+        updateUI();
+    }
+
+    function passTurnCricket() {
+        savePracticeState();
+        practiceState.cricketDartsThrown = 0;
+        cricketMult = 1;
+        if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
+        updateUI();
+    }
+
+    function renderDrillUI() {
+        const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
+        document.getElementById('drill-title').innerText = `${cur.name}'s Turn`;
+
+        let target = "";
+        let sub = "";
+        let btnHtml = "";
+
+        if (activeGameMode === 'atc') {
+            target = cur.atc > 20 ? "BULL" : cur.atc;
+            sub = `Darts thrown: ${cur.darts}`;
+            btnHtml = `
+                <button class="drill-btn" onclick="hitDrill(1)">Hit (1st Dart)</button>
+                <button class="drill-btn" onclick="hitDrill(2)">Hit (2nd Dart)</button>
+                <button class="drill-btn" onclick="hitDrill(3)">Hit (3rd Dart)</button>
+                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Missed All 3</button>
+            `;
+        } else if (activeGameMode === 'bobs27') {
+            target = cur.bobsRound > 20 ? "BULL" : `D${cur.bobsRound}`;
+            sub = `Score: ${cur.bobs} | Darts: ${cur.darts}`;
+            const val = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
+            btnHtml = `
+                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">0 Hits (-${val})</button>
+                <button class="drill-btn" onclick="hitDrill(1)">1 Hit (+${val})</button>
+                <button class="drill-btn" onclick="hitDrill(2)">2 Hits (+${val*2})</button>
+                <button class="drill-btn" onclick="hitDrill(3)">3 Hits (+${val*3})</button>
+            `;
+        } else if (activeGameMode === '121') {
+            target = cur.target121;
+            sub = `Checkout Target (Darts: ${cur.darts})`;
+            btnHtml = `
+                <button class="drill-btn" style="background:#1b4a22;" onclick="hitDrill(1)">Checkout! (Target +1)</button>
+                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Failed (Target -1)</button>
+            `;
+        }
+
+        document.getElementById('drill-target').innerText = target;
+        document.getElementById('drill-sub').innerText = sub;
+        document.getElementById('drill-dynamic-buttons').innerHTML = btnHtml;
+    }
+
+    function hitDrill(val) {
+        savePracticeState();
+        const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
+
+        if (activeGameMode === 'atc') {
+            if (val > 0) {
+                cur.darts += val;
+                cur.atc++;
+                if (cur.atc > 21) return finishPractice(cur);
+            } else cur.darts += 3;
+        } 
+        else if (activeGameMode === 'bobs27') {
+            cur.darts += 3;
+            const pts = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
+            if (val === 0) cur.bobs -= pts;
+            else cur.bobs += (val * pts);
+
+            if (cur.bobs <= 0) {
+                alert(`${cur.name} Busted out on Bob's 27!`);
+                return finishPractice(cur, true);
+            }
+            cur.bobsRound++;
+            if (cur.bobsRound > 21) return finishPractice(cur);
+        } 
+        else if (activeGameMode === '121') {
+            cur.darts += 3; // Approx tracking per visit
+            if (val > 0) cur.target121++;
+            else cur.target121 = Math.max(121, cur.target121 - 1);
+        }
+
+        if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
+        updateUI();
+    }
+
+    function finishPractice(player, failed=false) {
+        document.getElementById('winner-banner').innerText = failed ? `${player.name} FAILED` : `${player.name} FINISHED!`;
+        document.getElementById('standard-stats-grid').style.display = 'none';
+
+        let msg = `Game Completed in ${player.darts} darts.`;
+        if (activeGameMode === 'bobs27') msg = failed ? `Busted at Double ${player.bobsRound}` : `Finished with Score: ${player.bobs}`;
+        if (activeGameMode === 'cricket') msg = `Score: ${player.pts}`;
+
+        document.getElementById('practice-result-msg').innerText = msg;
+        document.getElementById('practice-result-msg').style.display = 'block';
+
+        showScreen('post-match-screen');
+    }
 </script>
 </body>
 </html>
