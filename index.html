@@ -540,10 +540,17 @@
         55: "15 D20",       54: "14 D20",       53: "13 D20",       52: "12 D20",       
         51: "11 D20",       50: "10 D20",       49: "9 D20",        48: "16 D16",       
         47: "15 D16",       46: "14 D16",       45: "13 D16",       44: "12 D16",       
-        43: "11 D16",       42: "10 D16",       41: "9 D16",        40: "D20", 
-        38: "D19", 36: "D18", 34: "D17", 32: "D16", 30: "D15", 28: "D14", 
-        26: "D13", 24: "D12", 22: "D11", 20: "D10", 18: "D9",  16: "D8",  
-        14: "D7",  12: "D6",  10: "D5",  8: "D4",   6: "D3",   4: "D2",   2: "D1"
+        43: "11 D16",       42: "10 D16",       41: "9 D16",        40: "D20",
+        39: "7 D16",        38: "D19",          37: "5 D16",        36: "D18",
+        35: "3 D16",        34: "D17",          33: "1 D16",        32: "D16",
+        31: "15 D8",        30: "D15",          29: "13 D8",        28: "D14", 
+        27: "11 D8",        26: "D13",          25: "9 D8",         24: "D12",
+        23: "7 D8",         22: "D11",          21: "5 D8",         20: "D10",
+        19: "3 D8",         18: "D9",           17: "1 D8",         16: "D8",  
+        15: "7 D4",         14: "D7",           13: "5 D4",         12: "D6",
+        11: "3 D4",         10: "D5",           9: "1 D4",          8: "D4",
+        7: "3 D2",          6: "D3",            5: "1 D2",          4: "D2",
+        3: "1 D1",          2: "D1"
     };
 
     let state = { settings: { startScore: 501, targetLegs: 3 }, p1: getFreshPlayerState("Player 1"), p2: getFreshPlayerState("Player 2"), turn: 1, startingPlayer: 1, globalHistory: [] };
@@ -1014,7 +1021,6 @@
         }
     }
 
-    // --- SCORE EDITING LOGIC ---
     function applyScoreImpact(player, displayScore, actualDeduction, isAdding, index) {
         const multiplier = isAdding ? 1 : -1;
         player.totalScored += (actualDeduction * multiplier);
@@ -1088,7 +1094,6 @@
         updateUI();
         broadcastState();
     }
-    // ---------------------------
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
