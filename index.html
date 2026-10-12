@@ -109,16 +109,18 @@
         .player-name { font-size: 1.1em; margin: 0 0 5px 0; color: white; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .score-remaining { font-size: clamp(2em, 7vw, 3.5em); font-weight: 900; line-height: 1; margin: 5px 0; color: var(--tech-cyan); text-shadow: 0 0 15px rgba(0,229,255,0.3);}
         
-        /* NEW CHECKOUT CSS */
         .checkout-hint { color: #27ae60; font-size: 0.85em; font-weight: 800; min-height: 1.2em; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; text-shadow: 0 0 10px rgba(39, 174, 96, 0.3); }
 
         .stats { display: flex; justify-content: center; gap: 10px; font-size: 0.75em; color: #aaa; font-weight: 500; }
         .stats strong { color: white; }
+        
         .history { flex: 1; overflow-y: auto; }
         .history table { width: 100%; border-collapse: collapse; text-align: center; }
         .history th { background: #111; padding: 4px; font-size: 0.7em; position: sticky; top: 0; color: #888; text-transform: uppercase; }
         .history td { padding: 4px; border-bottom: 1px solid #222; font-size: 0.85em; }
         .score-col { font-weight: 700; color: var(--tech-cyan); }
+        .editable-score { cursor: pointer; text-decoration: underline; text-decoration-style: dotted; text-decoration-color: #555; transition: 0.2s; }
+        .editable-score:hover { color: white; background: rgba(0, 229, 255, 0.15); border-radius: 4px; }
 
         .input-section { padding: 10px 15px; display: flex; flex-direction: column; align-items: center; background: #0d1117; flex-shrink: 0; transition: opacity 0.2s;}
         .score-display { width: 100%; max-width: 300px; height: 40px; font-size: 1.6em; text-align: center; margin-bottom: 10px; border: 1px solid var(--tech-cyan); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--tech-cyan); background: rgba(0, 229, 255, 0.05); }
@@ -162,7 +164,6 @@
             border: 1px solid var(--tech-cyan); 
         }
         
-        /* Standard modals keep the dark blurred background */
         #qr-modal, #checkout-modal, #camera-preview-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
     </style>
 </head>
@@ -508,7 +509,6 @@
         highestCheckout: 0, first9Scored: 0, first9Darts: 0
     });
 
-    // NEW CHECKOUT DICTIONARY
     const checkouts = {
         170: "T20 T20 Bull", 167: "T20 T19 Bull", 164: "T20 T18 Bull", 161: "T20 T17 Bull",
         160: "T20 T20 D20", 158: "T20 T20 D19", 157: "T20 T19 D20", 156: "T20 T20 D18",
@@ -563,7 +563,6 @@
             document.getElementById('target-board-id').value = camTarget;
             showScreen('camera-node-screen');
             
-            // Force a physical tap to satisfy iOS Safari WebRTC rules
             document.getElementById('cam-node-status').innerHTML = 
                 '<button class="btn-primary" onclick="this.style.display=\'none\'; document.getElementById(\'cam-node-status\').innerHTML = \'Requesting camera...\'; initCameraNode();" style="width:100%; padding:20px; font-size:1.2em; margin-top:10px;">TAP TO START CAMERA</button>';
         }
@@ -650,7 +649,6 @@
 
         if (appMode === 'online' && opponentPeerId && connection && connection.open) {
             if (activeMediaCall && activeMediaCall.peerConnection) {
-                // UPDATE EXISTING CONNECTION: Swap video track without spawning a new call
                 const videoTrack = myVideoStream.getVideoTracks()[0];
                 const sender = activeMediaCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
                 if (sender) {
@@ -659,7 +657,6 @@
                     activeMediaCall.peerConnection.addTrack(videoTrack, myVideoStream);
                 }
             } else {
-                // NO CONNECTION YET: Initiate a new media call
                 const outCall = peer.call(opponentPeerId, myVideoStream);
                 activeMediaCall = outCall;
                 outCall.on('stream', remoteStream => {
@@ -692,7 +689,6 @@
     function initPeer() {
         const shortId = generateCleanID();
         
-        // --- INJECTED METERED.CA DEDICATED SERVERS ---
         peer = new Peer(shortId, {
             config: {
                 iceTransportPolicy: 'all',
@@ -728,7 +724,6 @@
             if(call.metadata && call.metadata.type === 'external-camera') {
                 call.answer(); 
                 call.on('stream', stream => {
-                    // iOS Fix 3: Clone the incoming stream before forwarding it
                     const clonedStream = new MediaStream(stream.getTracks());
                     myVideoStream = clonedStream; 
                     
@@ -743,11 +738,10 @@
                     }
                 });
             } else {
-                // FIX: Only answer with a stream if we actually have one ready
                 if (myVideoStream) {
                     call.answer(myVideoStream);
                 } else {
-                    call.answer(); // Receive-only answer
+                    call.answer(); 
                 }
                 
                 activeMediaCall = call;
@@ -771,12 +765,10 @@
         
         const vidElement = isLocal ? document.getElementById('local-vid') : document.getElementById('remote-vid');
         
-        // iOS Fix 1: Aggressively clear and re-assign the stream
         vidElement.srcObject = null;
         vidElement.srcObject = stream;
         vidElement.style.display = 'block';
         
-        // iOS Fix 2: Delayed play to satisfy Safari autoplay policies
         setTimeout(() => {
             const playPromise = vidElement.play();
             if (playPromise !== undefined) {
@@ -784,7 +776,6 @@
             }
         }, 150);
 
-        // Hide local video when appropriate
         if (isLocal) {
             if (document.getElementById('start-modal').style.display !== 'flex') {
                 vidElement.style.display = 'none';
@@ -815,7 +806,6 @@
             document.getElementById('lobby-status').innerText = "SYNCING DATA...";
             const myName = document.getElementById('online-name').value || "Player 2";
             connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
-            // Removed duplicate peer.call() here to prevent race conditions.
         });
 
         connection.on('error', err => {
@@ -836,7 +826,6 @@
                     conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
                     showInitialHostSetup();
 
-                    // FIX: If Host already has a camera running, send it to the Joiner now
                     if (myVideoStream && !activeMediaCall) {
                         setTimeout(() => {
                             const call = peer.call(opponentPeerId, myVideoStream);
@@ -1025,6 +1014,82 @@
         }
     }
 
+    // --- SCORE EDITING LOGIC ---
+    function applyScoreImpact(player, displayScore, actualDeduction, isAdding, index) {
+        const multiplier = isAdding ? 1 : -1;
+        player.totalScored += (actualDeduction * multiplier);
+        if (index < 3) player.first9Scored += (actualDeduction * multiplier);
+        if (typeof displayScore === 'number' && displayScore !== "Bust") {
+            if (displayScore === 180) player.scores180s += multiplier;
+            else if (displayScore >= 140) player.scores140s += multiplier;
+            else if (displayScore >= 100) player.scores100s += multiplier;
+            
+            if (isAdding && displayScore > player.highestScore) {
+                player.highestScore = displayScore;
+            }
+        }
+    }
+
+    window.editScore = function(playerNum, historyIndex) {
+        if (appMode === 'online' && localPlayerNum !== playerNum) {
+            alert("Security Lock: You can only edit your own past scores.");
+            return;
+        }
+        
+        const player = playerNum === 1 ? state.p1 : state.p2;
+        const h = player.history[historyIndex];
+        let currentDisplay = h.score;
+        if (currentDisplay === "Bust") currentDisplay = 0;
+        
+        let newScoreStr = prompt(`Edit your score for Throw ${h.throwNum}:`, currentDisplay);
+        if (newScoreStr === null || newScoreStr.trim() === "") return;
+        
+        let newScore = parseInt(newScoreStr);
+        if (isNaN(newScore) || newScore > 180 || impossibleScores.includes(newScore)) {
+            alert("Invalid score.");
+            return;
+        }
+
+        let safeState = JSON.parse(JSON.stringify(state));
+        state.globalHistory.push(safeState); 
+
+        let tempRem = historyIndex === 0 ? state.settings.startScore : player.history[historyIndex - 1].rem;
+        
+        for (let i = historyIndex; i < player.history.length; i++) {
+            let ds = player.history[i].score;
+            let act = (ds === "Bust") ? 0 : parseInt(ds);
+            applyScoreImpact(player, ds, act, false, i);
+        }
+        
+        player.history[historyIndex].score = newScore;
+        
+        for (let i = historyIndex; i < player.history.length; i++) {
+            let intendedScore = player.history[i].score;
+            let actual = (intendedScore === "Bust") ? 0 : parseInt(intendedScore);
+            let display = intendedScore;
+            
+            if (intendedScore !== "Bust" && (intendedScore > tempRem || tempRem - intendedScore === 1)) {
+                actual = 0;
+                display = "Bust";
+                player.history[i].score = "Bust"; 
+            } else if (intendedScore !== "Bust" && intendedScore === tempRem) {
+                alert("Edit Notice: This changes a past score to a checkout (0). To prevent match errors, it has been marked as a Bust. Checkouts must be thrown normally.");
+                actual = 0;
+                display = "Bust";
+                player.history[i].score = "Bust";
+            }
+            
+            tempRem -= actual;
+            player.history[i].rem = tempRem;
+            applyScoreImpact(player, display, actual, true, i);
+        }
+        
+        player.rem = tempRem;
+        updateUI();
+        broadcastState();
+    }
+    // ---------------------------
+
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
     function switchTurn() { state.turn = state.turn === 1 ? 2 : 1; updateUI(); broadcastState(); }
     function undo() { if (state.globalHistory.length === 0) return; state = state.globalHistory.pop(); currentInput = ""; updateInputUI(); updateUI(); broadcastState(); }
@@ -1033,22 +1098,31 @@
     function calculateAverage(player) { return player.totalDarts === 0 ? "0.00" : ((player.totalScored / player.totalDarts) * 3).toFixed(2); }
     function calculateFirst9Average(player) { return player.first9Darts === 0 ? "0.00" : ((player.first9Scored / player.first9Darts) * 3).toFixed(2); }
     
-    function renderHistory(playerHistory, elementId) { const tbody = document.getElementById(elementId); tbody.innerHTML = ""; [...playerHistory].reverse().forEach(h => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col">${h.score}</td><td>${h.rem}</td>`; tbody.appendChild(tr); }); }
+    function renderHistory(playerHistory, elementId) { 
+        const tbody = document.getElementById(elementId); 
+        tbody.innerHTML = ""; 
+        const pNum = elementId === 'p1-history' ? 1 : 2;
+        [...playerHistory].reverse().forEach((h, idx) => { 
+            const origIdx = playerHistory.length - 1 - idx;
+            const tr = document.createElement('tr'); 
+            tr.innerHTML = `<td>${h.throwNum}</td><td class="score-col editable-score" title="Tap to Edit" onclick="editScore(${pNum}, ${origIdx})">${h.score}</td><td>${h.rem}</td>`; 
+            tbody.appendChild(tr); 
+        }); 
+    }
     
-    // UPDATED UI TO SHOW CHECKOUT HINTS
     function updateUI() {
         document.getElementById('target-legs').innerText = state.settings.targetLegs;
         
         document.getElementById('p1-name').innerText = state.p1.name; 
         document.getElementById('p1-rem').innerText = state.p1.rem; 
-        document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || "";
+        if(document.getElementById('p1-checkout')) { document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || ""; }
         document.getElementById('p1-legs').innerText = state.p1.legs; 
         document.getElementById('p1-avg').innerText = calculateAverage(state.p1); 
         renderHistory(state.p1.history, 'p1-history');
         
         document.getElementById('p2-name').innerText = state.p2.name; 
         document.getElementById('p2-rem').innerText = state.p2.rem; 
-        document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || "";
+        if(document.getElementById('p2-checkout')) { document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || ""; }
         document.getElementById('p2-legs').innerText = state.p2.legs; 
         document.getElementById('p2-avg').innerText = calculateAverage(state.p2); 
         renderHistory(state.p2.history, 'p2-history');
@@ -1272,7 +1346,6 @@
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
         
-        // Populate P1 Stats
         document.getElementById('stat-p1-name').innerText = state.p1.name;
         document.getElementById('stat-p1-legs').innerText = state.p1.legs;
         document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
@@ -1285,7 +1358,6 @@
         document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
         document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
 
-        // Populate P2 Stats
         document.getElementById('stat-p2-name').innerText = state.p2.name;
         document.getElementById('stat-p2-legs').innerText = state.p2.legs;
         document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
