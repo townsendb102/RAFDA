@@ -33,6 +33,8 @@
             --tech-red: #ff1744;
             --raf-blue: #002A5C;
             --raf-red: #C8102E;
+            --tech-green: #27ae60;
+            --tech-gold: #f39c12;
         }
 
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -90,9 +92,9 @@
         label { font-weight: 600; color: #aaa; margin-bottom: -8px; font-size: 0.85em; text-transform: uppercase; letter-spacing: 1px; }
         input[type="text"], select { width: 100%; padding: 14px; font-size: 16px; border: 1px solid #444; border-radius: 8px; background: #222; color: white; }
         
-        .btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
-        .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; }
-        .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
+        .btn-primary { background: linear-gradient(90deg, #0052cc, var(--raf-blue)); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-secondary { background: transparent; color: white; border: 1px solid #555; padding: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; }
+        .btn-danger { background: linear-gradient(90deg, var(--tech-red), #99001b); color: white; border: none; padding: 15px; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px;}
         .btn-cam-link { background: #161b22; color: var(--tech-cyan); border: 1px solid var(--tech-cyan); padding: 15px; border-radius: 8px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; gap: 10px; text-transform: uppercase; letter-spacing: 1px;}
         
         .btn-cam-small { background: transparent; border: 1px solid #888; color: #ccc; border-radius: 4px; padding: 5px 10px; cursor: pointer; font-weight: bold; font-size: 0.9em; transition: 0.2s;}
@@ -162,39 +164,15 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        #start-modal { 
-            align-items: flex-end; 
-            padding-bottom: 20px; 
-            background: transparent !important; 
-            backdrop-filter: none !important; 
-            -webkit-backdrop-filter: none !important; 
-        }
-        #start-modal .modal { 
-            background: #161b22; 
-            box-shadow: 0 0 50px rgba(0,0,0,0.8); 
-            border: 1px solid var(--tech-cyan); 
-        }
-        
+        #start-modal { align-items: flex-end; padding-bottom: 20px; background: transparent !important; backdrop-filter: none !important; -webkit-backdrop-filter: none !important; }
+        #start-modal .modal { background: #161b22; box-shadow: 0 0 50px rgba(0,0,0,0.8); border: 1px solid var(--tech-cyan); }
         #qr-modal, #checkout-modal, #camera-preview-modal, #ios-install-modal, #android-install-modal { background: rgba(0,0,0,0.8); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 
         /* INSTALL BUTTON */
         #install-app-btn {
-            display: none;
-            margin-top: 25px;
-            width: 100%;
-            max-width: 650px;
-            padding: 15px;
-            border-radius: 12px;
-            font-size: 1.1em;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            background: #111;
-            color: #f39c12;
-            border: 2px solid #f39c12;
-            box-shadow: 0 0 15px rgba(243, 156, 18, 0.2);
-            cursor: pointer;
-            transition: all 0.2s;
+            display: none; margin-top: 25px; width: 100%; max-width: 650px; padding: 15px; border-radius: 12px; font-size: 1.1em;
+            font-weight: 800; text-transform: uppercase; letter-spacing: 2px; background: #111; color: #f39c12; border: 2px solid #f39c12;
+            box-shadow: 0 0 15px rgba(243, 156, 18, 0.2); cursor: pointer; transition: all 0.2s;
         }
         #install-app-btn:active { background: #f39c12; color: #000; }
 
@@ -252,9 +230,7 @@
             </button>
         </div>
 
-        <!-- PWA INSTALL BUTTON -->
         <button id="install-app-btn">⬇️ Install App to Home Screen</button>
-
     </main>
 
     <div class="footer-drop-shadow" id="menu-footer">
@@ -352,6 +328,10 @@
         <div class="match-info">
             <div id="match-format-title">Race to <span id="target-legs">3</span></div>
             <div style="display:flex; gap:10px; align-items:center;">
+                
+                <!-- NEW: End Match/Quit Button -->
+                <button class="btn-cam-small" style="color:var(--tech-red); border-color:var(--tech-red);" onclick="forceEndMatch()">🛑 Quit</button>
+
                 <div id="match-cam-buttons" style="display:none; gap:5px;">
                     <button class="btn-cam-small" onclick="openCameraPreview()">📷 Built-in</button>
                     <button class="btn-cam-small" onclick="showQRModal()">📱 Link Ext.</button>
@@ -386,7 +366,6 @@
             </div>
         </div>
 
-        <!-- NEW: Cricket Board View -->
         <div id="cricket-board-view">
             <div class="cricket-header">
                 <div class="cricket-p-card" id="cricket-p1-card">
@@ -407,14 +386,12 @@
             </div>
         </div>
 
-        <!-- NEW: Drill Board View -->
         <div id="drill-board-view">
             <div style="font-size:1em; color:#888; text-transform:uppercase; letter-spacing:2px; margin-bottom:5px;" id="drill-title">Player 1</div>
             <div class="drill-target" id="drill-target">D1</div>
             <div class="drill-subtext" id="drill-sub">Score: 27</div>
         </div>
 
-        <!-- X01 Numpad -->
         <div class="input-section" id="input-section-x01">
             <div class="score-display" id="current-input"></div>
             <div class="numpad">
@@ -426,7 +403,6 @@
             </div>
         </div>
 
-        <!-- NEW: Cricket Input Box -->
         <div class="input-section" id="cricket-input-box">
             <div style="display:flex; gap:8px; width:100%; max-width:350px; margin-bottom:10px;">
                 <button class="drill-btn" id="btn-mult-1" style="flex:1; padding:8px;" onclick="setCricketMult(1)">1x</button>
@@ -449,7 +425,6 @@
             </div>
         </div>
 
-        <!-- NEW: Drill Input Box -->
         <div class="input-section" id="drill-input-box">
             <div id="drill-dynamic-buttons" class="drill-btn-grid"></div>
             <button class="btn-secondary" style="width:100%; max-width:400px; padding:10px; margin-top:10px;" onclick="undoPractice()">Undo Last Visit</button>
@@ -509,15 +484,12 @@
 <div class="modal-overlay" id="camera-preview-modal">
     <div class="modal">
         <h3 style="margin-bottom: 10px;">Camera Setup</h3>
-        
         <video id="preview-vid" style="width: 100%; aspect-ratio: 16/9; background: #000; border-radius: 8px; margin-bottom: 15px; object-fit: contain;" autoplay playsinline muted></video>
-        
         <div id="zoom-container" style="display: none; margin-bottom: 15px; text-align: left;">
             <label style="color:var(--tech-cyan); font-size:0.85em; margin-bottom:5px; display:block; text-transform: uppercase; font-weight: bold;">Zoom Adjust</label>
             <input type="range" id="camera-zoom" style="width: 100%; cursor: pointer;">
         </div>
         <p id="zoom-not-supported" style="display: none; color: #888; font-size: 0.8em; margin-bottom: 15px;">Hardware zoom is not supported by this camera.</p>
-        
         <div class="modal-buttons">
             <button onclick="confirmCameraPreview()" style="background: var(--tech-cyan); color: #000;">Confirm & Use</button>
             <button onclick="cancelCameraPreview()">Cancel</button>
@@ -546,7 +518,6 @@
 
 <div class="modal-overlay" id="start-modal">
     <div class="modal" style="padding: 20px;">
-
         <div id="setup-local" style="text-align: left;">
             <h3 id="start-modal-title" style="margin-bottom: 15px; text-align: center;">Match Setup</h3>
             <div style="margin-bottom: 10px;">
@@ -589,7 +560,6 @@
 
         <div id="setup-online-host" style="display:none; text-align: left;">
             <p style="color:var(--tech-red); font-weight:bold; margin-top:0; font-size:1.2em; text-align: center;">🎯 BULL UP! 🎯</p>
-            
             <div style="margin-bottom: 15px;">
                 <label style="color:#aaa; font-size:0.8em; margin-bottom:2px; display:block;">Match Format</label>
                 <select id="online-host-legs" style="width: 100%; padding: 10px; background: #222; border: 1px solid #444; border-radius: 6px; color: white;">
@@ -600,19 +570,16 @@
                     <option value="6">Best of 11 (First to 6)</option>
                 </select>
             </div>
-
             <p style="color:#aaa; font-size:0.9em; margin-bottom:15px; text-align: center;">Check the camera feed.<br>Who is closest to the bull?</p>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button class="start-btn" id="start-online-host" onclick="confirmStartOnline(1)">Me</button>
                 <button class="start-btn" id="start-online-joiner" onclick="confirmStartOnline(2)">Opponent</button>
             </div>
         </div>
-
         <button style="padding: 10px; font-size: 1em; background: transparent; border: none; color: #aaa; cursor: pointer; margin-top: 15px; width: 100%;" onclick="cancelRematch()">Cancel</button>
     </div>
 </div>
 
-<!-- iOS Install Guide Modal -->
 <div class="modal-overlay" id="ios-install-modal">
     <div class="modal">
         <h3 style="color: var(--tech-gold);">Install on iOS</h3>
@@ -622,13 +589,10 @@
             1. Tap the <strong>Share</strong> icon at the bottom of Safari.<br>
             2. Scroll down and tap <strong>"Add to Home Screen"</strong> ➕.
         </p>
-        <div class="modal-buttons">
-            <button onclick="document.getElementById('ios-install-modal').style.display='none'">Got It</button>
-        </div>
+        <div class="modal-buttons"><button onclick="document.getElementById('ios-install-modal').style.display='none'">Got It</button></div>
     </div>
 </div>
 
-<!-- Android Install Guide Modal (Fallback) -->
 <div class="modal-overlay" id="android-install-modal">
     <div class="modal">
         <h3 style="color: var(--tech-green);">Install on Android</h3>
@@ -638,9 +602,7 @@
             1. Tap the <strong>three dots (⋮)</strong> in the top right corner of Chrome.<br><br>
             2. Tap <strong>"Add to Home screen"</strong> or <strong>"Install app"</strong>.
         </p>
-        <div class="modal-buttons">
-            <button onclick="document.getElementById('android-install-modal').style.display='none'">Got It</button>
-        </div>
+        <div class="modal-buttons"><button onclick="document.getElementById('android-install-modal').style.display='none'">Got It</button></div>
     </div>
 </div>
 
@@ -650,27 +612,21 @@
     let connection = null;
     let localPlayerNum = 1;
     let opponentPeerId = null; 
-    
     let myVideoStream = null;     
     let activeMediaCall = null;   
-
     let previewStream = null;
     let previewTrack = null;
 
     function generateCleanID() {
         const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
         let result = '';
-        for (let i = 0; i < 5; i++) {
-            result += chars.charAt(Math.floor(Math.random() * chars.length));
-        }
+        for (let i = 0; i < 5; i++) result += chars.charAt(Math.floor(Math.random() * chars.length));
         return result;
     }
 
     const getFreshPlayerState = (name) => ({ 
-        name: name, legs: 0, rem: 501, history: [], 
-        totalScored: 0, totalDarts: 0, highestScore: 0,
-        scores100s: 0, scores140s: 0, scores180s: 0,
-        highestCheckout: 0, first9Scored: 0, first9Darts: 0
+        name: name, legs: 0, rem: 501, history: [], totalScored: 0, totalDarts: 0, highestScore: 0,
+        scores100s: 0, scores140s: 0, scores180s: 0, highestCheckout: 0, first9Scored: 0, first9Darts: 0
     });
 
     const checkouts = {
@@ -727,13 +683,11 @@
     let remoteNewName = "";
     window.connTimeout = null;
 
-    /* --- SAFE LOCAL PRACTICE EXTENSION VARIABLES --- */
     let activeGameMode = 'x01';
     let cricketMult = 1;
     let practiceState = { p1: {}, p2: {}, turn: 1, history: [], cricketDartsThrown: 0 };
 
     window.onload = () => {
-        // --- RESTORE AUTOSAVED SESSION ---
         const savedSession = localStorage.getItem('rafDartsState');
         if (savedSession) {
             try {
@@ -756,21 +710,17 @@
         if (camTarget) {
             document.getElementById('target-board-id').value = camTarget;
             showScreen('camera-node-screen');
-            
             document.getElementById('cam-node-status').innerHTML = 
                 '<button class="btn-primary" onclick="this.style.display=\'none\'; document.getElementById(\'cam-node-status\').innerHTML = \'Requesting camera...\'; initCameraNode();" style="width:100%; padding:20px; font-size:1.2em; margin-top:10px;">TAP TO START CAMERA</button>';
         }
 
-        // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
         const installBtn = document.getElementById('install-app-btn');
-
         const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
         const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
 
         if (!isStandalone) {
             installBtn.style.display = 'block';
-
             if (isIOS) {
                 installBtn.onclick = () => { document.getElementById('ios-install-modal').style.display = 'flex'; };
             } else {
@@ -778,7 +728,6 @@
                     e.preventDefault();
                     deferredPrompt = e;
                 });
-
                 installBtn.onclick = async () => {
                     if (deferredPrompt) {
                         deferredPrompt.prompt();
@@ -796,9 +745,7 @@
     function showScreen(screenId) {
         document.querySelectorAll('.screen').forEach(s => { s.classList.remove('active'); });
         document.getElementById(screenId).classList.add('active');
-        
         document.getElementById('menu-footer').style.display = (screenId === 'menu-screen') ? 'block' : 'none';
-        
         if (screenId === 'match-screen' || screenId === 'post-match-screen') {
             document.getElementById('main-header').style.display = 'none';
         } else {
@@ -806,7 +753,6 @@
         }
     }
 
-    /* --- NEW GAME MODE TOGGLE --- */
     function toggleLocalGameSettings() {
         const gm = document.getElementById('local-game-mode').value;
         document.getElementById('setup-score-wrap').style.display = (gm === 'x01') ? 'block' : 'none';
@@ -816,14 +762,10 @@
     async function openCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'flex';
         try {
-            previewStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: { ideal: "environment" } }, 
-                audio: false 
-            });
-            
+            previewStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
             const previewVid = document.getElementById('preview-vid');
             previewVid.srcObject = previewStream;
-            previewVid.play().catch(e => console.warn("Auto-play prevented", e));
+            previewVid.play().catch(e => console.warn(e));
 
             const [track] = previewStream.getVideoTracks();
             previewTrack = track;
@@ -833,7 +775,6 @@
                 const zoomContainer = document.getElementById('zoom-container');
                 const zoomSlider = document.getElementById('camera-zoom');
                 const zoomNotSupported = document.getElementById('zoom-not-supported');
-                
                 if (capabilities.zoom) {
                     zoomContainer.style.display = 'block';
                     zoomNotSupported.style.display = 'none';
@@ -841,67 +782,54 @@
                     zoomSlider.max = capabilities.zoom.max;
                     zoomSlider.step = capabilities.zoom.step;
                     zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
-                    
-                    zoomSlider.oninput = (e) => {
-                        track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
-                    };
+                    zoomSlider.oninput = (e) => track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
                 } else {
                     zoomContainer.style.display = 'none';
                     zoomNotSupported.style.display = 'block';
                 }
             }, 500);
-
         } catch (err) {
             document.getElementById('camera-preview-modal').style.display = 'none';
-            alert("Camera access was denied or no camera found on this device.");
+            alert("Camera access denied.");
         }
     }
 
     function cancelCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'none';
-        if (previewStream) {
-            previewStream.getTracks().forEach(track => track.stop());
-            previewStream = null;
-            previewTrack = null;
-        }
+        if (previewStream) { previewStream.getTracks().forEach(track => track.stop()); previewStream = null; previewTrack = null; }
     }
 
     function confirmCameraPreview() {
         document.getElementById('camera-preview-modal').style.display = 'none';
         if (!previewStream) return;
-        
-        if (myVideoStream) {
-            myVideoStream.getTracks().forEach(t => t.stop());
-        }
-
-        myVideoStream = previewStream;
-        previewStream = null; 
-        
+        if (myVideoStream) myVideoStream.getTracks().forEach(t => t.stop());
+        myVideoStream = previewStream; previewStream = null; 
         setupRemoteVideoStream(myVideoStream, true);
 
         if (appMode === 'online' && opponentPeerId && connection && connection.open) {
             if (activeMediaCall && activeMediaCall.peerConnection) {
                 const videoTrack = myVideoStream.getVideoTracks()[0];
                 const sender = activeMediaCall.peerConnection.getSenders().find(s => s.track && s.track.kind === 'video');
-                if (sender) {
-                    sender.replaceTrack(videoTrack);
-                } else {
-                    activeMediaCall.peerConnection.addTrack(videoTrack, myVideoStream);
-                }
+                if (sender) sender.replaceTrack(videoTrack);
+                else activeMediaCall.peerConnection.addTrack(videoTrack, myVideoStream);
             } else {
                 const outCall = peer.call(opponentPeerId, myVideoStream);
                 activeMediaCall = outCall;
-                outCall.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream, false);
-                });
+                outCall.on('stream', remoteStream => setupRemoteVideoStream(remoteStream, false));
             }
+        }
+    }
+
+    function forceEndMatch() {
+        if (confirm("Are you sure you want to quit this match? All current progress will be lost.")) {
+            localStorage.removeItem('rafDartsState');
+            location.reload(); 
         }
     }
 
     function startLocalMatch() {
         appMode = 'local';
         activeGameMode = document.getElementById('local-game-mode') ? document.getElementById('local-game-mode').value : 'x01';
-        
         state.settings.startScore = parseInt(document.getElementById('local-score').value || 501);
         state.settings.targetLegs = parseInt(document.getElementById('local-legs').value || 3);
         state.p1 = getFreshPlayerState(document.getElementById('local-p1').value || "Player 1");
@@ -910,21 +838,18 @@
         document.getElementById('match-badge').innerText = "LOCAL";
         document.getElementById('match-badge').className = "connection-badge badge-local";
         document.getElementById('match-cam-buttons').style.display = 'none'; 
-        
         initLocalSetup();
     }
 
     function initOnlineLobby() {
         appMode = 'online';
-        activeGameMode = 'x01'; // Force strictly to X01 for online play
+        activeGameMode = 'x01'; 
         showScreen('online-lobby-screen');
         if (!peer) initPeer();
     }
 
     function initPeer() {
-        const shortId = generateCleanID();
-        
-        peer = new Peer(shortId, {
+        peer = new Peer(generateCleanID(), {
             config: {
                 iceTransportPolicy: 'all',
                 iceServers: [
@@ -941,17 +866,11 @@
         peer.on('open', id => { 
             document.getElementById('my-peer-id').innerText = id; 
             document.getElementById("qrcode").innerHTML = ""; 
-            new QRCode(document.getElementById("qrcode"), {
-                text: window.location.href.split('?')[0] + "?cam=" + id,
-                width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff"
-            });
+            new QRCode(document.getElementById("qrcode"), { text: window.location.href.split('?')[0] + "?cam=" + id, width: 200, height: 200, colorDark : "#000000", colorLight : "#ffffff" });
         });
 
         peer.on('connection', conn => {
-            connection = conn;
-            localPlayerNum = 1;
-            opponentPeerId = conn.peer;
-            
+            connection = conn; localPlayerNum = 1; opponentPeerId = conn.peer;
             conn.on('data', data => handleNetworkData(data, conn));
         });
 
@@ -961,33 +880,21 @@
                 call.on('stream', stream => {
                     const clonedStream = new MediaStream(stream.getTracks());
                     myVideoStream = clonedStream; 
-                    
                     setupRemoteVideoStream(clonedStream, true);
-                    
                     if (appMode === 'online' && opponentPeerId) {
                         const outCall = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = outCall;
-                        outCall.on('stream', remoteStream => {
-                            setupRemoteVideoStream(remoteStream, false);
-                        });
+                        outCall.on('stream', remoteStream => setupRemoteVideoStream(remoteStream, false));
                     }
                 });
             } else {
-                if (myVideoStream) {
-                    call.answer(myVideoStream);
-                } else {
-                    call.answer(); 
-                }
-                
+                if (myVideoStream) call.answer(myVideoStream); else call.answer(); 
                 activeMediaCall = call;
-                call.on('stream', remoteStream => {
-                    setupRemoteVideoStream(remoteStream, false);
-                });
+                call.on('stream', remoteStream => setupRemoteVideoStream(remoteStream, false));
             }
         });
 
         peer.on('error', err => { 
-            console.error("PeerJS Error:", err); 
             if (err.type === 'peer-unavailable') {
                 if (window.connTimeout) clearTimeout(window.connTimeout);
                 document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.9em;">ERROR: ID NOT FOUND.<br>Check for typos!</span>';
@@ -997,26 +904,16 @@
 
     function setupRemoteVideoStream(stream, isLocal) {
         document.getElementById('video-bar').style.display = 'flex';
-        
         const vidElement = isLocal ? document.getElementById('local-vid') : document.getElementById('remote-vid');
-        
-        vidElement.srcObject = null;
-        vidElement.srcObject = stream;
-        vidElement.style.display = 'block';
-        
+        vidElement.srcObject = null; vidElement.srcObject = stream; vidElement.style.display = 'block';
         setTimeout(() => {
             const playPromise = vidElement.play();
-            if (playPromise !== undefined) {
-                playPromise.catch(e => console.warn("iOS prevented autoplay:", e));
-            }
+            if (playPromise !== undefined) playPromise.catch(e => console.warn(e));
         }, 150);
 
         if (isLocal) {
-            if (document.getElementById('start-modal').style.display !== 'flex') {
-                vidElement.style.display = 'none';
-            } else {
-                vidElement.style.display = 'block';
-            }
+            if (document.getElementById('start-modal').style.display !== 'flex') vidElement.style.display = 'none';
+            else vidElement.style.display = 'block';
         }
     }
 
@@ -1024,23 +921,20 @@
         const remoteId = document.getElementById('remote-id').value.toUpperCase().trim();
         if (!remoteId) return;
         
-        document.getElementById('lobby-status').innerHTML = '<span style="color:#aaa; font-size: 0.85em;">NEGOTIATING RELAYS...<br>(Please wait up to 15 seconds)</span>';
-        localPlayerNum = 2;
-        opponentPeerId = remoteId;
-        
+        document.getElementById('lobby-status').innerHTML = '<span style="color:#aaa; font-size: 0.85em;">NEGOTIATING RELAYS...</span>';
+        localPlayerNum = 2; opponentPeerId = remoteId;
         connection = peer.connect(remoteId);
         
         window.connTimeout = setTimeout(() => {
             if (!connection || !connection.open) {
-                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.85em;">FIREWALL BLOCK DETECTED.<br>The Base Wi-Fi is killing the signal.<br><strong>FIX:</strong> Connect laptop to Phone Hotspot.</span>';
+                document.getElementById('lobby-status').innerHTML = '<span style="color:var(--tech-red); font-size: 0.85em;">FIREWALL BLOCK DETECTED.<br>Use Mobile Hotspot.</span>';
             }
         }, 15000);
 
         connection.on('open', () => {
             clearTimeout(window.connTimeout);
             document.getElementById('lobby-status').innerText = "SYNCING DATA...";
-            const myName = document.getElementById('online-name').value || "Player 2";
-            connection.send({ type: 'HANDSHAKE', name: myName, player: 2 });
+            connection.send({ type: 'HANDSHAKE', name: document.getElementById('online-name').value || "Player 2", player: 2 });
         });
 
         connection.on('error', err => {
@@ -1056,64 +950,51 @@
             if (localPlayerNum === 1 && data.player === 2) {
                 state.p1.name = document.getElementById('online-name').value || "Player 1";
                 state.p2.name = data.name;
-                
                 const reply = () => {
                     conn.send({ type: 'JOINER_AWAIT_BULLUP', hostName: state.p1.name });
                     showInitialHostSetup();
-
                     if (myVideoStream && !activeMediaCall) {
                         setTimeout(() => {
                             const call = peer.call(opponentPeerId, myVideoStream);
                             activeMediaCall = call;
-                            call.on('stream', remoteStream => {
-                                setupRemoteVideoStream(remoteStream, false);
-                            });
+                            call.on('stream', remoteStream => setupRemoteVideoStream(remoteStream, false));
                         }, 1000); 
                     }
                 };
-
-                if (connection.open) { reply(); } 
-                else { connection.on('open', reply); }
+                if (connection.open) reply(); else connection.on('open', reply);
             }
         } 
         else if (data.type === 'JOINER_AWAIT_BULLUP') {
             if (localPlayerNum === 2) {
                 state.p1.name = data.hostName;
                 showInitialJoinerWait(); 
-                
                 if(myVideoStream && opponentPeerId && !activeMediaCall) {
                     setTimeout(() => {
                         const call = peer.call(opponentPeerId, myVideoStream);
                         activeMediaCall = call;
-                        call.on('stream', remoteStream => {
-                            setupRemoteVideoStream(remoteStream, false);
-                        });
+                        call.on('stream', remoteStream => setupRemoteVideoStream(remoteStream, false));
                     }, 500); 
                 }
             }
         } 
         else if (data.type === 'STATE_SYNC') {
             state = data.state; 
-            if(document.getElementById('match-screen').classList.contains('active') === false && 
-               document.getElementById('post-match-screen').classList.contains('active') === false) {
+            if(!document.getElementById('match-screen').classList.contains('active') && !document.getElementById('post-match-screen').classList.contains('active')) {
                 document.getElementById('match-badge').innerText = "ONLINE SYNC";
                 document.getElementById('match-badge').className = "connection-badge badge-online";
                 document.getElementById('match-cam-buttons').style.display = 'flex';
                 showScreen('match-screen');
             }
             updateUI();
-            
             if (state.p1.legs >= state.settings.targetLegs) displayPostMatch(state.p1);
             else if (state.p2.legs >= state.settings.targetLegs) displayPostMatch(state.p2);
         } 
         else if (data.type === 'REMATCH_READY') {
-            remoteRematchReady = true;
-            remoteNewName = data.name;
-            checkOnlineRematchState();
+            remoteRematchReady = true; remoteNewName = data.name; checkOnlineRematchState();
         } 
         else if (data.type === 'REMATCH_START') {
             document.getElementById('start-modal').style.display = 'none';
-            if (data.targetLegs) { state.settings.targetLegs = data.targetLegs; }
+            if (data.targetLegs) state.settings.targetLegs = data.targetLegs;
             executeStart(data.startingPlayer, data.p1Name, data.p2Name);
         }
     }
@@ -1128,18 +1009,13 @@
                         { urls: 'stun:stun.l.google.com:19302' },
                         { urls: "stun:stun.relay.metered.ca:80" },
                         { urls: "turn:standard.relay.metered.ca:80", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
-                        { urls: "turn:standard.relay.metered.ca:80?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
-                        { urls: "turn:standard.relay.metered.ca:443", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" },
-                        { urls: "turns:standard.relay.metered.ca:443?transport=tcp", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" }
+                        { urls: "turn:standard.relay.metered.ca:443", username: "96fbcfd878d6ee247cf2a732", credential: "9GrKtA0VqFiIkfbI" }
                     ]
                 }
             }); 
         }
         try {
-            myVideoStream = await navigator.mediaDevices.getUserMedia({ 
-                video: { facingMode: { ideal: "environment" } }, 
-                audio: false 
-            });
+            myVideoStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
             const camVid = document.getElementById('node-camera-feed');
             camVid.srcObject = myVideoStream;
             camVid.play().catch(e => console.warn(e));
@@ -1149,21 +1025,17 @@
                 const capabilities = track.getCapabilities ? track.getCapabilities() : {};
                 const zoomContainer = document.getElementById('node-zoom-container');
                 const zoomSlider = document.getElementById('node-camera-zoom');
-                
                 if (capabilities.zoom) {
                     zoomContainer.style.display = 'block';
                     zoomSlider.min = capabilities.zoom.min;
                     zoomSlider.max = capabilities.zoom.max;
                     zoomSlider.step = capabilities.zoom.step;
                     zoomSlider.value = track.getSettings().zoom || capabilities.zoom.min;
-                    
-                    zoomSlider.oninput = (e) => {
-                        track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
-                    };
+                    zoomSlider.oninput = (e) => track.applyConstraints({ advanced: [{ zoom: parseFloat(e.target.value) }] });
                 }
             }, 500);
 
-            if(document.getElementById('target-board-id').value !== "") { beamCameraToBoard(); }
+            if(document.getElementById('target-board-id').value !== "") beamCameraToBoard();
         } catch (err) {
             document.getElementById('cam-node-status').innerText = "Camera Access Denied/Failed.";
         }
@@ -1187,16 +1059,15 @@
         return Number(state.turn) === Number(localPlayerNum); 
     }
 
-    function appendNum(num) { if(!isMyTurn()) return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
-    function clearInput() { if(!isMyTurn()) return; currentInput = ""; updateInputUI(); }
+    function appendNum(num) { if(!isMyTurn() || activeGameMode !== 'x01') return; if (currentInput.length < 3) { currentInput += num; updateInputUI(); } }
+    function clearInput() { if(!isMyTurn() || activeGameMode !== 'x01') return; currentInput = ""; updateInputUI(); }
     function updateInputUI() { document.getElementById('current-input').innerText = currentInput; }
 
     function submitScore() {
-        if(!isMyTurn() || activeGameMode !== 'x01') return;
-        if (currentInput === "") return;
+        if(!isMyTurn() || activeGameMode !== 'x01' || currentInput === "") return;
         const score = parseInt(currentInput);
         currentInput = ""; updateInputUI();
-        if (score > 180 || impossibleScores.includes(score)) { alert("INVALID SCORE"); return; }
+        if (score > 180 || impossibleScores.includes(score)) return alert("INVALID SCORE"); 
         
         const p = state.turn === 1 ? state.p1 : state.p2;
         if (score > p.rem || p.rem - score === 1) { recordScore(p, 0, "Bust", 3); switchTurn(); } 
@@ -1206,48 +1077,29 @@
 
     function recordScore(player, actualDeduction, displayScore, dartsUsed) {
         let safeState = JSON.parse(JSON.stringify(state));
-        safeState.globalHistory = []; 
-        state.globalHistory.push(safeState); 
+        safeState.globalHistory = []; state.globalHistory.push(safeState); 
         
-        if (player.history.length < 3) {
-            player.first9Scored += actualDeduction;
-            player.first9Darts += dartsUsed;
-        }
-
-        player.rem -= actualDeduction; 
-        player.totalScored += actualDeduction; 
-        player.totalDarts += dartsUsed;
+        if (player.history.length < 3) { player.first9Scored += actualDeduction; player.first9Darts += dartsUsed; }
+        player.rem -= actualDeduction; player.totalScored += actualDeduction; player.totalDarts += dartsUsed;
         
         if (typeof displayScore === 'number') {
             if (displayScore === 180) player.scores180s++;
             else if (displayScore >= 140) player.scores140s++;
             else if (displayScore >= 100) player.scores100s++;
-
             if (displayScore > player.highestScore) player.highestScore = displayScore;
         }
-        
         player.history.push({ throwNum: player.history.length + 1, score: displayScore, rem: player.rem });
     }
 
     function completeLeg(checkoutDarts) {
         document.getElementById('checkout-modal').style.display = 'none';
         const p = state.turn === 1 ? state.p1 : state.p2;
-        
-        if (p.pendingCheckoutScore > p.highestCheckout) {
-            p.highestCheckout = p.pendingCheckoutScore;
-        }
-
+        if (p.pendingCheckoutScore > p.highestCheckout) p.highestCheckout = p.pendingCheckoutScore;
         recordScore(p, p.pendingCheckoutScore, p.pendingCheckoutScore, checkoutDarts);
         p.legs++;
         
-        if (p.legs >= state.settings.targetLegs) { 
-            broadcastState(); 
-            displayPostMatch(p); 
-        } 
-        else { 
-            state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; 
-            resetLeg(); updateUI(); broadcastState(); 
-        }
+        if (p.legs >= state.settings.targetLegs) { broadcastState(); displayPostMatch(p); } 
+        else { state.startingPlayer = state.startingPlayer === 1 ? 2 : 1; resetLeg(); updateUI(); broadcastState(); }
     }
 
     function applyScoreImpact(player, displayScore, actualDeduction, isAdding, index) {
@@ -1258,43 +1110,30 @@
             if (displayScore === 180) player.scores180s += multiplier;
             else if (displayScore >= 140) player.scores140s += multiplier;
             else if (displayScore >= 100) player.scores100s += multiplier;
-            
-            if (isAdding && displayScore > player.highestScore) {
-                player.highestScore = displayScore;
-            }
+            if (isAdding && displayScore > player.highestScore) player.highestScore = displayScore;
         }
     }
 
     window.editScore = function(playerNum, historyIndex) {
         if (activeGameMode !== 'x01') return;
-        if (appMode === 'online' && localPlayerNum !== playerNum) {
-            alert("Security Lock: You can only edit your own past scores.");
-            return;
-        }
+        if (appMode === 'online' && localPlayerNum !== playerNum) return alert("Security Lock: You can only edit your own past scores.");
         
         const player = playerNum === 1 ? state.p1 : state.p2;
         const h = player.history[historyIndex];
-        let currentDisplay = h.score;
-        if (currentDisplay === "Bust") currentDisplay = 0;
+        let currentDisplay = h.score === "Bust" ? 0 : h.score;
         
         let newScoreStr = prompt(`Edit your score for Throw ${h.throwNum}:`, currentDisplay);
         if (newScoreStr === null || newScoreStr.trim() === "") return;
         
         let newScore = parseInt(newScoreStr);
-        if (isNaN(newScore) || newScore > 180 || impossibleScores.includes(newScore)) {
-            alert("Invalid score.");
-            return;
-        }
+        if (isNaN(newScore) || newScore > 180 || impossibleScores.includes(newScore)) return alert("Invalid score.");
 
-        let safeState = JSON.parse(JSON.stringify(state));
-        state.globalHistory.push(safeState); 
-
+        let safeState = JSON.parse(JSON.stringify(state)); state.globalHistory.push(safeState); 
         let tempRem = historyIndex === 0 ? state.settings.startScore : player.history[historyIndex - 1].rem;
         
         for (let i = historyIndex; i < player.history.length; i++) {
             let ds = player.history[i].score;
-            let act = (ds === "Bust") ? 0 : parseInt(ds);
-            applyScoreImpact(player, ds, act, false, i);
+            applyScoreImpact(player, ds, (ds === "Bust") ? 0 : parseInt(ds), false, i);
         }
         
         player.history[historyIndex].score = newScore;
@@ -1305,24 +1144,15 @@
             let display = intendedScore;
             
             if (intendedScore !== "Bust" && (intendedScore > tempRem || tempRem - intendedScore === 1)) {
-                actual = 0;
-                display = "Bust";
-                player.history[i].score = "Bust"; 
+                actual = 0; display = "Bust"; player.history[i].score = "Bust"; 
             } else if (intendedScore !== "Bust" && intendedScore === tempRem) {
-                alert("Edit Notice: This changes a past score to a checkout (0). To prevent match errors, it has been marked as a Bust. Checkouts must be thrown normally.");
-                actual = 0;
-                display = "Bust";
-                player.history[i].score = "Bust";
+                alert("Edit Notice: This changes a past score to a checkout. Marked as Bust.");
+                actual = 0; display = "Bust"; player.history[i].score = "Bust";
             }
-            
-            tempRem -= actual;
-            player.history[i].rem = tempRem;
+            tempRem -= actual; player.history[i].rem = tempRem;
             applyScoreImpact(player, display, actual, true, i);
         }
-        
-        player.rem = tempRem;
-        updateUI();
-        broadcastState();
+        player.rem = tempRem; updateUI(); broadcastState();
     }
 
     function resetLeg() { state.p1.rem = state.settings.startScore; state.p2.rem = state.settings.startScore; state.p1.history = []; state.p2.history = []; state.turn = state.startingPlayer; state.globalHistory = []; }
@@ -1334,9 +1164,7 @@
     function calculateFirst9Average(player) { return player.first9Darts === 0 ? "0.00" : ((player.first9Scored / player.first9Darts) * 3).toFixed(2); }
     
     function renderHistory(playerHistory, elementId) { 
-        const tbody = document.getElementById(elementId); 
-        tbody.innerHTML = ""; 
-        const pNum = elementId === 'p1-history' ? 1 : 2;
+        const tbody = document.getElementById(elementId); tbody.innerHTML = ""; const pNum = elementId === 'p1-history' ? 1 : 2;
         [...playerHistory].reverse().forEach((h, idx) => { 
             const origIdx = playerHistory.length - 1 - idx;
             const tr = document.createElement('tr'); 
@@ -1347,8 +1175,7 @@
     
     function updateUI() {
         if (activeGameMode !== 'x01') {
-            document.getElementById('x01-board-view').style.display = 'none';
-            document.getElementById('input-section-x01').style.display = 'none';
+            document.getElementById('x01-board-view').style.display = 'none'; document.getElementById('input-section-x01').style.display = 'none';
             document.getElementById('cricket-board-view').style.display = (activeGameMode === 'cricket') ? 'flex' : 'none';
             document.getElementById('cricket-input-box').style.display = (activeGameMode === 'cricket') ? 'flex' : 'none';
             document.getElementById('drill-board-view').style.display = ['atc', 'bobs27', '121'].includes(activeGameMode) ? 'flex' : 'none';
@@ -1364,292 +1191,147 @@
                 renderDrillUI();
             }
         } else {
-            // --- ORIGINAL X01 DOM UPDATES ---
-            document.getElementById('x01-board-view').style.display = 'flex';
-            document.getElementById('input-section-x01').style.display = 'flex';
-            document.getElementById('cricket-board-view').style.display = 'none';
-            document.getElementById('cricket-input-box').style.display = 'none';
-            document.getElementById('drill-board-view').style.display = 'none';
-            document.getElementById('drill-input-box').style.display = 'none';
+            document.getElementById('x01-board-view').style.display = 'flex'; document.getElementById('input-section-x01').style.display = 'flex';
+            document.getElementById('cricket-board-view').style.display = 'none'; document.getElementById('cricket-input-box').style.display = 'none';
+            document.getElementById('drill-board-view').style.display = 'none'; document.getElementById('drill-input-box').style.display = 'none';
 
             document.getElementById('target-legs').innerText = state.settings.targetLegs;
-            
-            document.getElementById('p1-name').innerText = state.p1.name; 
-            document.getElementById('p1-rem').innerText = state.p1.rem; 
-            if(document.getElementById('p1-checkout')) { document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || ""; }
-            document.getElementById('p1-legs').innerText = state.p1.legs; 
-            document.getElementById('p1-avg').innerText = calculateAverage(state.p1); 
+            document.getElementById('p1-name').innerText = state.p1.name; document.getElementById('p1-rem').innerText = state.p1.rem; 
+            if(document.getElementById('p1-checkout')) document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || "";
+            document.getElementById('p1-legs').innerText = state.p1.legs; document.getElementById('p1-avg').innerText = calculateAverage(state.p1); 
             renderHistory(state.p1.history, 'p1-history');
             
-            document.getElementById('p2-name').innerText = state.p2.name; 
-            document.getElementById('p2-rem').innerText = state.p2.rem; 
-            if(document.getElementById('p2-checkout')) { document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || ""; }
-            document.getElementById('p2-legs').innerText = state.p2.legs; 
-            document.getElementById('p2-avg').innerText = calculateAverage(state.p2); 
+            document.getElementById('p2-name').innerText = state.p2.name; document.getElementById('p2-rem').innerText = state.p2.rem; 
+            if(document.getElementById('p2-checkout')) document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || ""; 
+            document.getElementById('p2-legs').innerText = state.p2.legs; document.getElementById('p2-avg').innerText = calculateAverage(state.p2); 
             renderHistory(state.p2.history, 'p2-history');
             
             document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
             document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
 
-            const active = isMyTurn();
-            const numpadBtns = document.querySelectorAll('.num-btn');
-            const scoreDisp = document.getElementById('current-input');
-            
+            const active = isMyTurn(); const numpadBtns = document.querySelectorAll('.num-btn'); const scoreDisp = document.getElementById('current-input');
             if (active) {
-                scoreDisp.style.opacity = '1';
-                scoreDisp.innerText = currentInput;
+                scoreDisp.style.opacity = '1'; scoreDisp.innerText = currentInput;
                 numpadBtns.forEach(btn => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; });
             } else {
-                scoreDisp.style.opacity = '0.35';
-                scoreDisp.innerText = "WAITING...";
+                scoreDisp.style.opacity = '0.35'; scoreDisp.innerText = "WAITING...";
                 numpadBtns.forEach(btn => { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none'; });
             }
         }
-
-        // --- BACKGROUND AUTO-SAVE ---
-        localStorage.setItem('rafDartsState', JSON.stringify({
-            appMode, activeGameMode, cricketMult, state, practiceState
-        }));
+        localStorage.setItem('rafDartsState', JSON.stringify({ appMode, activeGameMode, cricketMult, state, practiceState }));
     }
 
     function showInitialHostSetup() {
         showScreen('match-screen');
-        
-        const localVid = document.getElementById('local-vid');
-        const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) {
-            localVid.style.display = 'block';
-            localVid.play().catch(e=>console.warn(e));
-        }
-        if (activeMediaCall) {
-            remoteVid.style.display = 'block';
-            remoteVid.play().catch(e=>console.warn(e));
-        }
-
-        document.getElementById('start-modal').style.display = 'flex';
-        document.getElementById('setup-local').style.display = 'none';
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-wait').style.display = 'none';
-        
-        document.getElementById('setup-online-host').style.display = 'block';
-        
-        document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
-        
-        localNewName = state.p1.name;
-        remoteNewName = state.p2.name;
+        const localVid = document.getElementById('local-vid'); const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) { localVid.style.display = 'block'; localVid.play().catch(e=>console.warn(e)); }
+        if (activeMediaCall) { remoteVid.style.display = 'block'; remoteVid.play().catch(e=>console.warn(e)); }
+        document.getElementById('start-modal').style.display = 'flex'; document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none'; document.getElementById('setup-online-wait').style.display = 'none';
+        document.getElementById('setup-online-host').style.display = 'block'; document.getElementById('online-host-legs').value = state.settings.targetLegs || 3;
+        localNewName = state.p1.name; remoteNewName = state.p2.name;
         document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
         document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
     }
 
     function showInitialJoinerWait() {
         showScreen('match-screen');
-        
-        const localVid = document.getElementById('local-vid');
-        const remoteVid = document.getElementById('remote-vid');
-        if (myVideoStream) {
-            localVid.style.display = 'block';
-            localVid.play().catch(e=>console.warn(e));
-        }
-        if (activeMediaCall) {
-            remoteVid.style.display = 'block';
-            remoteVid.play().catch(e=>console.warn(e));
-        }
-
-        document.getElementById('start-modal').style.display = 'flex';
-        document.getElementById('setup-local').style.display = 'none';
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-host').style.display = 'none';
-        
+        const localVid = document.getElementById('local-vid'); const remoteVid = document.getElementById('remote-vid');
+        if (myVideoStream) { localVid.style.display = 'block'; localVid.play().catch(e=>console.warn(e)); }
+        if (activeMediaCall) { remoteVid.style.display = 'block'; remoteVid.play().catch(e=>console.warn(e)); }
+        document.getElementById('start-modal').style.display = 'flex'; document.getElementById('setup-local').style.display = 'none';
+        document.getElementById('setup-online-name').style.display = 'none'; document.getElementById('setup-online-host').style.display = 'none';
         document.getElementById('setup-online-wait').style.display = 'block';
         document.getElementById('wait-text').innerHTML = `Waiting for Host (${state.p1.name}) to set Match Format and Bull Up...`;
     }
 
     function initLocalSetup() {
         showScreen('match-screen');
-        document.getElementById('start-modal').style.display = 'flex';
-        document.getElementById('setup-local').style.display = 'block';
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-wait').style.display = 'none';
+        document.getElementById('start-modal').style.display = 'flex'; document.getElementById('setup-local').style.display = 'block';
+        document.getElementById('setup-online-name').style.display = 'none'; document.getElementById('setup-online-wait').style.display = 'none';
         document.getElementById('setup-online-host').style.display = 'none';
-
-        const p1Input = document.getElementById('rematch-p1-name');
-        const p2Input = document.getElementById('rematch-p2-name');
-        const p1Btn = document.getElementById('start-local-p1');
-        const p2Btn = document.getElementById('start-local-p2');
-
+        const p1Input = document.getElementById('rematch-p1-name'); const p2Input = document.getElementById('rematch-p2-name');
+        const p1Btn = document.getElementById('start-local-p1'); const p2Btn = document.getElementById('start-local-p2');
         document.getElementById('rematch-local-legs').value = state.settings.targetLegs;
-
-        p1Input.value = state.p1.name;
-        p2Input.value = state.p2.name;
-        p1Btn.innerText = state.p1.name + " Throws First";
-        p2Btn.innerText = state.p2.name + " Throws First";
-
+        p1Input.value = state.p1.name; p2Input.value = state.p2.name; p1Btn.innerText = state.p1.name + " Throws First"; p2Btn.innerText = state.p2.name + " Throws First";
         p1Input.oninput = (e) => { p1Btn.innerText = (e.target.value || "Player 1") + " Throws First"; };
         p2Input.oninput = (e) => { p2Btn.innerText = (e.target.value || "Player 2") + " Throws First"; };
     }
 
     function btnPlayRematch() {
-        if (appMode === 'local') {
-            initLocalSetup();
-        } else {
+        if (appMode === 'local') initLocalSetup();
+        else {
             showScreen('match-screen');
-            
-            const localVid = document.getElementById('local-vid');
-            const remoteVid = document.getElementById('remote-vid');
-            if (myVideoStream) {
-                localVid.style.display = 'block';
-                localVid.play().catch(e=>console.warn(e));
-            }
-            if (activeMediaCall) {
-                remoteVid.style.display = 'block';
-                remoteVid.play().catch(e=>console.warn(e));
-            }
-
-            document.getElementById('start-modal').style.display = 'flex';
-            
-            localRematchReady = false;
-            remoteRematchReady = false;
-
-            document.getElementById('setup-local').style.display = 'none';
-            document.getElementById('setup-online-name').style.display = 'block';
-            document.getElementById('setup-online-wait').style.display = 'none';
-            document.getElementById('setup-online-host').style.display = 'none';
-
-            const myNameInput = document.getElementById('rematch-my-name');
-            myNameInput.value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
+            const localVid = document.getElementById('local-vid'); const remoteVid = document.getElementById('remote-vid');
+            if (myVideoStream) { localVid.style.display = 'block'; localVid.play().catch(e=>console.warn(e)); }
+            if (activeMediaCall) { remoteVid.style.display = 'block'; remoteVid.play().catch(e=>console.warn(e)); }
+            document.getElementById('start-modal').style.display = 'flex'; localRematchReady = false; remoteRematchReady = false;
+            document.getElementById('setup-local').style.display = 'none'; document.getElementById('setup-online-name').style.display = 'block';
+            document.getElementById('setup-online-wait').style.display = 'none'; document.getElementById('setup-online-host').style.display = 'none';
+            document.getElementById('rematch-my-name').value = localPlayerNum === 1 ? state.p1.name : state.p2.name;
         }
     }
 
-    function cancelRematch() {
-        document.getElementById('start-modal').style.display = 'none';
-        if (appMode === 'online') {
-            document.getElementById('local-vid').style.display = 'none';
-        }
-        showScreen('post-match-screen');
-    }
+    function cancelRematch() { document.getElementById('start-modal').style.display = 'none'; if (appMode === 'online') document.getElementById('local-vid').style.display = 'none'; showScreen('post-match-screen'); }
 
     function confirmStartLocal(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
         const newP1 = document.getElementById('rematch-p1-name').value || "Player 1";
         const newP2 = document.getElementById('rematch-p2-name').value || "Player 2";
-        
-        if (activeGameMode !== 'x01') {
-            initPracticeGame(activeGameMode, newP1, newP2);
-            practiceState.turn = startingPlayerNum;
-            showScreen('match-screen');
-            return;
-        }
-
+        if (activeGameMode !== 'x01') { initPracticeGame(activeGameMode, newP1, newP2); practiceState.turn = startingPlayerNum; showScreen('match-screen'); return; }
         state.settings.targetLegs = parseInt(document.getElementById('rematch-local-legs').value);
         executeStart(startingPlayerNum, newP1, newP2);
     }
 
     function confirmReadyOnline() {
-        localNewName = document.getElementById('rematch-my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2");
-        localRematchReady = true;
-
-        document.getElementById('setup-online-name').style.display = 'none';
-        document.getElementById('setup-online-wait').style.display = 'block';
-
-        if (connection && connection.open) {
-            connection.send({ type: 'REMATCH_READY', name: localNewName });
-        }
+        localNewName = document.getElementById('rematch-my-name').value || (localPlayerNum === 1 ? "Player 1" : "Player 2"); localRematchReady = true;
+        document.getElementById('setup-online-name').style.display = 'none'; document.getElementById('setup-online-wait').style.display = 'block';
+        if (connection && connection.open) connection.send({ type: 'REMATCH_READY', name: localNewName });
         checkOnlineRematchState();
     }
 
     function checkOnlineRematchState() {
         if (localRematchReady && remoteRematchReady) {
             document.getElementById('setup-online-wait').style.display = 'none';
-
             if (localPlayerNum === 1) {
-                document.getElementById('setup-online-host').style.display = 'block';
-                
-                document.getElementById('online-host-legs').value = state.settings.targetLegs;
-                
-                state.p2.name = remoteNewName;
-                document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
+                document.getElementById('setup-online-host').style.display = 'block'; document.getElementById('online-host-legs').value = state.settings.targetLegs;
+                state.p2.name = remoteNewName; document.getElementById('start-online-host').innerText = localNewName + " (Me) Throws First";
                 document.getElementById('start-online-joiner').innerText = remoteNewName + " (Opponent) Throws First";
-            } else {
-                document.getElementById('setup-online-wait').style.display = 'block';
-                document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to set Match Format and Bull Up...`;
-            }
+            } else document.getElementById('setup-online-wait').style.display = 'block'; document.getElementById('wait-text').innerHTML = `Waiting for Host (${remoteNewName}) to set Match Format and Bull Up...`;
         }
     }
 
     function confirmStartOnline(startingPlayerNum) {
         document.getElementById('start-modal').style.display = 'none';
-        
-        const targetLegs = parseInt(document.getElementById('online-host-legs').value);
-        state.settings.targetLegs = targetLegs;
-
-        if (connection && connection.open) {
-            connection.send({
-                type: 'REMATCH_START',
-                startingPlayer: startingPlayerNum,
-                p1Name: localNewName,
-                p2Name: remoteNewName,
-                targetLegs: targetLegs 
-            });
-        }
+        const targetLegs = parseInt(document.getElementById('online-host-legs').value); state.settings.targetLegs = targetLegs;
+        if (connection && connection.open) connection.send({ type: 'REMATCH_START', startingPlayer: startingPlayerNum, p1Name: localNewName, p2Name: remoteNewName, targetLegs: targetLegs });
         executeStart(startingPlayerNum, localNewName, remoteNewName);
     }
 
     function executeStart(startingPlayerNum, p1Name, p2Name) {
-        if(p1Name) state.p1.name = p1Name;
-        if(p2Name) state.p2.name = p2Name;
-
-        state.p1 = getFreshPlayerState(state.p1.name);
-        state.p2 = getFreshPlayerState(state.p2.name);
-        state.startingPlayer = startingPlayerNum; 
-        
+        if(p1Name) state.p1.name = p1Name; if(p2Name) state.p2.name = p2Name;
+        state.p1 = getFreshPlayerState(state.p1.name); state.p2 = getFreshPlayerState(state.p2.name); state.startingPlayer = startingPlayerNum; 
         if (appMode === 'online') {
-            document.getElementById('match-badge').innerText = "ONLINE SYNC";
-            document.getElementById('match-badge').className = "connection-badge badge-online";
-            document.getElementById('match-cam-buttons').style.display = 'flex';
-            
-            document.getElementById('local-vid').style.display = 'none';
-        } else {
-            document.getElementById('match-cam-buttons').style.display = 'none';
-        }
-        
-        setupMatchUI();
-        if (appMode === 'online' && localPlayerNum === 1) { broadcastState(); }
+            document.getElementById('match-badge').innerText = "ONLINE SYNC"; document.getElementById('match-badge').className = "connection-badge badge-online";
+            document.getElementById('match-cam-buttons').style.display = 'flex'; document.getElementById('local-vid').style.display = 'none';
+        } else document.getElementById('match-cam-buttons').style.display = 'none';
+        setupMatchUI(); if (appMode === 'online' && localPlayerNum === 1) broadcastState();
     }
 
     function displayPostMatch(winningPlayer) {
         document.getElementById('winner-banner').innerText = winningPlayer.name + " WINS!";
-        
-        if (activeGameMode !== 'x01') {
-            document.getElementById('standard-stats-grid').style.display = 'none';
-        } else {
-            document.getElementById('standard-stats-grid').style.display = 'grid';
-            if (document.getElementById('practice-result-msg')) document.getElementById('practice-result-msg').style.display = 'none';
-            
-            document.getElementById('stat-p1-name').innerText = state.p1.name;
-            document.getElementById('stat-p1-legs').innerText = state.p1.legs;
-            document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
-            document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1);
-            document.getElementById('stat-p1-100s').innerText = state.p1.scores100s;
-            document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
-            document.getElementById('stat-p1-180s').innerText = state.p1.scores180s;
-            document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout;
-            document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
-            document.getElementById('stat-p1-pts').innerText = state.p1.totalScored;
-            document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
-
-            document.getElementById('stat-p2-name').innerText = state.p2.name;
-            document.getElementById('stat-p2-legs').innerText = state.p2.legs;
-            document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
-            document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2);
-            document.getElementById('stat-p2-100s').innerText = state.p2.scores100s;
-            document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
-            document.getElementById('stat-p2-180s').innerText = state.p2.scores180s;
-            document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout;
-            document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
-            document.getElementById('stat-p2-pts').innerText = state.p2.totalScored;
-            document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
+        if (activeGameMode !== 'x01') document.getElementById('standard-stats-grid').style.display = 'none';
+        else {
+            document.getElementById('standard-stats-grid').style.display = 'grid'; if (document.getElementById('practice-result-msg')) document.getElementById('practice-result-msg').style.display = 'none';
+            document.getElementById('stat-p1-name').innerText = state.p1.name; document.getElementById('stat-p1-legs').innerText = state.p1.legs; document.getElementById('stat-p1-avg').innerText = calculateAverage(state.p1);
+            document.getElementById('stat-p1-first9').innerText = calculateFirst9Average(state.p1); document.getElementById('stat-p1-100s').innerText = state.p1.scores100s; document.getElementById('stat-p1-140s').innerText = state.p1.scores140s;
+            document.getElementById('stat-p1-180s').innerText = state.p1.scores180s; document.getElementById('stat-p1-highout').innerText = state.p1.highestCheckout; document.getElementById('stat-p1-high').innerText = state.p1.highestScore;
+            document.getElementById('stat-p1-pts').innerText = state.p1.totalScored; document.getElementById('stat-p1-darts').innerText = state.p1.totalDarts;
+            document.getElementById('stat-p2-name').innerText = state.p2.name; document.getElementById('stat-p2-legs').innerText = state.p2.legs; document.getElementById('stat-p2-avg').innerText = calculateAverage(state.p2);
+            document.getElementById('stat-p2-first9').innerText = calculateFirst9Average(state.p2); document.getElementById('stat-p2-100s').innerText = state.p2.scores100s; document.getElementById('stat-p2-140s').innerText = state.p2.scores140s;
+            document.getElementById('stat-p2-180s').innerText = state.p2.scores180s; document.getElementById('stat-p2-highout').innerText = state.p2.highestCheckout; document.getElementById('stat-p2-high').innerText = state.p2.highestScore;
+            document.getElementById('stat-p2-pts').innerText = state.p2.totalScored; document.getElementById('stat-p2-darts').innerText = state.p2.totalDarts;
         }
-
         showScreen('post-match-screen');
     }
 
@@ -1676,12 +1358,7 @@
             `• Total Darts: ${state.p2.totalDarts}\n` +
             `------------------------------------------\n` +
             `Generated via RAF Darts Scorer Pro`;
-        
-        navigator.clipboard.writeText(summary).then(() => {
-            alert("Match report copied to clipboard! Ready to paste.");
-        }).catch(err => {
-            alert("Unable to auto-copy. Check browser permissions.");
-        });
+        navigator.clipboard.writeText(summary).then(() => alert("Match report copied to clipboard! Ready to paste.")).catch(err => alert("Unable to auto-copy."));
     }
 
     function exportStatsCSV() {
@@ -1699,36 +1376,25 @@
             ["Total Points Scored", state.p1.totalScored, state.p2.totalScored],
             ["Total Darts Thrown", state.p1.totalDarts, state.p2.totalDarts]
         ];
-
-        let csvContent = "data:text/csv;charset=utf-8," 
-            + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
-        
-        const encodedUri = encodeURI(csvContent);
-        const link = document.createElement("a");
-        link.setAttribute("href", encodedUri);
-        const dateStr = new Date().toISOString().slice(0,10);
-        link.setAttribute("download", `RAF_Match_${state.p1.name}_vs_${state.p2.name}_${dateStr}.csv`);
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
+        let csvContent = "data:text/csv;charset=utf-8," + rows.map(e => e.map(val => `"${val}"`).join(",")).join("\n");
+        const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri);
+        const dateStr = new Date().toISOString().slice(0,10); link.setAttribute("download", `RAF_Match_${state.p1.name}_vs_${state.p2.name}_${dateStr}.csv`);
+        document.body.appendChild(link); link.click(); document.body.removeChild(link);
     }
 
     document.addEventListener('keydown', function(event) {
-        if (activeGameMode !== 'x01') return; // Protect original listener
+        if (activeGameMode !== 'x01') return; 
         if (document.getElementById('match-screen').classList.contains('active') && 
             document.getElementById('checkout-modal').style.display !== 'flex' &&
             document.getElementById('start-modal').style.display !== 'flex') {
             if (event.key >= '0' && event.key <= '9') appendNum(event.key);
             else if (event.key === 'Enter') submitScore();
-            else if (event.key === 'Backspace') { clearInput(); }
+            else if (event.key === 'Backspace') clearInput();
             else if (event.key === 'Escape' || event.key.toLowerCase() === 'c') clearInput();
         }
     });
 
-    // =========================================================================
-    // --- LOCAL PRACTICE MODES EXTENSION LOGIC ---
-    // (Completely isolated from X01 and Networking)
-    // =========================================================================
+    // --- LOCAL PRACTICE MODES ---
     function initPracticeGame(mode, p1n, p2n) {
         cricketMult = 1;
         practiceState = {
@@ -1739,178 +1405,93 @@
         updateUI();
     }
 
-    function savePracticeState() {
-        practiceState.history.push(JSON.stringify({p1: practiceState.p1, p2: practiceState.p2, turn: practiceState.turn, cricketDartsThrown: practiceState.cricketDartsThrown}));
-    }
+    function savePracticeState() { practiceState.history.push(JSON.stringify({p1: practiceState.p1, p2: practiceState.p2, turn: practiceState.turn, cricketDartsThrown: practiceState.cricketDartsThrown})); }
 
     function undoPractice() {
         if (practiceState.history.length === 0) return;
         const last = JSON.parse(practiceState.history.pop());
-        practiceState.p1 = last.p1;
-        practiceState.p2 = last.p2;
-        practiceState.turn = last.turn;
-        practiceState.cricketDartsThrown = last.cricketDartsThrown;
+        practiceState.p1 = last.p1; practiceState.p2 = last.p2; practiceState.turn = last.turn; practiceState.cricketDartsThrown = last.cricketDartsThrown;
         updateUI();
     }
 
     function renderCricketUI() {
-        const p1 = practiceState.p1;
-        const p2 = practiceState.p2;
-        document.getElementById('cricket-p1-name').innerText = p1.name;
-        document.getElementById('cricket-p1-pts').innerText = p1.pts;
-        document.getElementById('cricket-p2-name').innerText = p2.name;
-        document.getElementById('cricket-p2-pts').innerText = p2.pts;
-        
+        const p1 = practiceState.p1; const p2 = practiceState.p2;
+        document.getElementById('cricket-p1-name').innerText = p1.name; document.getElementById('cricket-p1-pts').innerText = p1.pts;
+        document.getElementById('cricket-p2-name').innerText = p2.name; document.getElementById('cricket-p2-pts').innerText = p2.pts;
         document.getElementById('cricket-p1-card').className = 'cricket-p-card' + (practiceState.turn === 1 ? ' is-turn' : '');
         document.getElementById('cricket-p2-card').className = 'cricket-p-card' + (practiceState.turn === 2 ? ' is-turn' : '');
-
-        const tbody = document.getElementById('cricket-table-body');
-        tbody.innerHTML = '';
+        const tbody = document.getElementById('cricket-table-body'); tbody.innerHTML = '';
         [20, 19, 18, 17, 16, 15, 25].forEach(s => {
-            const m1 = Math.min(3, p1.marks[s] || 0);
-            const m2 = Math.min(3, p2.marks[s] || 0);
-            const chars = ["", "/", "X", "⨂"];
-            tbody.innerHTML += `<tr>
-                <td class="cricket-mark ${m1===3?'cricket-closed':''}">${chars[m1]}</td>
-                <td style="color:#f39c12; font-weight:900;">${s===25?'BULL':s}</td>
-                <td class="cricket-mark ${m2===3?'cricket-closed':''}">${chars[m2]}</td>
-            </tr>`;
+            const m1 = Math.min(3, p1.marks[s] || 0); const m2 = Math.min(3, p2.marks[s] || 0); const chars = ["", "/", "X", "⨂"];
+            tbody.innerHTML += `<tr><td class="cricket-mark ${m1===3?'cricket-closed':''}">${chars[m1]}</td><td style="color:#f39c12; font-weight:900;">${s===25?'BULL':s}</td><td class="cricket-mark ${m2===3?'cricket-closed':''}">${chars[m2]}</td></tr>`;
         });
-        
         [1,2,3].forEach(m => document.getElementById(`btn-mult-${m}`).style.background = m === cricketMult ? 'var(--tech-gold)' : '#21262d');
         [1,2,3].forEach(m => document.getElementById(`btn-mult-${m}`).style.color = m === cricketMult ? '#000' : 'white');
     }
 
-    function setCricketMult(m) {
-        cricketMult = m;
-        updateUI();
-    }
+    function setCricketMult(m) { cricketMult = m; updateUI(); }
 
     function hitCricket(sector) {
-        savePracticeState();
-        const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
-        const opp = practiceState.turn === 1 ? practiceState.p2 : practiceState.p1;
-
-        cur.darts++;
-        practiceState.cricketDartsThrown++;
-
+        savePracticeState(); const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2; const opp = practiceState.turn === 1 ? practiceState.p2 : practiceState.p1;
+        cur.darts++; practiceState.cricketDartsThrown++;
         if (sector !== 0) {
             const hits = (sector === 25 && cricketMult === 3) ? 2 : cricketMult; 
-            const currentMarks = cur.marks[sector] || 0;
-            const newMarks = currentMarks + hits;
-            cur.marks[sector] = Math.min(newMarks, 3);
-
+            const currentMarks = cur.marks[sector] || 0; const newMarks = currentMarks + hits; cur.marks[sector] = Math.min(newMarks, 3);
             if (newMarks > 3) {
                 const oppClosed = (opp.marks[sector] || 0) >= 3;
                 if (!oppClosed) cur.pts += (newMarks - Math.max(3, currentMarks)) * sector;
             }
         }
-
         cricketMult = 1;
         const allClosed = [20,19,18,17,16,15,25].every(s => (cur.marks[s] || 0) >= 3);
         if (allClosed && cur.pts >= opp.pts) return finishPractice(cur);
-
         if (practiceState.cricketDartsThrown >= 3) {
-            practiceState.cricketDartsThrown = 0;
-            if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
+            practiceState.cricketDartsThrown = 0; if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
         }
         updateUI();
     }
 
-    function passTurnCricket() {
-        savePracticeState();
-        practiceState.cricketDartsThrown = 0;
-        cricketMult = 1;
-        if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
-        updateUI();
-    }
+    function passTurnCricket() { savePracticeState(); practiceState.cricketDartsThrown = 0; cricketMult = 1; if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1; updateUI(); }
 
     function renderDrillUI() {
         const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
         document.getElementById('drill-title').innerText = `${cur.name}'s Turn`;
-
-        let target = "";
-        let sub = "";
-        let btnHtml = "";
-
+        let target = ""; let sub = ""; let btnHtml = "";
         if (activeGameMode === 'atc') {
-            target = cur.atc > 20 ? "BULL" : cur.atc;
-            sub = `Darts thrown: ${cur.darts}`;
-            btnHtml = `
-                <button class="drill-btn" onclick="hitDrill(1)">Hit (1st Dart)</button>
-                <button class="drill-btn" onclick="hitDrill(2)">Hit (2nd Dart)</button>
-                <button class="drill-btn" onclick="hitDrill(3)">Hit (3rd Dart)</button>
-                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Missed All 3</button>
-            `;
+            target = cur.atc > 20 ? "BULL" : cur.atc; sub = `Darts thrown: ${cur.darts}`;
+            btnHtml = `<button class="drill-btn" onclick="hitDrill(1)">Hit (1st Dart)</button><button class="drill-btn" onclick="hitDrill(2)">Hit (2nd Dart)</button><button class="drill-btn" onclick="hitDrill(3)">Hit (3rd Dart)</button><button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Missed All 3</button>`;
         } else if (activeGameMode === 'bobs27') {
-            target = cur.bobsRound > 20 ? "BULL" : `D${cur.bobsRound}`;
-            sub = `Score: ${cur.bobs} | Darts: ${cur.darts}`;
-            const val = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
-            btnHtml = `
-                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">0 Hits (-${val})</button>
-                <button class="drill-btn" onclick="hitDrill(1)">1 Hit (+${val})</button>
-                <button class="drill-btn" onclick="hitDrill(2)">2 Hits (+${val*2})</button>
-                <button class="drill-btn" onclick="hitDrill(3)">3 Hits (+${val*3})</button>
-            `;
+            target = cur.bobsRound > 20 ? "BULL" : `D${cur.bobsRound}`; sub = `Score: ${cur.bobs} | Darts: ${cur.darts}`; const val = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
+            btnHtml = `<button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">0 Hits (-${val})</button><button class="drill-btn" onclick="hitDrill(1)">1 Hit (+${val})</button><button class="drill-btn" onclick="hitDrill(2)">2 Hits (+${val*2})</button><button class="drill-btn" onclick="hitDrill(3)">3 Hits (+${val*3})</button>`;
         } else if (activeGameMode === '121') {
-            target = cur.target121;
-            sub = `Checkout Target (Darts: ${cur.darts})`;
-            btnHtml = `
-                <button class="drill-btn" style="background:#1b4a22;" onclick="hitDrill(1)">Checkout! (Target +1)</button>
-                <button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Failed (Target -1)</button>
-            `;
+            target = cur.target121; sub = `Checkout Target (Darts: ${cur.darts})`;
+            btnHtml = `<button class="drill-btn" style="background:#1b4a22;" onclick="hitDrill(1)">Checkout! (Target +1)</button><button class="drill-btn" style="background:#4a1515;" onclick="hitDrill(0)">Failed (Target -1)</button>`;
         }
-
-        document.getElementById('drill-target').innerText = target;
-        document.getElementById('drill-sub').innerText = sub;
-        document.getElementById('drill-dynamic-buttons').innerHTML = btnHtml;
+        document.getElementById('drill-target').innerText = target; document.getElementById('drill-sub').innerText = sub; document.getElementById('drill-dynamic-buttons').innerHTML = btnHtml;
     }
 
     function hitDrill(val) {
-        savePracticeState();
-        const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
-
+        savePracticeState(); const cur = practiceState.turn === 1 ? practiceState.p1 : practiceState.p2;
         if (activeGameMode === 'atc') {
-            if (val > 0) {
-                cur.darts += val;
-                cur.atc++;
-                if (cur.atc > 21) return finishPractice(cur);
-            } else cur.darts += 3;
-        } 
-        else if (activeGameMode === 'bobs27') {
-            cur.darts += 3;
-            const pts = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
-            if (val === 0) cur.bobs -= pts;
-            else cur.bobs += (val * pts);
-
-            if (cur.bobs <= 0) {
-                alert(`${cur.name} Busted out on Bob's 27!`);
-                return finishPractice(cur, true);
-            }
-            cur.bobsRound++;
-            if (cur.bobsRound > 21) return finishPractice(cur);
-        } 
-        else if (activeGameMode === '121') {
-            cur.darts += 3; // Approx tracking per visit
-            if (val > 0) cur.target121++;
-            else cur.target121 = Math.max(121, cur.target121 - 1);
+            if (val > 0) { cur.darts += val; cur.atc++; if (cur.atc > 21) return finishPractice(cur); } else cur.darts += 3;
+        } else if (activeGameMode === 'bobs27') {
+            cur.darts += 3; const pts = cur.bobsRound > 20 ? 50 : cur.bobsRound * 2;
+            if (val === 0) cur.bobs -= pts; else cur.bobs += (val * pts);
+            if (cur.bobs <= 0) { alert(`${cur.name} Busted out on Bob's 27!`); return finishPractice(cur, true); }
+            cur.bobsRound++; if (cur.bobsRound > 21) return finishPractice(cur);
+        } else if (activeGameMode === '121') {
+            cur.darts += 3; if (val > 0) cur.target121++; else cur.target121 = Math.max(121, cur.target121 - 1);
         }
-
-        if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1;
-        updateUI();
+        if (practiceState.p2.name.trim() !== "") practiceState.turn = practiceState.turn === 1 ? 2 : 1; updateUI();
     }
 
     function finishPractice(player, failed=false) {
         document.getElementById('winner-banner').innerText = failed ? `${player.name} FAILED` : `${player.name} FINISHED!`;
         document.getElementById('standard-stats-grid').style.display = 'none';
-
         let msg = `Game Completed in ${player.darts} darts.`;
         if (activeGameMode === 'bobs27') msg = failed ? `Busted at Double ${player.bobsRound}` : `Finished with Score: ${player.bobs}`;
         if (activeGameMode === 'cricket') msg = `Score: ${player.pts}`;
-
-        document.getElementById('practice-result-msg').innerText = msg;
-        document.getElementById('practice-result-msg').style.display = 'block';
-
+        document.getElementById('practice-result-msg').innerText = msg; document.getElementById('practice-result-msg').style.display = 'block';
         showScreen('post-match-screen');
     }
 </script>
