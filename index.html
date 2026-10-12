@@ -13,8 +13,17 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#1a1e24">
 
-    <!-- Embedded Manifest for App Install Prompt -->
-    <link rel="manifest" href='data:application/manifest+json,{"name":"RAF Darts Scorer Pro","short_name":"RAF Darts","display":"standalone","start_url":".","background_color":"#1a1e24","theme_color":"#1a1e24","icons":[{"src":"icon.png","sizes":"192x192","type":"image/png"}]}'>
+    <!-- Dynamically built manifest to fix Android Icon Pathing -->
+    <script>
+        const iconUrl = new URL('icon.png', window.location.href).href;
+        const manifest = {
+            name: "RAF Darts Scorer Pro", short_name: "RAF Darts", display: "standalone",
+            start_url: window.location.href, background_color: "#1a1e24", theme_color: "#1a1e24",
+            icons: [{ src: iconUrl, sizes: "192x192", type: "image/png" }, { src: iconUrl, sizes: "512x512", type: "image/png" }]
+        };
+        const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/manifest+json'});
+        document.write(`<link rel="manifest" href="${URL.createObjectURL(manifestBlob)}">`);
+    </script>
 
     <script src="https://unpkg.com/peerjs@1.5.5/dist/peerjs.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -153,7 +162,6 @@
         .start-btn { padding: 15px; font-size: 1.2em; background: #21262d; border: 1px solid #30363d; color: white; border-radius: 8px; cursor: pointer; font-weight: 600; transition: 0.1s;}
         .start-btn:active { background: var(--tech-cyan); color: #000; }
         
-        /* Transparent Setup Modal Background so cameras are clearly visible during Bull Up */
         #start-modal { 
             align-items: flex-end; 
             padding-bottom: 20px; 
@@ -491,7 +499,7 @@
 
             <div class="flex-col" style="max-width: 600px; width:100%;">
                 <button class="btn-primary" onclick="btnPlayRematch()">Play Rematch</button>
-                <button class="btn-secondary" onclick="location.reload()">End Session</button>
+                <button class="btn-secondary" onclick="localStorage.removeItem('rafDartsState'); location.reload()">End Session</button>
             </div>
         </div>
     </main>
@@ -725,6 +733,24 @@
     let practiceState = { p1: {}, p2: {}, turn: 1, history: [], cricketDartsThrown: 0 };
 
     window.onload = () => {
+        // --- RESTORE AUTOSAVED SESSION ---
+        const savedSession = localStorage.getItem('rafDartsState');
+        if (savedSession) {
+            try {
+                const parsed = JSON.parse(savedSession);
+                appMode = parsed.appMode || 'local';
+                activeGameMode = parsed.activeGameMode || 'x01';
+                cricketMult = parsed.cricketMult || 1;
+                if (parsed.state) state = parsed.state;
+                if (parsed.practiceState) practiceState = parsed.practiceState;
+                
+                if (state.p1.name !== "Player 1" || state.p2.name !== "Player 2" || Object.keys(practiceState.p1).length > 0) {
+                    showScreen('match-screen');
+                    updateUI();
+                }
+            } catch(e) {}
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const camTarget = urlParams.get('cam');
         if (camTarget) {
@@ -735,7 +761,7 @@
                 '<button class="btn-primary" onclick="this.style.display=\'none\'; document.getElementById(\'cam-node-status\').innerHTML = \'Requesting camera...\'; initCameraNode();" style="width:100%; padding:20px; font-size:1.2em; margin-top:10px;">TAP TO START CAMERA</button>';
         }
 
-        // --- PWA INSTALLATION LOGIC (FORCED) ---
+        // --- PWA INSTALLATION LOGIC ---
         let deferredPrompt;
         const installBtn = document.getElementById('install-app-btn');
 
@@ -1156,7 +1182,7 @@
     function copyMyId() { navigator.clipboard.writeText(document.getElementById('my-peer-id').innerText); document.getElementById('copy-btn').innerText = "COPIED"; setTimeout(() => document.getElementById('copy-btn').innerText = "Copy ID", 2000); }
     
     function isMyTurn() { 
-        if (activeGameMode !== 'x01') return true; // Local Practice turns are strictly UI driven
+        if (activeGameMode !== 'x01') return true; 
         if (appMode === 'local') return true;
         return Number(state.turn) === Number(localPlayerNum); 
     }
@@ -1337,49 +1363,53 @@
                 if (activeGameMode === '121') document.getElementById('match-format-title').innerText = "121 Checkout Practice";
                 renderDrillUI();
             }
-            return; // Skip original X01 logic
-        }
-
-        // --- ORIGINAL X01 DOM UPDATES ---
-        document.getElementById('x01-board-view').style.display = 'flex';
-        document.getElementById('input-section-x01').style.display = 'flex';
-        document.getElementById('cricket-board-view').style.display = 'none';
-        document.getElementById('cricket-input-box').style.display = 'none';
-        document.getElementById('drill-board-view').style.display = 'none';
-        document.getElementById('drill-input-box').style.display = 'none';
-
-        document.getElementById('target-legs').innerText = state.settings.targetLegs;
-        
-        document.getElementById('p1-name').innerText = state.p1.name; 
-        document.getElementById('p1-rem').innerText = state.p1.rem; 
-        if(document.getElementById('p1-checkout')) { document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || ""; }
-        document.getElementById('p1-legs').innerText = state.p1.legs; 
-        document.getElementById('p1-avg').innerText = calculateAverage(state.p1); 
-        renderHistory(state.p1.history, 'p1-history');
-        
-        document.getElementById('p2-name').innerText = state.p2.name; 
-        document.getElementById('p2-rem').innerText = state.p2.rem; 
-        if(document.getElementById('p2-checkout')) { document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || ""; }
-        document.getElementById('p2-legs').innerText = state.p2.legs; 
-        document.getElementById('p2-avg').innerText = calculateAverage(state.p2); 
-        renderHistory(state.p2.history, 'p2-history');
-        
-        document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
-        document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
-
-        const active = isMyTurn();
-        const numpadBtns = document.querySelectorAll('.num-btn');
-        const scoreDisp = document.getElementById('current-input');
-        
-        if (active) {
-            scoreDisp.style.opacity = '1';
-            scoreDisp.innerText = currentInput;
-            numpadBtns.forEach(btn => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; });
         } else {
-            scoreDisp.style.opacity = '0.35';
-            scoreDisp.innerText = "WAITING...";
-            numpadBtns.forEach(btn => { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none'; });
+            // --- ORIGINAL X01 DOM UPDATES ---
+            document.getElementById('x01-board-view').style.display = 'flex';
+            document.getElementById('input-section-x01').style.display = 'flex';
+            document.getElementById('cricket-board-view').style.display = 'none';
+            document.getElementById('cricket-input-box').style.display = 'none';
+            document.getElementById('drill-board-view').style.display = 'none';
+            document.getElementById('drill-input-box').style.display = 'none';
+
+            document.getElementById('target-legs').innerText = state.settings.targetLegs;
+            
+            document.getElementById('p1-name').innerText = state.p1.name; 
+            document.getElementById('p1-rem').innerText = state.p1.rem; 
+            if(document.getElementById('p1-checkout')) { document.getElementById('p1-checkout').innerText = checkouts[state.p1.rem] || ""; }
+            document.getElementById('p1-legs').innerText = state.p1.legs; 
+            document.getElementById('p1-avg').innerText = calculateAverage(state.p1); 
+            renderHistory(state.p1.history, 'p1-history');
+            
+            document.getElementById('p2-name').innerText = state.p2.name; 
+            document.getElementById('p2-rem').innerText = state.p2.rem; 
+            if(document.getElementById('p2-checkout')) { document.getElementById('p2-checkout').innerText = checkouts[state.p2.rem] || ""; }
+            document.getElementById('p2-legs').innerText = state.p2.legs; 
+            document.getElementById('p2-avg').innerText = calculateAverage(state.p2); 
+            renderHistory(state.p2.history, 'p2-history');
+            
+            document.getElementById('p1-panel').className = 'player-header' + (state.turn === 1 ? ' is-turn' : ''); 
+            document.getElementById('p2-panel').className = 'player-header' + (state.turn === 2 ? ' is-turn' : '');
+
+            const active = isMyTurn();
+            const numpadBtns = document.querySelectorAll('.num-btn');
+            const scoreDisp = document.getElementById('current-input');
+            
+            if (active) {
+                scoreDisp.style.opacity = '1';
+                scoreDisp.innerText = currentInput;
+                numpadBtns.forEach(btn => { btn.style.opacity = '1'; btn.style.pointerEvents = 'auto'; });
+            } else {
+                scoreDisp.style.opacity = '0.35';
+                scoreDisp.innerText = "WAITING...";
+                numpadBtns.forEach(btn => { btn.style.opacity = '0.35'; btn.style.pointerEvents = 'none'; });
+            }
         }
+
+        // --- BACKGROUND AUTO-SAVE ---
+        localStorage.setItem('rafDartsState', JSON.stringify({
+            appMode, activeGameMode, cricketMult, state, practiceState
+        }));
     }
 
     function showInitialHostSetup() {
